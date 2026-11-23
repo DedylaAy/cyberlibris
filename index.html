@@ -711,6 +711,9 @@
               <button class="tool-btn" id="btn-toggle-manga-mode" title="Переключить между постраничным чтением и непрерывной лентой">
                 📜 Режим: Лента (Манга-скролл)
               </button>
+              <select id="reader-chapter-select" class="form-select" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; max-width: 220px; display: none; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid var(--border-glass);" onchange="window.readerEngine.jumpToChapter(parseInt(this.value))">
+                <option value="0">Глава 1</option>
+              </select>
               <span id="reading-progress-percent" style="font-size: 0.85rem; color: var(--accent-cyan); font-weight: 800; margin-left: 0.4rem;">0%</span>
             </div>
 
@@ -773,7 +776,7 @@
             </div>
 
             <!-- Reader Navigation Footer -->
-            <div class="reader-nav-footer">
+            <div class="reader-nav-footer" id="reader-chapter-nav">
               <button class="btn btn-secondary" id="btn-prev-chapter" onclick="window.readerEngine.prevChapter()">
                 ← Предыдущая глава
               </button>

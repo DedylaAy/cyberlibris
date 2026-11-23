@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CyberLibris High-Performance Dual-Stack (IPv4 + IPv6) Multi-Threaded Server
+CyberLibris High-Performance Dual-Stack (IPv4 + IPv6) Multi-Threaded Server & Live Book Relay
 Дисциплина: Технологии программирования
+Особенность: Потоковая ретрансляция книг из открытых источников в реальном времени.
+Никаких файлов книг на локальном диске (Zero-Storage Policy).
 """
 
 import http.server
 import os
 import sys
 import socket
+import urllib.parse
+import json
+import relay_service
 
 PORT = 8080
 
+# In-memory runtime cache (RAM only, never written to disk)
+RELAY_MEMORY_CACHE = {}
+
 class CyberLibrisHandler(http.server.SimpleHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
-    timeout = 5
+    timeout = 15
 
     def end_headers(self):
         # Enable CORS and disable caching
@@ -24,6 +32,10 @@ class CyberLibrisHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
         self.send_header('Connection', 'close')
         super().end_headers()
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.end_headers()
 
     def do_HEAD(self):
         self.send_response(200)
@@ -36,6 +48,62 @@ class CyberLibrisHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(204)
             self.end_headers()
             return
+
+        parsed_url = urllib.parse.urlparse(self.path)
+        params = urllib.parse.parse_qs(parsed_url.query)
+
+        # ----------------------------------------------------
+        # API: Потоковая ретрансляция книги из внешнего источника
+        # ----------------------------------------------------
+        if parsed_url.path == '/api/relay/stream':
+            provider = params.get('provider', ['wikisource'])[0]
+            page = params.get('page', [''])[0]
+            lang = params.get('lang', ['ru'])[0]
+            identifier = params.get('identifier', [''])[0]
+            max_chapters = int(params.get('max_chapters', [15])[0])
+
+            cache_key = f"{provider}:{lang}:{page or identifier}"
+            if cache_key in RELAY_MEMORY_CACHE:
+                result_data = RELAY_MEMORY_CACHE[cache_key]
+            else:
+                if provider == 'archive' and identifier:
+                    result_data = relay_service.stream_archive_book(identifier)
+                else:
+                    result_data = relay_service.stream_wikisource_book(page, lang=lang, max_subchapters=max_chapters)
+
+                if result_data and result_data.get('success'):
+                    RELAY_MEMORY_CACHE[cache_key] = result_data
+
+            if not result_data:
+                result_data = {
+                    "success": False,
+                    "error": f"Не удалось ретранслировать книгу из {provider} ({page})"
+                }
+
+            response_bytes = json.dumps(result_data, ensure_ascii=False).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Content-Length', str(len(response_bytes)))
+            self.end_headers()
+            self.wfile.write(response_bytes)
+            return
+
+        # ----------------------------------------------------
+        # API: Сквозной живой поиск по открытым библиотекам
+        # ----------------------------------------------------
+        if parsed_url.path == '/api/relay/search':
+            query = params.get('q', [''])[0]
+            lang = params.get('lang', ['ru'])[0]
+            results = relay_service.search_live_books(query, lang=lang) if query else []
+            
+            response_bytes = json.dumps({"success": True, "results": results}, ensure_ascii=False).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Content-Length', str(len(response_bytes)))
+            self.end_headers()
+            self.wfile.write(response_bytes)
+            return
+
         super().do_GET()
 
     def guess_type(self, path):

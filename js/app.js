@@ -558,7 +558,16 @@ class AppController {
           });
         });
       } else {
-        tocEl.innerHTML = '';
+        const providerName = book.relaySource?.provider === 'archive' ? 'Internet Archive' : 'Викитека (Wikisource)';
+        tocEl.innerHTML = `
+          <div style="background: rgba(0,0,0,0.35); border: 1px dashed rgba(0, 240, 255, 0.3); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size:0.78rem; font-weight:700; color:var(--accent-cyan);">📡 Живая потоковая ретрансляция</div>
+              <div style="font-size:0.74rem; color:var(--text-muted); margin-top:2px;">Подлинный текст подкачивается из <strong>${providerName}</strong> в память при чтении</div>
+            </div>
+            <span class="pulse-dot"></span>
+          </div>
+        `;
       }
     }
 
@@ -746,7 +755,7 @@ class AppController {
   async performOpenLibrarySearch(query) {
     const grid = document.getElementById('openlibrary-results-grid');
     if (!grid) return;
-    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--accent-cyan);">⏳ Ретрансляция книг из мирового каталога Open Library...</div>';
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--accent-cyan);"><span class="pulse-dot" style="display:inline-block; vertical-align:middle; margin-right:8px;"></span> ⏳ Сквозной поиск по мировым библиотекам (Викитека + Open Library)...</div>';
 
     const books = await window.bookRelay.searchExternalRelay(query);
     grid.innerHTML = '';

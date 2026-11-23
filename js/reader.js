@@ -98,7 +98,7 @@ class ReaderEngine {
     });
   }
 
-  openBook(bookId, chapterIdx = 0, initialMode = 'manga') {
+  async openBook(bookId, chapterIdx = 0, initialMode = 'manga') {
     let book = window.bookRelay ? window.bookRelay.getBookById(bookId) : null;
     if (!book && window.dbEngine) book = window.dbEngine.getBook(bookId);
     if (!book) return;
@@ -112,7 +112,7 @@ class ReaderEngine {
       window.bookRelay.setReadingNow(user.username, book.id);
     }
 
-    // Fill UI Header
+    // Заполняем заголовок читального зала
     const titleEl = document.getElementById('reader-book-title');
     const authorEl = document.getElementById('reader-book-author');
     if (titleEl) titleEl.textContent = book.title;
@@ -123,15 +123,119 @@ class ReaderEngine {
       modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
     }
 
-    this.renderContent();
-
-    // Switch view
+    // Немедленно открываем экран читателя
     window.app.switchView('reader');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Start reading timer
+    // Проверяем, нужно ли ретранслировать текст книги в реальном времени
+    if (!book.chapters || book.chapters.length === 0) {
+      this.renderStreamingLoader();
+      const streamRes = await window.bookRelay.streamBook(book.id);
+      if (!streamRes || !book.chapters || book.chapters.length === 0) {
+        this.renderStreamingError();
+        return;
+      }
+    }
+
+    this.updateRelayBadge();
+    this.updateChapterDropdown();
+    this.renderContent();
+
+    // Запускаем трекер чтения
     this.startReadingTracker();
     if (window.soundEngine) window.soundEngine.playCardFlip();
+  }
+
+  renderStreamingLoader() {
+    const bodyEl = document.getElementById('reader-body-content');
+    const chapterEl = document.getElementById('reader-chapter-title');
+    const selectEl = document.getElementById('reader-chapter-select');
+    if (selectEl) selectEl.style.display = 'none';
+    if (chapterEl) chapterEl.textContent = '📡 Подключение к каналу потоковой ретрансляции...';
+    if (!bodyEl) return;
+    
+    const providerName = this.currentBook?.relaySource?.provider === 'archive' 
+      ? 'Internet Archive (archive.org)' 
+      : 'Викитека — Свободная библиотека (ru.wikisource.org)';
+
+    bodyEl.className = 'reader-streaming-mode';
+    bodyEl.innerHTML = `
+      <div class="relay-stream-loader-box">
+        <div class="relay-radar-circle">
+          <span class="relay-radar-icon">📡</span>
+        </div>
+        <h3 class="relay-stream-headline">ПОТОКОВАЯ РЕТРАНСЛЯЦИЯ В РЕАЛЬНОМ ВРЕМЕНИ</h3>
+        <p class="relay-stream-subline">Установка прямого сетевого моста с открытым фондом мировой классики...</p>
+        <div class="relay-stream-meter">
+          <div class="relay-stream-meter-glow"></div>
+        </div>
+        <div class="relay-stream-source-info">
+          🌐 Внешний источник: <strong>${providerName}</strong>
+        </div>
+        <div class="relay-stream-policy-badge">
+          🛡️ <strong>Zero-Storage Protocol:</strong> На сервере книги не сохраняются. Подлинный текст передается потоком напрямую в оперативную память браузера.
+        </div>
+      </div>
+    `;
+  }
+
+  renderStreamingError() {
+    const bodyEl = document.getElementById('reader-body-content');
+    const chapterEl = document.getElementById('reader-chapter-title');
+    if (chapterEl) chapterEl.textContent = '⚠️ Ошибка ретрансляции книги';
+    if (!bodyEl) return;
+    bodyEl.innerHTML = `
+      <div class="relay-stream-error-box">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🛰️</div>
+        <h3>Не удалось завершить потоковую передачу</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Внешний библиотечный сервер временно недоступен или ограничил поток. Проверьте соединение и повторите попытку.</p>
+        <button class="btn btn-primary" onclick="window.readerEngine.openBook('${this.currentBook?.id}')">🔄 Повторить попытку ретрансляции</button>
+      </div>
+    `;
+  }
+
+  updateRelayBadge() {
+    const headerRow = document.querySelector('.reader-book-header .reader-meta-row');
+    if (!headerRow) return;
+    let badge = document.getElementById('reader-relay-source-badge');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.id = 'reader-relay-source-badge';
+      badge.className = 'relay-live-badge';
+      headerRow.appendChild(badge);
+    }
+    const sourceName = this.currentBook.relaySourceName || 'Викитека (Wikisource)';
+    const sourceUrl = this.currentBook.relaySourceUrl || `https://ru.wikisource.org/wiki/${encodeURIComponent(this.currentBook.title)}`;
+    badge.innerHTML = `<span class="pulse-dot"></span> 📡 Ретранслировано из: <a href="${sourceUrl}" target="_blank" rel="noopener">${sourceName} ↗</a>`;
+  }
+
+  updateChapterDropdown() {
+    const selectEl = document.getElementById('reader-chapter-select');
+    if (!selectEl || !this.currentBook) return;
+    const chapters = this.currentBook.chapters || [];
+    if (chapters.length > 1) {
+      selectEl.style.display = 'inline-block';
+      selectEl.innerHTML = chapters.map((ch, idx) => `
+        <option value="${idx}" ${idx === this.currentChapterIdx ? 'selected' : ''}>${ch.title}</option>
+      `).join('');
+    } else {
+      selectEl.style.display = 'none';
+    }
+  }
+
+  jumpToChapter(idx) {
+    if (!this.currentBook) return;
+    const chapters = this.currentBook.chapters || [];
+    if (idx >= 0 && idx < chapters.length) {
+      this.currentChapterIdx = idx;
+      if (this.readingMode === 'manga') {
+        const el = document.getElementById(`chapter-block-${idx}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        this.renderContent();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
   }
 
   toggleReadingMode() {
@@ -150,11 +254,13 @@ class ReaderEngine {
     const bodyEl = document.getElementById('reader-body-content');
     const navControls = document.getElementById('reader-chapter-nav');
     const chapterEl = document.getElementById('reader-chapter-title');
+    const selectEl = document.getElementById('reader-chapter-select');
 
     if (!bodyEl) return;
+    if (selectEl) selectEl.value = this.currentChapterIdx;
 
     if (this.readingMode === 'manga') {
-      if (chapterEl) chapterEl.textContent = 'Непрерывная лента (Все главы)';
+      if (chapterEl) chapterEl.textContent = `Непрерывная лента (${chapters.length} глав)`;
       if (navControls) navControls.style.display = 'none';
 
       bodyEl.className = 'reader-manga-mode';
