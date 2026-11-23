@@ -1060,13 +1060,14 @@ class AppController {
       const card = document.createElement('div');
       card.className = `quest-card ${q.claimed ? 'claimed' : q.completed ? 'completed' : ''}`;
 
+      const rewardXp = q.rewardXp || q.rewardXP || 50;
       let btnHTML = '';
       if (q.claimed) {
         btnHTML = '<span class="quest-btn-claimed">✓ Получено</span>';
       } else if (q.completed) {
         btnHTML = `<button class="btn btn-primary btn-sm btn-claim-quest" data-quest-id="${q.id}">🎁 Забрать +${q.rewardLumens} ⬡</button>`;
       } else {
-        btnHTML = `<span class="quest-reward-preview">+${q.rewardLumens} ⬡ | +${q.rewardXP} XP</span>`;
+        btnHTML = `<span class="quest-reward-preview">+${q.rewardLumens} ⬡ | +${rewardXp} XP</span>`;
       }
 
       card.innerHTML = `
@@ -1093,9 +1094,10 @@ class AppController {
         claimBtn.addEventListener('click', () => {
           const res = window.dbEngine.claimQuest(q.id);
           if (res) {
+            const xp = res.rewardXp || res.rewardXP || 50;
             window.auth.addLumens(res.rewardLumens);
-            window.auth.addXp(res.rewardXP);
-            this.showToast(`Контракт выполнен! +${res.rewardLumens} ⬡, +${res.rewardXP} XP`, 'reward');
+            window.auth.addXp(xp);
+            this.showToast(`Контракт выполнен! +${res.rewardLumens} ⬡, +${xp} XP`, 'reward');
             if (window.soundEngine) window.soundEngine.playLevelUp();
             this.renderDailyQuests();
           }
