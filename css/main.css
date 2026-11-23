@@ -993,27 +993,161 @@ body.is-creator .github-status-pill {
   .spotlight-cover-visual { min-height: 180px; border-left: none; border-top: 1px solid var(--border-glass); }
 }
 
-/* Quick Theme Switcher Button in Header */
-.quick-theme-btn {
+/* Interactive Theme Palette Picker with Color Circles Preview */
+.theme-picker-container {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-trigger-btn {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.4rem 0.85rem;
-  background: rgba(255, 255, 255, 0.05);
+  gap: 0.55rem;
+  padding: 0.42rem 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-full);
   color: var(--text-main);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-fast);
+  backdrop-filter: blur(8px);
 }
 
-.quick-theme-btn:hover {
+.theme-trigger-btn:hover {
   border-color: var(--accent-cyan);
   background: rgba(0, 240, 255, 0.12);
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
-  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.current-theme-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00f0ff, #ff007f);
+  box-shadow: 0 0 8px currentColor;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.theme-chevron {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.theme-picker-container.open .theme-chevron {
+  transform: rotate(180deg);
+}
+
+.theme-palette-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 290px;
+  background: rgba(11, 16, 26, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 25px rgba(0, 240, 255, 0.2);
+  padding: 1rem;
+  z-index: 1000;
+  display: none;
+  animation: fadeInDropdown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.theme-picker-container.open .theme-palette-dropdown {
+  display: block;
+}
+
+@keyframes fadeInDropdown {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.theme-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent-cyan);
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.theme-count-badge {
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--accent-cyan);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+}
+
+.theme-swatches-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.theme-swatch-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  color: #ddd;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  user-select: none;
+}
+
+.theme-swatch-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.4);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.theme-swatch-item.active {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+}
+
+.theme-color-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-swatch-item:hover .theme-color-circle {
+  transform: scale(1.15);
+  border-color: #fff;
+}
+
+.theme-swatch-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
 }
 
 /* Real Book Cover Image */
@@ -1249,7 +1383,22 @@ body.is-creator .github-status-pill {
   padding: 2.2rem;
   min-height: 380px;
   align-items: center;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.steam-carousel-main.carousel-fade-out {
+  opacity: 0;
+  transform: scale(0.985);
+}
+
+.steam-carousel-main.carousel-fade-in {
+  animation: carouselSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes carouselSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 650px) {
@@ -1798,4 +1947,294 @@ body.is-creator .github-status-pill {
   background: rgba(0, 240, 255, 0.15);
   border-color: var(--accent-cyan);
   transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   REMANGA-STYLE FACETED FILTER PANEL
+   ========================================================================== */
+.remanga-filter-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.remanga-main-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.remanga-search-box {
+  flex: 2;
+  min-width: 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.remanga-search-icon {
+  position: absolute;
+  left: 1rem;
+  font-size: 1rem;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.remanga-input {
+  width: 100%;
+  padding: 0.75rem 2.4rem 0.75rem 2.75rem;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.remanga-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.25);
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.remanga-clear-btn {
+  position: absolute;
+  right: 0.8rem;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 50%;
+  transition: color 0.2s ease;
+}
+
+.remanga-clear-btn:hover {
+  color: #fff;
+}
+
+.remanga-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 155px;
+  flex: 1;
+}
+
+.remanga-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.remanga-select {
+  padding: 0.68rem 0.9rem;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  appearance: auto;
+}
+
+.remanga-select:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.2);
+}
+
+.remanga-genres-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.remanga-genre-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  flex-shrink: 0;
+}
+
+.remanga-chips-list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.remanga-chip {
+  padding: 0.42rem 0.95rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.remanga-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.3);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.remanga-chip.active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+  font-weight: 700;
+}
+
+.remanga-results-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.84rem;
+}
+
+.remanga-counter-text {
+  color: var(--text-muted);
+}
+
+.btn-text-reset {
+  background: transparent;
+  border: none;
+  color: var(--accent-magenta);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-text-reset:hover {
+  background: rgba(255, 0, 128, 0.1);
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   BOOK QUIZ SELECTOR STAGE
+   ========================================================================== */
+.quiz-stage-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.quiz-stage-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.quiz-stage-subtitle {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.quiz-books-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.quiz-active-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.quiz-current-book-badge {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--accent-cyan);
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   REFINED "ЛИТЕРАТУРНЫЕ ЦЕЛИ ДНЯ"
+   ========================================================================== */
+.daily-goals-wrap {
+  margin-top: 3.5rem;
+  padding: 2rem;
+  background: rgba(8, 12, 22, 0.6);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+}
+
+.daily-goals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.daily-goals-title-group h3 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.daily-goals-title-group p {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-top: 0.25rem;
+}
+
+.daily-goals-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: var(--radius-full);
+  color: var(--accent-gold);
+  font-size: 0.8rem;
+  font-weight: 700;
 }

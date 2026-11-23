@@ -39,7 +39,7 @@ const DEFAULT_DATABASE = {
       xp: 14200,
       lumens: 5200,
       stats: { booksRead: 18, readTimeMinutes: 520, gamesWon: 64, speedRecordWPM: 620, cryptorSolved: 30, memoryFlips: 85, currentStreak: 21 },
-      badges: ["creator_badge", "admin_power", "github_sync", "legend_reader", "speed_demon", "crypto_master", "book_worm"],
+      badges: ["book_first_page", "foliant_master", "military_veteran", "classic_connoisseur", "philosophy_sage", "quiz_erudite", "book_worm"],
       unlockedCosmetics: {
         frames: ["frame-default", "frame-neon", "frame-dragon", "frame-gold", "frame-void", "frame-flame"],
         backgrounds: ["theme-cyberpunk", "theme-cosmic", "theme-amber", "theme-matrix", "theme-royal"],
@@ -65,7 +65,7 @@ const DEFAULT_DATABASE = {
       xp: 8900,
       lumens: 2800,
       stats: { booksRead: 12, readTimeMinutes: 320, gamesWon: 40, speedRecordWPM: 510, cryptorSolved: 18, memoryFlips: 45, currentStreak: 14 },
-      badges: ["admin_power", "speed_demon", "crypto_master", "book_worm"],
+      badges: ["book_first_page", "foliant_master", "military_veteran", "scifi_explorer"],
       unlockedCosmetics: {
         frames: ["frame-default", "frame-neon", "frame-dragon"],
         backgrounds: ["theme-cyberpunk", "theme-matrix"],
@@ -88,7 +88,7 @@ const DEFAULT_DATABASE = {
       xp: 5100,
       lumens: 1250,
       stats: { booksRead: 9, readTimeMinutes: 210, gamesWon: 28, speedRecordWPM: 440, cryptorSolved: 12, memoryFlips: 32, currentStreak: 9 },
-      badges: ["book_worm", "crypto_master"],
+      badges: ["book_first_page", "classic_connoisseur", "philosophy_sage"],
       unlockedCosmetics: {
         frames: ["frame-default", "frame-neon"],
         backgrounds: ["theme-cyberpunk", "theme-cosmic"],
@@ -111,7 +111,7 @@ const DEFAULT_DATABASE = {
       xp: 3600,
       lumens: 920,
       stats: { booksRead: 8, readTimeMinutes: 195, gamesWon: 29, speedRecordWPM: 420, cryptorSolved: 15, memoryFlips: 38, currentStreak: 7 },
-      badges: ["book_worm", "speed_demon", "crypto_master"],
+      badges: ["book_first_page", "scifi_explorer", "quiz_erudite"],
       unlockedCosmetics: {
         frames: ["frame-default", "frame-neon"],
         backgrounds: ["theme-cyberpunk", "theme-cosmic"],
@@ -382,13 +382,16 @@ const DEFAULT_DATABASE = {
     ]
   },
   badges: [
-    { id: "creator_badge", name: "Создатель Миров", icon: "👑", color: "#ffd700", description: "Обладатель верховного статуса Создателя системы." },
-    { id: "admin_power", name: "Власть Системы", icon: "⚡", color: "#ffd700", description: "Доступ к ядру базы данных и управлению контентом." },
-    { id: "github_sync", name: "Власть Системы", icon: "⚡", color: "#ffd700", description: "Полный доступ и синхронизация системных узлов платформы." },
-    { id: "speed_demon", name: "Сверхзвуковой Чтец", icon: "⚡", color: "#ff007f", description: "Достиг скорости чтения свыше 400 WPM в мини-игре RSVP." },
-    { id: "crypto_master", name: "Криптограф Разума", icon: "🧩", color: "#9d4edd", description: "Расшифровал скрытые цитаты в мини-игре Кибер-Криптор." },
-    { id: "book_worm", name: "Книжный Червь", icon: "📚", color: "#00ff66", description: "Прочитал более 5 произведений в библиотеке." },
-    { id: "legend_reader", name: "Легенда Вселенной", icon: "👑", color: "#ffaa00", description: "Достиг высокого уровня и открыл эксклюзивные кастомизации." }
+    { id: "book_first_page", name: "Первая Страница", icon: "📖", color: "#00f0ff", description: "Начато чтение первого произведения на платформе." },
+    { id: "foliant_master", name: "Покоритель Фолиантов", icon: "👑", color: "#ffd700", description: "Изучено монументальное произведение объемом свыше 600 страниц." },
+    { id: "military_veteran", name: "Воевода Полей", icon: "⚔️", color: "#ff5500", description: "Глубокое освоение военной прозы и трактатов стратегии." },
+    { id: "scifi_explorer", name: "Первопроходец Космоса", icon: "🚀", color: "#9d4edd", description: "Погружение в миры научной фантастики и киберпанка." },
+    { id: "classic_connoisseur", name: "Хранитель Классики", icon: "🕯️", color: "#ffaa00", description: "Прикосновение к золотому фонду мировой литературы." },
+    { id: "philosophy_sage", name: "Старейшина Мысли", icon: "📜", color: "#00ff88", description: "Познание мудрости философских манускриптов и притчей." },
+    { id: "literary_critic", name: "Острый Критик", icon: "💬", color: "#00bbf9", description: "Написаны содержательные рецензии к произведениям." },
+    { id: "quiz_erudite", name: "Магистр Эрудиции", icon: "🎓", color: "#ff007f", description: "Блестящие ответы на каверзные вопросы книжного квиза." },
+    { id: "night_reader", name: "Ночной Мыслитель", icon: "🦉", color: "#7209b7", description: "Чтение в полночные часы в режиме непрерывной ленты." },
+    { id: "book_worm", name: "Книжный Запой", icon: "📚", color: "#00ff66", description: "Изучено более 5 произведений в личной библиотеке." }
   ],
   miniGamesData: {
     speedRushWords: [
@@ -461,18 +464,23 @@ const DEFAULT_DATABASE = {
 
 class DatabaseEngine {
   constructor() {
-    this.storageKey = 'cyberlibris_database_v3_3';
+    this.storageKey = 'cyberlibris_database_v4_5';
     this.data = null;
     this.listeners = [];
     this.saveTimeout = null;
   }
 
   async init() {
+    // Purge outdated legacy caches from previous versions
+    ['cyberlibris_database_v3_3', 'cyberlibris_database_v3_2', 'cyberlibris_database_v3_1', 'cyberlibris_database_v3_0'].forEach(k => {
+      try { localStorage.removeItem(k); } catch (e) {}
+    });
+
     const local = localStorage.getItem(this.storageKey);
     if (local) {
       try {
         const parsed = JSON.parse(local);
-        if (parsed.books && parsed.books.length > 0 && parsed.shopItems?.frames?.length > 0) {
+        if (parsed.books && parsed.books.length > 0 && parsed.badges && parsed.badges[0]?.id === 'book_first_page') {
           this.data = parsed;
         }
       } catch (e) {
@@ -494,6 +502,20 @@ class DatabaseEngine {
         this.data = JSON.parse(JSON.stringify(DEFAULT_DATABASE));
         this.persistLocally();
       }
+    }
+
+    // Always enforce pure literary badges
+    if (this.data) {
+      this.data.badges = JSON.parse(JSON.stringify(DEFAULT_DATABASE.badges));
+      if (this.data.users) {
+        this.data.users.forEach(u => {
+          if (u.badges) {
+            u.badges = u.badges.filter(bId => !['creator_badge', 'admin_power', 'github_sync', 'crypto_master', 'memory_master', 'speed_reader', 'speed_demon'].includes(bId));
+            if (!u.badges.includes('book_first_page')) u.badges.push('book_first_page');
+          }
+        });
+      }
+      this.persistLocally();
     }
 
     // Pull from GitHub if Creator configured live GitHub mode

@@ -474,12 +474,56 @@
         </ul>
       </nav>
 
-      <!-- Header Controls: Theme, Audio SFX, User Pill -->
+      <!-- Header Controls: Theme Palette, Audio SFX, User Pill -->
       <div class="header-actions">
-        <!-- Quick Theme Switcher Button -->
-        <button class="quick-theme-btn magnetic-btn" id="btn-quick-theme" title="Сменить визуальный фон платформы">
-          🎨 Фон
-        </button>
+        <!-- Interactive Theme Palette Picker with Color Circles Preview -->
+        <div class="theme-picker-container" id="theme-picker-container">
+          <button class="theme-trigger-btn magnetic-btn" id="btn-theme-picker-trigger" title="Выбрать тему и цвет платформы">
+            <span class="current-theme-dot" id="current-theme-dot"></span>
+            <span>🎨 Фон</span>
+            <span class="theme-chevron">▾</span>
+          </button>
+          <div class="theme-palette-dropdown" id="theme-palette-dropdown">
+            <div class="theme-dropdown-header">
+              <span>Палитра атмосферы</span>
+              <span class="theme-count-badge">8 тем</span>
+            </div>
+            <div class="theme-swatches-grid" id="theme-swatches-grid">
+              <button class="theme-swatch-item active" data-theme="theme-cyberpunk" title="Киберпанк: неон, бирюза и фуксия">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #00f0ff, #ff007f);"></span>
+                <span class="theme-swatch-name">Киберпанк</span>
+              </button>
+              <button class="theme-swatch-item" data-theme="theme-cosmic" title="Глубокий космос: индиго и ультрафиолет">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #7928ca, #4338ca);"></span>
+                <span class="theme-swatch-name">Космос</span>
+              </button>
+              <button class="theme-swatch-item" data-theme="theme-amber" title="Тёплый янтарь: уютный свет свечей и золото">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #f59e0b, #d97706);"></span>
+                <span class="theme-swatch-name">Янтарь</span>
+              </button>
+              <button class="theme-swatch-item" data-theme="theme-matrix" title="Матрица: изумрудный терминал и цифры">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #00ff66, #003b1f);"></span>
+                <span class="theme-swatch-name">Матрица</span>
+              </button>
+              <button class="theme-swatch-item" data-theme="theme-royal" title="Королевская аврора: фиолетовый и изумруд">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #9d4edd, #06d6a0);"></span>
+                <span class="theme-swatch-name">Аврора</span>
+              </button>
+              <button class="theme-swatch-item" data-theme="theme-synthwave" title="Синтвейв 80-х: пурпур и закатное солнце">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #ff007f, #ffaa00);"></span>
+                <span class="theme-swatch-name">Синтвейв</span>
+              </button>
+              <button class="theme-swatch-item" data-theme="theme-ocean" title="Глубокий океан: морская лазурь и сапфир">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #0284c7, #06b6d4);"></span>
+                <span class="theme-swatch-name">Океан</span>
+              </button>
+              <button class="theme-swatch-item" data-theme="theme-zen" title="Дзен: минималистичный графит и туман">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #94a3b8, #475569);"></span>
+                <span class="theme-swatch-name">Дзен</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Sound Synthesizer SFX Button -->
         <button class="sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты">
@@ -513,24 +557,96 @@
           <div class="carousel-progress-bar" id="carousel-timer-bar"></div>
         </div>
 
-        <!-- Steam Category Filter Pills -->
-        <div class="filter-pills-row" style="margin-bottom: 1.5rem;">
-          <button class="genre-pill active" data-category="recommend">🌟 Рекомендовано вам (Персонально)</button>
-          <button class="genre-pill" data-category="masterpiece">👑 Шедевры литературы</button>
-          <button class="genre-pill" data-category="legendary">🌌 Легендарные фолианты</button>
-          <button class="genre-pill" data-category="военная проза">⚔️ Военная проза и стратегия</button>
-          <button class="genre-pill" data-category="киберпанк">🚀 Киберпанк и фантастика</button>
-          <button class="genre-pill" data-category="детектив">🔍 Детективы</button>
-          <button class="genre-pill" data-category="философия">📜 Философия и мысль</button>
-          <button class="genre-pill" data-category="openlibrary" id="tab-src-openlibrary">🌐 Мировой Каталог</button>
-        </div>
+        <!-- ReManga-Style Faceted Filter Panel -->
+        <div class="remanga-filter-panel" id="remanga-filter-panel">
+          <div class="remanga-main-row">
+            <!-- Search -->
+            <div class="remanga-search-box">
+              <span class="remanga-search-icon">🔍</span>
+              <input type="text" id="remanga-search-input" class="remanga-input" placeholder="Поиск по названию, автору или тегу (#Толстой, #Оруэлл, #Стратегия)...">
+              <button class="remanga-clear-btn" id="btn-clear-search" style="display:none;" title="Очистить поиск">✕</button>
+            </div>
 
-        <!-- Search input -->
-        <div class="hero-search-wrap" style="margin-bottom: 1.8rem;">
-          <input type="text" id="library-search-input" class="form-input" placeholder="🔍 Поиск по названию, автору или тегу (#Толстой, #Оруэлл, #Стратегия)...">
-          <button class="btn btn-secondary magnetic-btn" id="btn-open-taste-settings" title="Настроить мои литературные вкусы">
-            ⚙️ Мои вкусы
-          </button>
+            <!-- Sorting Dropdown -->
+            <div class="remanga-select-group">
+              <label class="remanga-label">Сортировка</label>
+              <select id="remanga-sort-select" class="remanga-select">
+                <option value="popular">🌟 По популярности</option>
+                <option value="rating">⭐ По рейтингу</option>
+                <option value="pages_desc">📄 По объёму (страницам)</option>
+                <option value="year_desc">📅 Сначала новые</option>
+                <option value="year_asc">🕰️ Сначала классика</option>
+                <option value="title">🔤 По названию (А-Я)</option>
+              </select>
+            </div>
+
+            <!-- Reading Status Dropdown -->
+            <div class="remanga-select-group">
+              <label class="remanga-label">Мой статус</label>
+              <select id="remanga-status-select" class="remanga-select">
+                <option value="all">Все книги</option>
+                <option value="reading">📖 Читаю сейчас</option>
+                <option value="favorite">❤️ В избранном</option>
+                <option value="completed">✅ Прочитано</option>
+              </select>
+            </div>
+
+            <!-- Format Dropdown -->
+            <div class="remanga-select-group">
+              <label class="remanga-label">Формат</label>
+              <select id="remanga-format-select" class="remanga-select">
+                <option value="all">Все форматы</option>
+                <option value="foliant">📜 Фолиант / Эпопея</option>
+                <option value="novel">📖 Роман</option>
+                <option value="treatise">🏛️ Трактат</option>
+                <option value="novella">📑 Повесть</option>
+                <option value="collection">📚 Сборник</option>
+              </select>
+            </div>
+
+            <!-- Difficulty Dropdown -->
+            <div class="remanga-select-group">
+              <label class="remanga-label">Сложность</label>
+              <select id="remanga-diff-select" class="remanga-select">
+                <option value="all">Любая сложность</option>
+                <option value="easy">🟢 Базовая (Легкая)</option>
+                <option value="medium">🟡 Продвинутая (Средняя)</option>
+                <option value="hardcore">🔴 Хардкор (Монументальная)</option>
+              </select>
+            </div>
+
+            <!-- Taste settings button -->
+            <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-open-taste-settings" title="Персональные настройки вкусов">
+              ⚙️ Вкусы
+            </button>
+          </div>
+
+          <!-- Genre / Theme Chips Row (ReManga-style) -->
+          <div class="remanga-genres-row">
+            <span class="remanga-genre-label">Жанры & Темы:</span>
+            <div class="remanga-chips-list" id="remanga-genre-chips">
+              <button class="remanga-chip active" data-genre="all">Все книги</button>
+              <button class="remanga-chip" data-genre="recommend">🌟 Для вас (Рекомендации)</button>
+              <button class="remanga-chip" data-genre="masterpiece">👑 Шедевры</button>
+              <button class="remanga-chip" data-genre="legendary">🌌 Легендарные</button>
+              <button class="remanga-chip" data-genre="военная проза">⚔️ Военная проза</button>
+              <button class="remanga-chip" data-genre="киберпанк">🚀 Киберпанк & Sci-Fi</button>
+              <button class="remanga-chip" data-genre="детектив">🔍 Детектив</button>
+              <button class="remanga-chip" data-genre="философия">📜 Философия</button>
+              <button class="remanga-chip" data-genre="мистика">🕯️ Мистика & Готика</button>
+              <button class="remanga-chip" data-genre="openlibrary" id="remanga-chip-openlibrary">🌐 Мировой Каталог</button>
+            </div>
+          </div>
+
+          <!-- Filter Results Bar -->
+          <div class="remanga-results-bar">
+            <div class="remanga-counter-text">
+              Найдено: <strong id="remanga-books-found-count" style="color:var(--accent-cyan);">14</strong> произведений
+            </div>
+            <button class="btn-text-reset" id="btn-reset-remanga-filters" style="display:none;">
+              🔄 Сбросить все фильтры
+            </button>
+          </div>
         </div>
 
         <!-- OpenLibrary Worldwide Explorer (Appears when OpenLibrary tab is active) -->
@@ -561,13 +677,16 @@
           </div>
         </div>
 
-        <!-- Daily Quests Section (Moved below the storefront so it doesn't clutter the hero) -->
-        <div id="daily-quests-section" style="margin-top: 3.5rem;">
-          <div class="section-title-wrap" style="margin-bottom: 1rem;">
-            <h3 style="font-size: 1.3rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
-              <span>📜</span> Ежедневные Контракты Чтеца
-            </h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Выполняйте задания во время чтения и мини-игр, чтобы получать Люмены и прокачивать уровень профиля.</p>
+        <!-- Refined Daily Goals Section ("Литературные Цели Дня") -->
+        <div class="daily-goals-wrap" id="daily-quests-section">
+          <div class="daily-goals-header">
+            <div class="daily-goals-title-group">
+              <h3><span>📜</span> Литературные Цели Дня</h3>
+              <p>Выполняйте цели во время чтения и интеллектуальных квизов, зарабатывайте Люмены и повышайте свой читательский ранг.</p>
+            </div>
+            <div class="daily-goals-badge">
+              <span>⚡</span> Обновляется ежедневно в 00:00
+            </div>
           </div>
           <div id="daily-quests-container"></div>
         </div>
@@ -720,31 +839,57 @@
             </div>
           </div>
 
-          <!-- GAME 2: LITERARY QUIZ ERUDITE -->
+          <!-- GAME 2: LITERARY QUIZ ERUDITE (BOOK SELECTION -> BOOK-SPECIFIC QUESTIONS) -->
           <div class="game-arena-view" id="game-view-quiz" style="display: none;">
-            <div class="game-arena-hud">
-              <div class="hud-stat-pill">
-                <span id="quiz-number-display">Вопрос 1 из 8</span>
+            <!-- STAGE 1: PICK A LITERARY WORK -->
+            <div id="quiz-book-selector-stage">
+              <div class="quiz-stage-header">
+                <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 800; margin-bottom: 0.4rem;">
+                  🧠 Проверка Литературной Эрудиции
+                </div>
+                <h3 class="quiz-stage-title">Выберите произведение для проверки знаний</h3>
+                <p class="quiz-stage-subtitle">Вопросы сформированы строго по сюжету, философии, персонажам и ключевым цитатам выбранной книги.</p>
               </div>
-              <div class="hud-stat-pill">
-                <span id="quiz-streak-display" style="color: var(--accent-gold);">Серия: 0 🔥</span>
-              </div>
-              <div class="hud-stat-pill">
-                <span>Награда:</span>
-                <span id="quiz-score-display" style="color: var(--accent-cyan);">0 ⬡</span>
+              <div class="quiz-books-picker-grid" id="quiz-books-picker-grid">
+                <!-- Populated dynamically by games.js -->
               </div>
             </div>
 
-            <div class="quiz-card">
-              <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 800;">
-                🧠 Проверка Литературной Эрудиции
-              </div>
-              <div class="quiz-question-text" id="quiz-question-text">
-                Загрузка вопроса...
+            <!-- STAGE 2: ACTIVE QUESTION ARENA -->
+            <div id="quiz-active-question-stage" style="display: none;">
+              <div class="quiz-active-top-bar">
+                <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-back-to-quiz-books">
+                  ← Выбрать другое произведение
+                </button>
+                <div class="quiz-current-book-badge" id="quiz-current-book-badge">
+                  «Мастер и Маргарита»
+                </div>
               </div>
 
-              <div class="quiz-answers-grid" id="quiz-answers-grid">
-                <!-- 4 answer buttons -->
+              <div class="game-arena-hud">
+                <div class="hud-stat-pill">
+                  <span id="quiz-number-display">Вопрос 1 из 8</span>
+                </div>
+                <div class="hud-stat-pill">
+                  <span id="quiz-streak-display" style="color: var(--accent-gold);">Серия: 0 🔥</span>
+                </div>
+                <div class="hud-stat-pill">
+                  <span>Награда:</span>
+                  <span id="quiz-score-display" style="color: var(--accent-cyan);">0 ⬡</span>
+                </div>
+              </div>
+
+              <div class="quiz-card">
+                <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-cyan); font-weight: 800;">
+                  Вопрос по содержанию
+                </div>
+                <div class="quiz-question-text" id="quiz-question-text">
+                  Загрузка вопроса...
+                </div>
+
+                <div class="quiz-answers-grid" id="quiz-answers-grid">
+                  <!-- 4 answer buttons -->
+                </div>
               </div>
             </div>
           </div>
@@ -1471,9 +1616,12 @@
             </div>
           </div>
 
-          <p id="book-modal-synopsis" style="color: #ccc; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          <p id="book-modal-synopsis" style="color: #ccc; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.25rem;">
             Описание книги...
           </p>
+
+          <!-- Chapters Table of Contents -->
+          <div id="book-modal-chapters-toc" style="margin-bottom: 1.25rem;"></div>
 
           <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
             <button class="btn btn-primary magnetic-btn" id="btn-modal-read-manga">

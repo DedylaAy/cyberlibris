@@ -1,16 +1,16 @@
 /**
- * CyberLibris Mini-Games Suite & Customization Wardrobe
+ * CyberLibris Mini-Games Suite & Customization Wardrobe v4.5
  * -------------------------------------------------------------
- * 1. «Словесный Шторм» (Цитаты великих личностей и мыслителей)
- * 2. «Литературный Квиз Эрудита» (Интеллектуальная викторина по книгам)
- * 3. Артефактный Магазин (Трата Люменов на аватарные рамки, титулы, фоны и темы)
+ * 1. «Словесный Шторм 2.0» (Цитаты великих мыслителей, мгновенный перезапуск)
+ * 2. «Литературный Квиз Эрудита» (Выбор книги читателем -> вопросы по выбранной книге!)
+ * 3. Артефактный Магазин (Анимированные рамки, фоны, читательские стили и титулы)
  */
 
 class MiniGamesSuite {
   constructor() {
     this.currentGame = 'speed';
 
-    // Game 1: Speed Rush (Цитаты великих людей)
+    // Game 1: Speed Rush State
     this.speedScore = 0;
     this.speedCombo = 1;
     this.speedTimeLeft = 30;
@@ -34,65 +34,232 @@ class MiniGamesSuite {
       { word: "ВРЕМЯ", quote: "Всему свой час, и время всякой вещи под этим небом.", author: "Царь Соломон" }
     ];
 
-    // Game 2: Literary Quiz Erudite
-    this.quizQuestions = [
-      {
-        question: "В каком бессмертном романе Москву посещает Воланд со своей свитой и котом Бегемотом?",
-        options: ["«Мастер и Маргарита»", "«Белая гвардия»", "«Собачье сердце»", "«Роковые яйца»"],
-        correct: 0,
-        hint: "Михаил Булгаков"
-      },
-      {
-        question: "Кто является автором древнейшего и самого почитаемого военного трактата «Искусство войны»?",
-        options: ["Конфуций", "Сунь-Цзы", "Лао-Цзы", "Сыма Цянь"],
-        correct: 1,
-        hint: "Стратегия победы без боя"
-      },
-      {
-        question: "Как звали главного героя культовой антиутопии Джорджа Оруэлла «1984»?",
-        options: ["Родион Раскольников", "Уинстон Смит", "О'Брайен", "Пьер Безухов"],
-        correct: 1,
-        hint: "Сотрудник Министерства Правды"
-      },
-      {
-        question: "Какая суровая пустынная планета служила единственным источником Пряности в романе Фрэнка Герберта?",
-        options: ["Каладан", "Гьеди Прайм", "Арракис (Дюна)", "Солярис"],
-        correct: 2,
-        hint: "Песчаные черви и фримены"
-      },
-      {
-        question: "Какой студент мучился вопросом: «Тварь ли я дрожащая или право имею?»",
-        options: ["Родион Раскольников", "Дмитрий Карамазов", "Евгений Онегин", "Андрей Болконский"],
-        correct: 0,
-        hint: "Ф.М. Достоевский, «Преступление и наказание»"
-      },
-      {
-        question: "«Небо над портом напоминало телевизионный экран, включенный на мертвый канал» — первые строки какого шедевра киберпанка?",
-        options: ["«Лавина» Нила Стивенсона", "«Нейромант» Уильяма Гибсона", "«Видоизмененный углерод»", "«Мечтают ли андроиды об электроовцах?»"],
-        correct: 1,
-        hint: "Кейс и Тиба-Сити"
-      },
-      {
-        question: "Кто произнес знаменитую фразу: «Время разбрасывать камни, и время собирать камни»?",
-        options: ["Царь Соломон (Экклезиаст)", "Аристотель", "Сократ", "Марк Аврелий"],
-        correct: 0,
-        hint: "Книга Экклезиаста"
-      },
-      {
-        question: "Какое великое произведение Льва Толстого описывает Бородинское сражение и небо Аустерлица?",
-        options: ["«Анна Каренина»", "«Воскресение»", "«Война и мир»", "«Смерть Ивана Ильича»"],
-        correct: 2,
-        hint: "Монументальная четырехтомная эпопея"
-      }
-    ];
+    // Game 2: Book-Specific Quiz Database
+    this.selectedQuizBookId = null;
+    this.currentQuizQuestions = [];
     this.quizIdx = 0;
     this.quizScore = 0;
     this.quizStreak = 0;
+
+    this.bookQuizzes = {
+      relay_master_margarita: {
+        title: "Мастер и Маргарита",
+        author: "М.А. Булгаков",
+        cover: "https://covers.openlibrary.org/b/id/10523455-L.jpg",
+        questions: [
+          {
+            question: "Кто находился на Патриарших прудах вместе с Михаилом Берлиозом в момент появления Воланда?",
+            options: ["Поэт Иван Бездомный", "Директор варьете Лиходеев", "Мастер", "Коровьев"],
+            correct: 0,
+            hint: "Молодой поэт, пишущий антирелигиозную поэму"
+          },
+          {
+            question: "Какое масло разлила Аннушка на трамвайных путях у Патриарших?",
+            options: ["Подсолнечное", "Оливковое", "Льняное", "Кунжутное"],
+            correct: 0,
+            hint: "«Не только разлила, но уже и купила...»"
+          },
+          {
+            question: "Какая бессмертная фраза Воланда стала манифестом о вечности рукописного слова?",
+            options: ["«Рукописи не горят»", "«Каждому воздастся по вере его»", "«Трусость — самый тяжкий порок»", "«Никогда ничего не просите»"],
+            correct: 0,
+            hint: "Слова при возвращении сожженного романа Мастеру"
+          },
+          {
+            question: "Какой недуг мучил римского прокуратора Понтия Пилата в Ершалаиме?",
+            options: ["Гемикрания (ужасная боль полуголовы)", "Бессонница", "Слепота", "Лихорадка"],
+            correct: 0,
+            hint: "Невыносимая головная боль, от которой пахло розовым маслом"
+          },
+          {
+            question: "Кем по своей демонической сути являлся черный кот Бегемот в свите Воланда?",
+            options: ["Демоном-пажем и шутом-оборотнем", "Обычным бродячим котом", "Заколдованным чародеем", "Галлюцинацией москвичей"],
+            correct: 0,
+            hint: "Любитель примусов, водки и маринованных грибов"
+          }
+        ]
+      },
+      relay_war_and_peace: {
+        title: "Война и мир",
+        author: "Л.Н. Толстой",
+        cover: "https://covers.openlibrary.org/b/id/12818862-L.jpg",
+        questions: [
+          {
+            question: "Какое зрелище на поле Аустерлица перевернуло мировоззрение тяжелораненого князя Андрея Болконского?",
+            options: ["Высокое, бесконечное и тихое небо", "Бегущие полки Наполеона", "Яркое полуденное солнце", "Знамя Апшеронского полка"],
+            correct: 0,
+            hint: "«Как тихо, спокойно и торжественно... Все пустое, кроме этого бесконечного неба»"
+          },
+          {
+            question: "Чьим незаконным сыном являлся Пьер до внезапного получения колоссального наследства?",
+            options: ["Графа Кирилла Безухова", "Князя Василия Курагина", "Генерала Багратиона", "Князя Николая Болконского"],
+            correct: 0,
+            hint: "Екатерининский вельможа, умиравший в Москве"
+          },
+          {
+            question: "Командир какой неприметной батареи совершил подвиг в Шенграбенском сражении без прикрытия?",
+            options: ["Капитан Тушин", "Штабс-капитан Долохов", "Поручик Ржевский", "Полковник Денисов"],
+            correct: 0,
+            hint: "Скромный офицер в чулках и с трубочкой в зубах"
+          },
+          {
+            question: "На ком женился Пьер Безухов в финале романа после всех испытаний плена и войны?",
+            options: ["На Наташе Ростовой", "На Элен Курагиной", "На княжне Марье Болконской", "На Соне"],
+            correct: 0,
+            hint: "Любимая героиня Льва Толстого"
+          }
+        ]
+      },
+      relay_crime_and_punishment: {
+        title: "Преступление и наказание",
+        author: "Ф.М. Достоевский",
+        cover: "https://covers.openlibrary.org/b/id/8739161-L.jpg",
+        questions: [
+          {
+            question: "Каким орудием Родион Раскольников совершил роковое преступление?",
+            options: ["Топором из кухни дворника", "Кинжалом", "Тяжелым подсвечником", "Шнуром"],
+            correct: 0,
+            hint: "Спрятан под пальто в самодельной петле"
+          },
+          {
+            question: "Какой сакраментальный вопрос терзал Раскольникова при создании его теории?",
+            options: ["«Тварь ли я дрожащая или право имею?»", "«Вся власть — насилие?»", "«Есть ли жизнь после смерти?»", "«Все ли позволено сильным?»"],
+            correct: 0,
+            hint: "Деление людей на обыкновенных и Наполеонов"
+          },
+          {
+            question: "Кто последовал за Раскольниковым на каторгу в Сибирь, став его духовной опорой?",
+            options: ["Соня Мармеладова", "Сестра Авдотья (Дуня)", "Друг Разумихин", "Мать Пульхерия Александровна"],
+            correct: 0,
+            hint: "Дочь чиновника Мармеладова, читавшая ему Евангелие о воскрешении Лазаря"
+          },
+          {
+            question: "Какой цвет навязчиво преобладает в описании комнат, обоев и билета Сони в Петербурге Достоевского?",
+            options: ["Желтый", "Серый", "Зеленый", "Багровый"],
+            correct: 0,
+            hint: "Цвет болезни, безумия и нищеты"
+          }
+        ]
+      },
+      relay_1984_orwell: {
+        title: "1984",
+        author: "Джордж Оруэлл",
+        cover: "https://covers.openlibrary.org/b/id/12818862-L.jpg",
+        questions: [
+          {
+            question: "В каком министерстве служил Уинстон Смит, занимаясь переписыванием архивных газет?",
+            options: ["Министерство Правды (Миниправ)", "Министерство Любви (Минилюб)", "Министерство Изобилия", "Министерство Мира"],
+            correct: 0,
+            hint: "Орган, ведающий пропагандой и фальсификацией истории"
+          },
+          {
+            question: "Какой номер носила зловещая комната абсолютного страха в подвалах Министерства Любви?",
+            options: ["Комната 101", "Комната 404", "Комната 1984", "Комната 7"],
+            correct: 0,
+            hint: "«Там находится то, что хуже всего на свете...»"
+          },
+          {
+            question: "Как назывался искусственный язык Океании, создаваемый для полного исключения опасных мыслей?",
+            options: ["Новояз (Newspeak)", "Партоглагол", "Евролингва", "Ангсоц"],
+            correct: 0,
+            hint: "Язык с ежегодным сокращением словарного запаса"
+          },
+          {
+            question: "Какой предмет старинного быта из лавки Чаррингтона стал для Уинстона символом утраченного прошлого?",
+            options: ["Стеклянное пресс-папье с кораллом внутри", "Медные карманные часы", "Фарфоровая чашка", "Граммофонная пластинка"],
+            correct: 0,
+            hint: "Кусочек застывшего чистого времени"
+          }
+        ]
+      },
+      relay_dune: {
+        title: "Дюна",
+        author: "Фрэнк Герберт",
+        cover: "https://covers.openlibrary.org/b/id/11187425-L.jpg",
+        questions: [
+          {
+            question: "Как коренные жители пустыни (фримены) почтительно именовали гигантских песчаных червей?",
+            options: ["Шаи-Хулуд", "Сардаукар", "Краулер", "Создатель глубин"],
+            correct: 0,
+            hint: "«Старик Пустыни» и «Вечный Червь»"
+          },
+          {
+            question: "Какое бесценное вещество добывалось исключительно на песках планеты Арракис?",
+            options: ["Пряность (Меланж)", "Тяжелая вода", "Кристаллы спайса", "Эфириум"],
+            correct: 0,
+            hint: "Продлевает жизнь и позволяет гильд-навигаторам сворачивать пространство"
+          },
+          {
+            question: "Какой коварный Дом предал Атрейдесов при тайной поддержке Падишах-Императора?",
+            options: ["Дом Харконненов", "Дом Коррино", "Дом Ричез", "Дом Верниус"],
+            correct: 0,
+            hint: "Барон Владимир Харконнен с темной планеты Гьеди Прайм"
+          },
+          {
+            question: "Какое имя принял Пол Атрейдес среди вольных племен фрименов в ситче Табр?",
+            options: ["Муад'Диб (Пустынная мышь)", "Квисатц Хадерах", "Усул", "Лисан аль-Гаиб"],
+            correct: 0,
+            hint: "Маленькая проворная мышь, рисунок которой виден на второй луне Арракиса"
+          }
+        ]
+      },
+      relay_art_of_war: {
+        title: "Искусство войны",
+        author: "Сунь-Цзы",
+        cover: "https://covers.openlibrary.org/b/id/12095383-L.jpg",
+        questions: [
+          {
+            question: "Что Сунь-Цзы провозглашает абсолютной вершиной полководческого мастерства?",
+            options: ["Покорить чужую армию, не вступая в бой", "Победить сто раз в ста битвах", "Взять штурмом неприступную крепость", "Иметь самую многочисленную конницу"],
+            correct: 0,
+            hint: "Разрушить замыслы и союзы противника прежде сражения"
+          },
+          {
+            question: "Какой из пяти факторов войны выражает духовное единение народа с правителем?",
+            options: ["Дао (Путь)", "Тянь (Небо)", "Ди (Земля)", "Фа (Закон)"],
+            correct: 0,
+            hint: "Первая и главнейшая основа государственного бытия"
+          },
+          {
+            question: "Каких двух зверей должен уметь воплощать мудрый стратег?",
+            options: ["Льва и Лисицу", "Дракона и Тигра", "Сокола и Змею", "Волка и Медведя"],
+            correct: 0,
+            hint: "Быть лисицей против капканов и львом против волков"
+          }
+        ]
+      },
+      relay_sherlock_holmes: {
+        title: "Приключения Шерлока Холмса",
+        author: "А. Конан Дойл",
+        cover: "https://covers.openlibrary.org/b/id/12818862-L.jpg",
+        questions: [
+          {
+            question: "Какой знаменитый лондонский адрес служил квартирой Шерлоку Холмсу и доктору Ватсону?",
+            options: ["Бейкер-стрит, 221Б", "Флит-стрит, 10", "Даунинг-стрит, 42", "Пикадилли, 7"],
+            correct: 0,
+            hint: "Усадьба миссис Хадсон"
+          },
+          {
+            question: "Как Шерлок Холмс всегда уважительно именовал певицу Ирен Адлер?",
+            options: ["«Эта Женщина»", "«Королева Шахмат»", "«Лондонская Муза»", "«Мой единственный соперник»"],
+            correct: 0,
+            hint: "Героиня рассказа «Скандал в Богемии»"
+          },
+          {
+            question: "Какое смертоносное существо оказалось «Пестрой лентой» доктора Ройлотта?",
+            options: ["Болотная гадюка (ядовитая индийская змея)", "Мадагаскарский паук", "Дрессированный хорек", "Полосатый скорпион"],
+            correct: 0,
+            hint: "Спускалась по шнуру от колокольчика в вентиляционное отверстие"
+          }
+        ]
+      }
+    };
   }
 
   init() {
     this.bindNav();
     this.bindShopTabs();
+    this.bindQuizBookSelector();
   }
 
   bindNav() {
@@ -105,9 +272,6 @@ class MiniGamesSuite {
 
     // Speed Rush Controls
     document.getElementById('btn-start-speed-rush')?.addEventListener('click', () => this.startSpeedRush());
-
-    // Quiz Controls
-    document.getElementById('btn-next-quiz')?.addEventListener('click', () => this.nextQuizQuestion());
   }
 
   switchGame(gameId) {
@@ -125,7 +289,7 @@ class MiniGamesSuite {
         document.getElementById('btn-start-speed-rush').style.display = 'inline-flex';
       }
     } else if (gameId === 'quiz') {
-      this.initQuizGame();
+      this.renderQuizBookSelector();
     }
 
     if (window.soundEngine) window.soundEngine.playCardFlip();
@@ -166,13 +330,12 @@ class MiniGamesSuite {
     const targetEl = document.getElementById('speed-target-word');
     if (targetEl) {
       targetEl.innerHTML = `
-        <span style="display:block; font-size: 0.95rem; color: var(--accent-magenta); margin-bottom: 0.4rem;">«${item.quote}»</span>
-        <span style="font-size: 1.8rem; letter-spacing: 2px;">${item.word}</span>
-        <span style="display:block; font-size: 0.8rem; color: var(--text-dim); margin-top: 0.4rem;">— ${item.author}</span>
+        <span style="display:block; font-size: 1rem; color: var(--accent-magenta); margin-bottom: 0.5rem; font-style:italic;">«${item.quote}»</span>
+        <span style="font-size: 1.9rem; letter-spacing: 2px; font-weight:900;">${item.word}</span>
+        <span style="display:block; font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem;">— ${item.author}</span>
       `;
     }
 
-    // Generate 4 button choices (1 correct, 3 decoys)
     const allWords = this.famousQuotes.map(q => q.word);
     const decoys = allWords.filter(w => w !== this.speedCurrentTarget).sort(() => Math.random() - 0.5).slice(0, 3);
     const options = [this.speedCurrentTarget, ...decoys].sort(() => Math.random() - 0.5);
@@ -185,7 +348,7 @@ class MiniGamesSuite {
       const btn = document.createElement('button');
       btn.className = 'btn btn-secondary speed-word-card';
       btn.style.padding = '1.2rem 1.5rem';
-      btn.style.fontSize = '1.1rem';
+      btn.style.fontSize = '1.15rem';
       btn.style.fontWeight = '800';
       btn.textContent = word;
 
@@ -246,25 +409,94 @@ class MiniGamesSuite {
   }
 
   // =========================================================================
-  // GAME 2: LITERARY QUIZ ERUDITE (КВИЗ ЭРУДИТА)
+  // GAME 2: LITERARY QUIZ (ВЫБОР КНИГИ -> ВОПРОСЫ ПО ЭТОЙ КНИГЕ!)
   // =========================================================================
 
-  initQuizGame() {
+  bindQuizBookSelector() {
+    document.getElementById('btn-back-to-quiz-books')?.addEventListener('click', () => {
+      this.renderQuizBookSelector();
+    });
+  }
+
+  renderQuizBookSelector() {
+    const selectorStage = document.getElementById('quiz-book-selector-stage');
+    const questionStage = document.getElementById('quiz-active-question-stage');
+    const booksGrid = document.getElementById('quiz-books-picker-grid');
+
+    if (selectorStage) selectorStage.style.display = 'block';
+    if (questionStage) questionStage.style.display = 'none';
+
+    if (!booksGrid) return;
+    booksGrid.innerHTML = '';
+
+    Object.keys(this.bookQuizzes).forEach((bookId) => {
+      const b = this.bookQuizzes[bookId];
+      const card = document.createElement('div');
+      card.className = 'quiz-book-pick-card tilt-card';
+      card.style.background = 'var(--bg-card)';
+      card.style.border = '1px solid var(--border-glow)';
+      card.style.borderRadius = 'var(--radius-md)';
+      card.style.padding = '0.9rem';
+      card.style.cursor = 'pointer';
+      card.style.textAlign = 'center';
+      card.style.transition = 'all 0.25s ease';
+
+      card.innerHTML = `
+        <img src="${b.cover}" style="width:100%; height:160px; object-fit:cover; border-radius:4px; margin-bottom:0.6rem; box-shadow:0 8px 18px rgba(0,0,0,0.6);" alt="${b.title}">
+        <div style="font-weight:800; font-size:0.92rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.title}</div>
+        <div style="font-size:0.75rem; color:var(--accent-cyan); margin-bottom:0.5rem;">${b.author}</div>
+        <div style="font-size:0.75rem; color:var(--text-dim);">${b.questions.length} вопросов</div>
+        <button class="btn btn-primary btn-sm btn-block" style="margin-top:0.6rem;">
+          🎯 Проверить эрудицию
+        </button>
+      `;
+
+      card.addEventListener('click', () => {
+        this.startQuizForBook(bookId);
+      });
+
+      booksGrid.appendChild(card);
+    });
+
+    if (window.app?.bindTiltEffect) window.app.bindTiltEffect();
+  }
+
+  startQuizForBook(bookId) {
+    const bookData = this.bookQuizzes[bookId];
+    if (!bookData) return;
+
+    this.selectedQuizBookId = bookId;
+    this.currentQuizQuestions = bookData.questions;
     this.quizIdx = 0;
     this.quizScore = 0;
     this.quizStreak = 0;
-    this.renderQuizQuestion();
+
+    const selectorStage = document.getElementById('quiz-book-selector-stage');
+    const questionStage = document.getElementById('quiz-active-question-stage');
+    const bookBadge = document.getElementById('quiz-current-book-badge');
+
+    if (selectorStage) selectorStage.style.display = 'none';
+    if (questionStage) questionStage.style.display = 'block';
+    if (bookBadge) bookBadge.textContent = `«${bookData.title}» (${bookData.author})`;
+
+    this.renderCurrentQuizQuestion();
   }
 
-  renderQuizQuestion() {
-    const q = this.quizQuestions[this.quizIdx % this.quizQuestions.length];
+  renderCurrentQuizQuestion() {
+    const q = this.currentQuizQuestions[this.quizIdx];
+    if (!q) {
+      // Quiz completed!
+      this.finishBookQuiz();
+      return;
+    }
+
     const qTextEl = document.getElementById('quiz-question-text');
     const qNumEl = document.getElementById('quiz-number-display');
     const qScoreEl = document.getElementById('quiz-score-display');
     const qStreakEl = document.getElementById('quiz-streak-display');
     const answersGrid = document.getElementById('quiz-answers-grid');
 
-    if (qNumEl) qNumEl.textContent = `Вопрос ${this.quizIdx + 1} из ${this.quizQuestions.length}`;
+    if (qNumEl) qNumEl.textContent = `Вопрос ${this.quizIdx + 1} из ${this.currentQuizQuestions.length}`;
     if (qScoreEl) qScoreEl.textContent = `${this.quizScore} ⬡`;
     if (qStreakEl) qStreakEl.textContent = `Серия: ${this.quizStreak} 🔥`;
     if (qTextEl) qTextEl.textContent = q.question;
@@ -285,7 +517,7 @@ class MiniGamesSuite {
           btn.style.background = 'rgba(0, 255, 136, 0.25)';
           btn.style.borderColor = 'var(--accent-green)';
           this.quizStreak += 1;
-          const reward = 25 * Math.min(3, this.quizStreak);
+          const reward = 30 * Math.min(3, this.quizStreak);
           this.quizScore += reward;
 
           if (window.auth) {
@@ -311,7 +543,7 @@ class MiniGamesSuite {
 
         setTimeout(() => {
           this.quizIdx += 1;
-          this.renderQuizQuestion();
+          this.renderCurrentQuizQuestion();
         }, 1600);
       });
 
@@ -319,8 +551,33 @@ class MiniGamesSuite {
     });
   }
 
+  finishBookQuiz() {
+    const qTextEl = document.getElementById('quiz-question-text');
+    const answersGrid = document.getElementById('quiz-answers-grid');
+    if (qTextEl) {
+      qTextEl.innerHTML = `
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">🎉</div>
+        <div style="color:var(--accent-gold); font-size:1.6rem; font-weight:900;">Тест завершен!</div>
+        <div style="font-size:1rem; color:#fff; margin-top:0.5rem;">Вы заработали <strong>+${this.quizScore} Люменов (⬡)</strong> за знание произведения!</div>
+      `;
+    }
+    if (answersGrid) {
+      answersGrid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; margin-top: 1rem;">
+          <button class="btn btn-primary" id="btn-quiz-pick-another" style="padding:0.8rem 2rem;">
+            ← Выбрать другое произведение
+          </button>
+        </div>
+      `;
+      answersGrid.querySelector('#btn-quiz-pick-another')?.addEventListener('click', () => {
+        this.renderQuizBookSelector();
+      });
+    }
+    if (window.soundEngine) window.soundEngine.playLevelUp();
+  }
+
   // =========================================================================
-  // SHOP & CUSTOMIZATION WARDROBE (ТРАТА ВАЛЮТЫ)
+  // SHOP & WARDROBE
   // =========================================================================
 
   bindShopTabs() {
@@ -419,7 +676,7 @@ class MiniGamesSuite {
     }
 
     if ((user.lumens || 0) < price) {
-      window.app.showToast('Недостаточно Люменов (⬡)! Читайте книги и выполняйте квесты.', 'error');
+      window.app.showToast('Недостаточно Люменов (⬡)! Читайте книги и проходите квизы.', 'error');
       if (window.soundEngine) window.soundEngine.playError();
       return;
     }

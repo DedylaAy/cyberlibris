@@ -12,13 +12,17 @@
 class AppController {
   constructor() {
     this.currentView = 'library';
-    this.selectedCategory = 'recommend';
+    this.selectedCategory = 'all';
+    this.selectedSort = 'popular';
+    this.selectedStatus = 'all';
+    this.selectedFormat = 'all';
+    this.selectedDifficulty = 'all';
     this.searchQuery = '';
 
-    // Steam Carousel State
+    // Steam Carousel State (Slower, 10s intervals for smooth relaxed viewing)
     this.carouselIndex = 0;
     this.carouselTimer = null;
-    this.carouselDuration = 6000;
+    this.carouselDuration = 10000;
     this.carouselProgress = 0;
     this.carouselInterval = null;
     this.isCarouselPaused = false;
@@ -39,6 +43,7 @@ class AppController {
     this.bindTiltEffect();
     this.bindMagneticButtons();
     this.bindAudioTriggers();
+    this.bindThemePalette();
     this.bindSearchAndFilters();
     this.bindSteamCarouselControls();
     this.bindTasteOnboarding();
@@ -52,7 +57,7 @@ class AppController {
     this.renderDailyQuests();
     this.updateAudioButtonState();
 
-    console.log('⚡ CyberLibris v4.0 (Full Relay & Steam Showcase) Ready.');
+    console.log('⚡ CyberLibris v4.5 (Multi-Chapter Books & ReManga Filter Hub) Ready.');
   }
 
   // --- NAVIGATION & VIEW ROUTING ---
@@ -192,59 +197,66 @@ class AppController {
     const books = window.bookRelay.getAllBooks();
     if (!books.length) return;
 
-    const book = books[this.carouselIndex];
     const mainEl = document.getElementById('carousel-main-slide');
     const thumbsEl = document.getElementById('carousel-thumbs-list');
 
     if (mainEl) {
-      let rarityPillClass = 'rarity-pill-classic';
-      if (book.rarity === 'legendary') rarityPillClass = 'rarity-pill-legendary';
-      else if (book.rarity === 'masterpiece') rarityPillClass = 'rarity-pill-masterpiece';
-      else if (book.rarity === 'epic') rarityPillClass = 'rarity-pill-epic';
+      mainEl.classList.add('carousel-fade-out');
+      setTimeout(() => {
+        const book = books[this.carouselIndex];
+        let rarityPillClass = 'rarity-pill-classic';
+        if (book.rarity === 'legendary') rarityPillClass = 'rarity-pill-legendary';
+        else if (book.rarity === 'masterpiece') rarityPillClass = 'rarity-pill-masterpiece';
+        else if (book.rarity === 'epic') rarityPillClass = 'rarity-pill-epic';
 
-      mainEl.innerHTML = `
-        <div class="carousel-cover-wrap" style="background: ${book.coverStyle};">
-          <img src="${book.coverImage}" class="carousel-cover-img" alt="${book.title}" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
-        </div>
-        <div class="carousel-details">
-          <div class="carousel-badges-row">
-            <span class="rarity-pill ${rarityPillClass}">${book.rarityLabel || 'ШЕДЕВР'}</span>
-            <span class="book-genre-pill">${book.genre}</span>
-            <span style="color:#ffd700; font-weight:800; font-size:0.9rem;">⭐ ${book.rating}</span>
-            <span style="color:var(--text-dim); font-size:0.8rem;">(~${book.lengthPages} стр.)</span>
+        mainEl.innerHTML = `
+          <div class="carousel-cover-wrap" style="background: ${book.coverStyle};">
+            <img src="${book.coverImage}" class="carousel-cover-img" alt="${book.title}" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
           </div>
-          <h2 class="carousel-title">${book.title}</h2>
-          <div class="carousel-author">✍ ${book.author} (${book.year})</div>
-          <div class="carousel-quote">${book.quote || 'Великое произведение мировой литературы.'}</div>
-          <div class="carousel-synopsis">${book.synopsis || ''}</div>
-          <div class="carousel-actions">
-            <button class="btn btn-primary magnetic-btn" id="btn-carousel-read-now" data-book-id="${book.id}">
-              📖 Читать сейчас (Лента)
-            </button>
-            <button class="btn btn-secondary magnetic-btn" id="btn-carousel-details" data-book-id="${book.id}">
-              ℹ️ Карточка & Рецензии
-            </button>
-            <button class="btn btn-secondary magnetic-btn" id="btn-carousel-fav" data-book-id="${book.id}">
-              ❤️ В избранное
-            </button>
+          <div class="carousel-details">
+            <div class="carousel-badges-row">
+              <span class="rarity-pill ${rarityPillClass}">${book.rarityLabel || 'ШЕДЕВР'}</span>
+              <span class="book-genre-pill">${book.genre}</span>
+              <span style="color:#ffd700; font-weight:800; font-size:0.9rem;">⭐ ${book.rating}</span>
+              <span style="color:var(--text-dim); font-size:0.8rem;">(~${book.lengthPages} стр.)</span>
+            </div>
+            <h2 class="carousel-title">${book.title}</h2>
+            <div class="carousel-author">✍ ${book.author} (${book.year})</div>
+            <div class="carousel-quote">${book.quote || 'Великое произведение мировой литературы.'}</div>
+            <div class="carousel-synopsis">${book.synopsis || ''}</div>
+            <div class="carousel-actions">
+              <button class="btn btn-primary magnetic-btn" id="btn-carousel-read-now" data-book-id="${book.id}">
+                📖 Читать сейчас (Лента)
+              </button>
+              <button class="btn btn-secondary magnetic-btn" id="btn-carousel-details" data-book-id="${book.id}">
+                ℹ️ Карточка & Рецензии
+              </button>
+              <button class="btn btn-secondary magnetic-btn" id="btn-carousel-fav" data-book-id="${book.id}">
+                ❤️ В избранное
+              </button>
+            </div>
           </div>
-        </div>
-      `;
+        `;
 
-      mainEl.querySelector('#btn-carousel-read-now')?.addEventListener('click', () => {
-        window.readerEngine.openBook(book.id, 0, 'manga');
-      });
+        mainEl.querySelector('#btn-carousel-read-now')?.addEventListener('click', () => {
+          window.readerEngine.openBook(book.id, 0, 'manga');
+        });
 
-      mainEl.querySelector('#btn-carousel-details')?.addEventListener('click', () => {
-        this.openBookDetails(book.id);
-      });
+        mainEl.querySelector('#btn-carousel-details')?.addEventListener('click', () => {
+          this.openBookDetails(book.id);
+        });
 
-      mainEl.querySelector('#btn-carousel-fav')?.addEventListener('click', () => {
-        const user = window.auth.currentUser;
-        if (!user) { this.openModal('modal-auth'); return; }
-        const isFav = window.bookRelay.toggleFavorite(user.username, book.id);
-        this.showToast(isFav ? `❤️ «${book.title}» добавлена в избранное!` : `Удалено из избранного`, 'info');
-      });
+        mainEl.querySelector('#btn-carousel-fav')?.addEventListener('click', () => {
+          const user = window.auth.currentUser;
+          if (!user) { this.openModal('modal-auth'); return; }
+          const isFav = window.bookRelay.toggleFavorite(user.username, book.id);
+          this.showToast(isFav ? `❤️ «${book.title}» добавлена в избранное!` : `Удалено из избранного`, 'info');
+        });
+
+        mainEl.classList.remove('carousel-fade-out');
+        mainEl.classList.add('carousel-fade-in');
+        setTimeout(() => mainEl.classList.remove('carousel-fade-in'), 500);
+      }, 180);
     }
 
     if (thumbsEl) {
@@ -274,22 +286,67 @@ class AppController {
     }
   }
 
-  // --- LIBRARY & RELAYED CATALOG ---
+  // --- REMANGA-STYLE FACETED FILTERS & RELAYED CATALOG ---
 
   bindSearchAndFilters() {
-    const searchInput = document.getElementById('library-search-input');
+    const searchInput = document.getElementById('remanga-search-input');
+    const clearBtn = document.getElementById('btn-clear-search');
+    const sortSelect = document.getElementById('remanga-sort-select');
+    const statusSelect = document.getElementById('remanga-status-select');
+    const formatSelect = document.getElementById('remanga-format-select');
+    const diffSelect = document.getElementById('remanga-diff-select');
+    const resetBtn = document.getElementById('btn-reset-remanga-filters');
+
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        this.searchQuery = e.target.value.toLowerCase().trim();
+        this.searchQuery = e.target.value.trim();
+        if (clearBtn) clearBtn.style.display = this.searchQuery ? 'block' : 'none';
         this.renderLibrary();
       });
     }
 
-    document.querySelectorAll('.filter-pills-row .genre-pill').forEach((pill) => {
-      pill.addEventListener('click', (e) => {
-        document.querySelectorAll('.filter-pills-row .genre-pill').forEach((p) => p.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        this.selectedCategory = e.currentTarget.dataset.category;
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        this.searchQuery = '';
+        clearBtn.style.display = 'none';
+        this.renderLibrary();
+      });
+    }
+
+    if (sortSelect) {
+      sortSelect.addEventListener('change', (e) => {
+        this.selectedSort = e.target.value;
+        this.renderLibrary();
+      });
+    }
+
+    if (statusSelect) {
+      statusSelect.addEventListener('change', (e) => {
+        this.selectedStatus = e.target.value;
+        this.renderLibrary();
+      });
+    }
+
+    if (formatSelect) {
+      formatSelect.addEventListener('change', (e) => {
+        this.selectedFormat = e.target.value;
+        this.renderLibrary();
+      });
+    }
+
+    if (diffSelect) {
+      diffSelect.addEventListener('change', (e) => {
+        this.selectedDifficulty = e.target.value;
+        this.renderLibrary();
+      });
+    }
+
+    document.querySelectorAll('#remanga-genre-chips .remanga-chip').forEach((chip) => {
+      chip.addEventListener('click', (e) => {
+        document.querySelectorAll('#remanga-genre-chips .remanga-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        this.selectedCategory = chip.dataset.genre || 'all';
 
         const olExplorer = document.getElementById('openlibrary-explorer');
         const localWrapper = document.getElementById('local-catalog-wrapper');
@@ -306,38 +363,90 @@ class AppController {
         if (window.soundEngine) window.soundEngine.playClick();
       });
     });
+
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        this.searchQuery = '';
+        this.selectedCategory = 'all';
+        this.selectedSort = 'popular';
+        this.selectedStatus = 'all';
+        this.selectedFormat = 'all';
+        this.selectedDifficulty = 'all';
+
+        if (searchInput) searchInput.value = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (sortSelect) sortSelect.value = 'popular';
+        if (statusSelect) statusSelect.value = 'all';
+        if (formatSelect) formatSelect.value = 'all';
+        if (diffSelect) diffSelect.value = 'all';
+
+        document.querySelectorAll('#remanga-genre-chips .remanga-chip').forEach(c => {
+          c.classList.toggle('active', c.dataset.genre === 'all');
+        });
+
+        const olExplorer = document.getElementById('openlibrary-explorer');
+        const localWrapper = document.getElementById('local-catalog-wrapper');
+        if (olExplorer) olExplorer.style.display = 'none';
+        if (localWrapper) localWrapper.style.display = 'block';
+
+        this.renderLibrary();
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    }
   }
 
   renderLibrary() {
     const grid = document.getElementById('books-catalog-grid');
+    const counterEl = document.getElementById('remanga-books-found-count');
+    const resetBtn = document.getElementById('btn-reset-remanga-filters');
     if (!grid) return;
     grid.innerHTML = '';
 
-    const allBooks = window.bookRelay.getAllBooks();
-    const user = window.auth.currentUser;
+    const user = window.auth?.currentUser;
+    const criteria = {
+      search: this.searchQuery,
+      query: this.searchQuery,
+      genre: this.selectedCategory,
+      format: this.selectedFormat,
+      difficulty: this.selectedDifficulty,
+      status: this.selectedStatus,
+      sort: this.selectedSort,
+      sortBy: this.selectedSort,
+      username: user?.username,
+      userId: user?.username
+    };
 
-    let displayBooks = allBooks;
-
+    let displayBooks = [];
     if (this.selectedCategory === 'recommend') {
+      const allBooks = window.bookRelay.getAllBooks();
       displayBooks = window.recommendations.getRecommendations(allBooks, user);
+      if (this.searchQuery) {
+        displayBooks = displayBooks.filter(b => 
+          b.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          b.author.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      }
     } else {
-      displayBooks = window.bookRelay.getBooksByCategory(this.selectedCategory);
+      displayBooks = window.bookRelay.filterCatalog(criteria);
     }
 
-    // Apply search filter
-    if (this.searchQuery) {
-      displayBooks = displayBooks.filter(b => 
-        b.title.toLowerCase().includes(this.searchQuery) ||
-        b.author.toLowerCase().includes(this.searchQuery) ||
-        (b.tags && b.tags.some(t => t.toLowerCase().includes(this.searchQuery)))
-      );
-    }
+    if (counterEl) counterEl.textContent = displayBooks.length;
+
+    const isFiltered = this.searchQuery || 
+                       this.selectedCategory !== 'all' || 
+                       this.selectedSort !== 'popular' || 
+                       this.selectedStatus !== 'all' || 
+                       this.selectedFormat !== 'all' || 
+                       this.selectedDifficulty !== 'all';
+    if (resetBtn) resetBtn.style.display = isFiltered ? 'inline-block' : 'none';
 
     if (displayBooks.length === 0) {
       grid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
-          <h3>Книг по данному запросу не найдено</h3>
-          <p>Попробуйте сменить фильтр категории или проверить вкладку «Мировой Каталог».</p>
+        <div style="grid-column: 1/-1; text-align: center; padding: 3.5rem 1rem; color: var(--text-muted); background: rgba(0,0,0,0.3); border-radius: var(--radius-lg); border: 1px dashed var(--border-glass);">
+          <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🔍</div>
+          <h3 style="color:#fff; font-size:1.3rem; margin-bottom:0.5rem;">По вашим фильтрам ничего не найдено</h3>
+          <p style="font-size:0.9rem; max-width:500px; margin:0 auto 1.2rem;">Попробуйте смягчить критерии поиска или сбросить фильтры.</p>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('btn-reset-remanga-filters')?.click()">Сбросить фильтры</button>
         </div>
       `;
       return;
@@ -366,11 +475,11 @@ class AppController {
           <p class="steam-book-desc">${b.synopsis || b.quote}</p>
           <div class="steam-book-meta">
             <span class="book-genre-pill">${b.genre}</span>
-            <span class="book-read-time">⭐ ${b.rating} | ~${b.lengthPages} стр.</span>
+            <span class="book-read-time">⭐ ${b.rating} | ${b.chapters ? b.chapters.length : 1} глав (~${b.lengthPages} стр.)</span>
           </div>
           <div style="margin-top: 0.8rem; display: flex; gap: 0.5rem;">
             <button class="btn btn-primary btn-block btn-open-card" data-book-id="${b.id}">
-              ℹ️ Открыть карточку & Отзывы
+              ℹ️ Открыть карточку & Главы
             </button>
           </div>
         </div>
@@ -416,6 +525,41 @@ class AppController {
     if (rarityPill) {
       rarityPill.className = `rarity-pill ${book.rarity === 'legendary' ? 'rarity-pill-legendary' : book.rarity === 'masterpiece' ? 'rarity-pill-masterpiece' : 'rarity-pill-epic'}`;
       rarityPill.textContent = book.rarityLabel || 'ШЕДЕВР';
+    }
+
+    // Chapters Table of Contents
+    const tocEl = document.getElementById('book-modal-chapters-toc');
+    if (tocEl) {
+      const chapters = book.chapters || [];
+      if (chapters.length > 0) {
+        tocEl.innerHTML = `
+          <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 0.8rem 1rem;">
+            <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--accent-cyan); font-weight:800; margin-bottom:0.5rem; display:flex; justify-content:space-between;">
+              <span>📚 Содержание произведения</span>
+              <span>${chapters.length} глав(ы)</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.35rem; max-height:130px; overflow-y:auto; padding-right:0.3rem;">
+              ${chapters.map((ch, idx) => `
+                <div class="toc-chapter-item" data-chapter-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0.6rem; background:rgba(255,255,255,0.03); border-radius:4px; font-size:0.82rem; color:#ddd; cursor:pointer; transition:background 0.2s ease;">
+                  <span style="font-weight:600;">${ch.title}</span>
+                  <span style="font-size:0.72rem; color:var(--text-dim);">Гл. ${idx + 1} →</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        tocEl.querySelectorAll('.toc-chapter-item').forEach(item => {
+          item.addEventListener('mouseenter', () => item.style.background = 'rgba(0, 240, 255, 0.12)');
+          item.addEventListener('mouseleave', () => item.style.background = 'rgba(255, 255, 255, 0.03)');
+          item.addEventListener('click', () => {
+            const chIdx = parseInt(item.dataset.chapterIdx) || 0;
+            this.closeAllModals();
+            window.readerEngine.openBook(book.id, chIdx, 'page');
+          });
+        });
+      } else {
+        tocEl.innerHTML = '';
+      }
     }
 
     // Read buttons
@@ -842,49 +986,98 @@ class AppController {
     this.bindTiltEffect();
   }
 
-  // --- THEME CYCLING (8 DISTINCT ATMOSPHERES) ---
+  // --- INTERACTIVE THEME PALETTE (COLOR CIRCLES PREVIEW) ---
 
-  cycleNextTheme() {
-    const themes = [
-      'theme-cyberpunk',
-      'theme-cosmic',
-      'theme-amber',
-      'theme-matrix',
-      'theme-royal',
-      'theme-synthwave',
-      'theme-ocean',
-      'theme-zen'
-    ];
-    const themeNames = {
-      'theme-cyberpunk': 'Киберпанк Неон',
-      'theme-cosmic': 'Космическая Туманность',
-      'theme-amber': 'Уютный Янтарь (Камин)',
-      'theme-matrix': 'Изумрудная Матрица',
-      'theme-royal': 'Полярное Сияние (Аврора)',
-      'theme-synthwave': 'Синтвейв 80-х',
-      'theme-ocean': 'Глубокий Океан',
-      'theme-zen': 'Минималистичный Дзен'
+  bindThemePalette() {
+    const container = document.getElementById('theme-picker-container');
+    const triggerBtn = document.getElementById('btn-theme-picker-trigger');
+    const dot = document.getElementById('current-theme-dot');
+
+    const themeGradients = {
+      'theme-cyberpunk': 'linear-gradient(135deg, #00f0ff, #ff007f)',
+      'theme-cosmic': 'linear-gradient(135deg, #7928ca, #4338ca)',
+      'theme-amber': 'linear-gradient(135deg, #f59e0b, #d97706)',
+      'theme-matrix': 'linear-gradient(135deg, #00ff66, #003b1f)',
+      'theme-royal': 'linear-gradient(135deg, #9d4edd, #06d6a0)',
+      'theme-synthwave': 'linear-gradient(135deg, #ff007f, #ffaa00)',
+      'theme-ocean': 'linear-gradient(135deg, #0284c7, #06b6d4)',
+      'theme-zen': 'linear-gradient(135deg, #94a3b8, #475569)'
     };
 
-    const currentTheme = window.reactiveBg ? window.reactiveBg.currentTheme : 'theme-cyberpunk';
-    let idx = themes.indexOf(currentTheme);
-    if (idx === -1) idx = 0;
-    const nextTheme = themes[(idx + 1) % themes.length];
+    const themeNames = {
+      'theme-cyberpunk': 'Киберпанк',
+      'theme-cosmic': 'Космос',
+      'theme-amber': 'Янтарь',
+      'theme-matrix': 'Матрица',
+      'theme-royal': 'Аврора',
+      'theme-synthwave': 'Синтвейв',
+      'theme-ocean': 'Океан',
+      'theme-zen': 'Дзен'
+    };
 
-    if (window.reactiveBg) {
-      window.reactiveBg.setTheme(nextTheme);
+    const updateActiveThemeUI = (themeId) => {
+      if (dot && themeGradients[themeId]) {
+        dot.style.background = themeGradients[themeId];
+      }
+      document.querySelectorAll('.theme-swatch-item').forEach((item) => {
+        if (item.dataset.theme === themeId) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    };
+
+    // Initialize UI with active theme
+    const activeTheme = window.reactiveBg ? window.reactiveBg.currentTheme : 'theme-cyberpunk';
+    updateActiveThemeUI(activeTheme);
+
+    // Toggle dropdown
+    if (triggerBtn && container) {
+      triggerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        container.classList.toggle('open');
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
     }
-    const user = window.auth.currentUser;
-    if (user) {
-      user.customBg = nextTheme;
-      window.auth.saveUser();
-    }
 
-    window.dbEngine.updateQuestProgress('quest_change_theme', 1);
-    this.renderDailyQuests();
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (container && !container.contains(e.target)) {
+        container.classList.remove('open');
+      }
+    });
 
-    this.showToast(`🎨 Атмосфера изменена: ${themeNames[nextTheme] || nextTheme}`, 'info');
-    if (window.soundEngine) window.soundEngine.playCardFlip();
+    // Swatches selection with visual circles
+    document.querySelectorAll('.theme-swatch-item').forEach((swatch) => {
+      swatch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const themeId = swatch.dataset.theme;
+        if (!themeId) return;
+
+        if (window.reactiveBg) {
+          window.reactiveBg.setTheme(themeId);
+        }
+        const user = window.auth.currentUser;
+        if (user) {
+          user.customBg = themeId;
+          window.auth.saveUser();
+        }
+
+        updateActiveThemeUI(themeId);
+        if (container) container.classList.remove('open');
+
+        window.dbEngine.updateQuestProgress('quest_change_theme', 1);
+        this.renderDailyQuests();
+
+        this.showToast(`🎨 Выбрана атмосфера: ${themeNames[themeId] || themeId}`, 'info');
+        if (window.soundEngine) window.soundEngine.playCardFlip();
+      });
+    });
+  }
+
+  cycleNextTheme() {
+    this.bindThemePalette();
   }
 
   // --- DAILY QUESTS ---
@@ -939,7 +1132,7 @@ class AppController {
             const xp = res.rewardXp || res.rewardXP || 50;
             window.auth.addLumens(res.rewardLumens);
             window.auth.addXp(xp);
-            this.showToast(`Контракт выполнен! +${res.rewardLumens} ⬡, +${xp} XP`, 'reward');
+            this.showToast(`Цель достигнута! +${res.rewardLumens} ⬡, +${xp} XP`, 'reward');
             if (window.soundEngine) window.soundEngine.playLevelUp();
             this.renderDailyQuests();
           }

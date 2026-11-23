@@ -40,12 +40,12 @@
         "currentStreak": 21
       },
       "badges": [
-        "creator_badge",
-        "admin_power",
-        "github_sync",
-        "legend_reader",
-        "speed_demon",
-        "crypto_master",
+        "book_first_page",
+        "foliant_master",
+        "military_veteran",
+        "classic_connoisseur",
+        "philosophy_sage",
+        "quiz_erudite",
         "book_worm"
       ],
       "unlockedCosmetics": {
@@ -107,9 +107,12 @@
         "currentStreak": 14
       },
       "badges": [
-        "admin_power",
-        "speed_demon",
-        "crypto_master",
+        "book_first_page",
+        "foliant_master",
+        "military_veteran",
+        "classic_connoisseur",
+        "philosophy_sage",
+        "quiz_erudite",
         "book_worm"
       ],
       "unlockedCosmetics": {
@@ -153,8 +156,13 @@
         "currentStreak": 9
       },
       "badges": [
-        "book_worm",
-        "crypto_master"
+        "book_first_page",
+        "foliant_master",
+        "military_veteran",
+        "classic_connoisseur",
+        "philosophy_sage",
+        "quiz_erudite",
+        "book_worm"
       ],
       "unlockedCosmetics": {
         "frames": [
@@ -196,9 +204,13 @@
         "currentStreak": 7
       },
       "badges": [
-        "book_worm",
-        "speed_demon",
-        "crypto_master"
+        "book_first_page",
+        "foliant_master",
+        "military_veteran",
+        "classic_connoisseur",
+        "philosophy_sage",
+        "quiz_erudite",
+        "book_worm"
       ],
       "unlockedCosmetics": {
         "frames": [
@@ -246,6 +258,12 @@
         "currentStreak": 4
       },
       "badges": [
+        "book_first_page",
+        "foliant_master",
+        "military_veteran",
+        "classic_connoisseur",
+        "philosophy_sage",
+        "quiz_erudite",
         "book_worm"
       ],
       "unlockedCosmetics": {
@@ -653,53 +671,74 @@
   },
   "badges": [
     {
-      "id": "creator_badge",
-      "name": "Создатель Миров",
+      "id": "book_first_page",
+      "name": "Первая Страница",
+      "icon": "📖",
+      "color": "#00f0ff",
+      "description": "Начато чтение первого произведения на платформе."
+    },
+    {
+      "id": "foliant_master",
+      "name": "Покоритель Фолиантов",
       "icon": "👑",
       "color": "#ffd700",
-      "description": "Обладатель верховного статуса Создателя системы. Полный суверенитет над GitHub и базой данных."
+      "description": "Изучено монументальное произведение объемом свыше 600 страниц."
     },
     {
-      "id": "admin_power",
-      "name": "Власть Системы",
-      "icon": "⚡",
-      "color": "#ffd700",
-      "description": "Доступ к ядру базы данных и управлению контентом."
+      "id": "military_veteran",
+      "name": "Воевода Полей",
+      "icon": "⚔️",
+      "color": "#ff5500",
+      "description": "Глубокое освоение военной прозы и трактатов стратегии."
     },
     {
-      "id": "github_sync",
-      "name": "Власть Системы",
-      "icon": "🐙",
-      "color": "#00f0ff",
-      "description": "Успешно подключил базу данных к облачному GitHub репозиторию."
-    },
-    {
-      "id": "speed_demon",
-      "name": "Сверхзвуковой Чтец",
-      "icon": "⚡",
-      "color": "#ff007f",
-      "description": "Достиг скорости чтения свыше 400 WPM в мини-игре RSVP."
-    },
-    {
-      "id": "crypto_master",
-      "name": "Криптограф Разума",
-      "icon": "🧩",
+      "id": "scifi_explorer",
+      "name": "Первопроходец Космоса",
+      "icon": "🚀",
       "color": "#9d4edd",
-      "description": "Расшифровал скрытые цитаты в мини-игре Кибер-Криптор."
+      "description": "Погружение в миры научной фантастики и киберпанка."
+    },
+    {
+      "id": "classic_connoisseur",
+      "name": "Хранитель Классики",
+      "icon": "🕯️",
+      "color": "#ffaa00",
+      "description": "Прикосновение к золотому фонду мировой литературы."
+    },
+    {
+      "id": "philosophy_sage",
+      "name": "Старейшина Мысли",
+      "icon": "📜",
+      "color": "#00ff88",
+      "description": "Познание мудрости философских манускриптов и притчей."
+    },
+    {
+      "id": "literary_critic",
+      "name": "Острый Критик",
+      "icon": "💬",
+      "color": "#00bbf9",
+      "description": "Написаны содержательные рецензии к произведениям."
+    },
+    {
+      "id": "quiz_erudite",
+      "name": "Магистр Эрудиции",
+      "icon": "🎓",
+      "color": "#ff007f",
+      "description": "Блестящие ответы на каверзные вопросы книжного квиза."
+    },
+    {
+      "id": "night_reader",
+      "name": "Ночной Мыслитель",
+      "icon": "🦉",
+      "color": "#7209b7",
+      "description": "Чтение в полночные часы в режиме непрерывной ленты."
     },
     {
       "id": "book_worm",
-      "name": "Книжный Червь",
+      "name": "Книжный Запой",
       "icon": "📚",
       "color": "#00ff66",
-      "description": "Прочитал более 5 произведений в библиотеке."
-    },
-    {
-      "id": "legend_reader",
-      "name": "Легенда Вселенной",
-      "icon": "👑",
-      "color": "#ffaa00",
-      "description": "Достиг высокого уровня и открыл эксклюзивные кастомизации."
+      "description": "Изучено более 5 произведений в личной библиотеке."
     }
   ],
   "miniGamesData": {
