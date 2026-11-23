@@ -483,6 +483,11 @@
           <span>🐙</span>
         </div>
 
+        <!-- Quick Theme Switcher Button -->
+        <button class="quick-theme-btn magnetic-btn" id="btn-quick-theme" title="Сменить визуальный фон платформы">
+          🎨 Фон
+        </button>
+
         <!-- Sound Synthesizer SFX Button -->
         <button class="sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты">
           🔊
@@ -502,19 +507,55 @@
            VIEW 1: STEAM-STYLE LIBRARY (БИБЛИОТЕКА)
            =================================================================== -->
       <section id="view-library" class="view-section active">
-        <!-- Steam Spotlight Featured Banner -->
-        <div id="steam-spotlight-banner" class="steam-spotlight-banner tilt-card">
-          <!-- Populated dynamically by app.js -->
-        </div>
+        <!-- Daily Quests & Activity Hub (Смысл и Геймификация) -->
+        <div id="daily-quests-container"></div>
 
-        <!-- Search & Admin Add -->
-        <div class="hero-search-wrap">
-          <input type="text" id="library-search-input" class="form-input" placeholder="🔍 Поиск по названию, автору или тегу (#Архитектура, #Киберпанк)...">
-          <!-- Admin Add Book Button: Strictly visible ONLY to Admin/Owner/Creator -->
-          <button class="btn btn-primary magnetic-btn admin-only" id="btn-open-add-book-library">
-            + Добавить книгу
+        <!-- Library Source Switcher (Local Collection vs OpenLibrary Worldwide API) -->
+        <div class="library-source-tabs">
+          <button class="library-source-tab active magnetic-btn" data-source="local" id="tab-src-local">
+            📚 Наш Фонд (<span id="local-books-count">8</span>)
+          </button>
+          <button class="library-source-tab magnetic-btn" data-source="openlibrary" id="tab-src-openlibrary">
+            🌐 Всемирный Каталог (Open Library API)
           </button>
         </div>
+
+        <!-- OpenLibrary Worldwide Explorer (Appears when OpenLibrary tab is active) -->
+        <div id="openlibrary-explorer" style="display: none;">
+          <div class="openlibrary-search-hero">
+            <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: #fff;">🌐 Всемирная Библиотека Open Library</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Поиск по миллионам книг в открытом глобальном репозитории. Читайте и добавляйте любые книги в свою коллекцию в 1 клик!</p>
+            <div style="display: flex; gap: 0.8rem;">
+              <input type="text" id="openlibrary-search-input" class="form-input" placeholder="Поиск книг по миру: 'Cyberpunk', 'Tolkien', 'Clean Code', 'Dostoevsky'..." style="flex: 1;">
+              <button class="btn btn-primary magnetic-btn" id="btn-search-openlibrary">🔍 Найти в Сети</button>
+            </div>
+            <div class="openlibrary-quick-tags">
+              <span style="font-size: 0.8rem; color: var(--text-muted); align-self: center;">Популярные темы:</span>
+              <button class="ol-tag-btn" data-query="Cyberpunk">🚀 Киберпанк</button>
+              <button class="ol-tag-btn" data-query="Computer Science">💻 Программирование</button>
+              <button class="ol-tag-btn" data-query="Science Fiction">🌌 Научная Фантастика</button>
+              <button class="ol-tag-btn" data-query="Philosophy">⚔️ Философия</button>
+              <button class="ol-tag-btn" data-query="Fantasy">🔮 Фэнтези</button>
+            </div>
+          </div>
+          <div id="openlibrary-results-grid" class="books-grid" style="margin-bottom: 3rem;"></div>
+        </div>
+
+        <!-- Local Catalog Section Wrapper -->
+        <div id="local-catalog-wrapper">
+          <!-- Steam Spotlight Featured Banner -->
+          <div id="steam-spotlight-banner" class="steam-spotlight-banner tilt-card">
+            <!-- Populated dynamically by app.js -->
+          </div>
+
+          <!-- Search & Admin Add -->
+          <div class="hero-search-wrap">
+            <input type="text" id="library-search-input" class="form-input" placeholder="🔍 Поиск по названию, автору или тегу (#Архитектура, #Киберпанк)...">
+            <!-- Admin Add Book Button: Strictly visible ONLY to Admin/Owner/Creator -->
+            <button class="btn btn-primary magnetic-btn admin-only" id="btn-open-add-book-library">
+              + Добавить книгу
+            </button>
+          </div>
 
         <!-- Steam Rarity Filter Bar -->
         <div style="margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
@@ -550,6 +591,7 @@
         <div class="books-grid" id="books-catalog-grid">
           <!-- Populated by app.js -->
         </div>
+        </div> <!-- End of local-catalog-wrapper -->
       </section>
 
       <!-- ===================================================================
@@ -1395,6 +1437,7 @@
   <script src="js/github.js"></script>
   <script src="js/db.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/openlibrary.js"></script>
   <script src="js/reader.js"></script>
   <script src="js/games.js"></script>
   <script src="js/admin.js"></script>

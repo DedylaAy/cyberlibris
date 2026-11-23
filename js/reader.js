@@ -154,6 +154,10 @@ class ReaderEngine {
         window.auth.addLumens(15);
         window.auth.addXp(40);
         window.auth.updateStat('readTimeMinutes', 1);
+        if (window.dbEngine) {
+          window.dbEngine.updateQuestProgress('quest_read_2min', 1);
+          if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+        }
         window.app.showToast('📖 Чтение вознаграждено: +15 ⬡, +40 XP!', 'reward');
         if (window.soundEngine) window.soundEngine.playClick();
       }

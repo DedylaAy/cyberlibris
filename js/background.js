@@ -1,6 +1,7 @@
 /**
  * CyberLibris Reactive Canvas Engine
- * Renders 5 progressive reactive themes that react to cursor movement and clicks.
+ * Renders 8 visually distinct, high-performance interactive animated themes.
+ * Reacts to cursor movement, click bursts, and window resizing.
  */
 class ReactiveBackground {
   constructor() {
@@ -14,6 +15,7 @@ class ReactiveBackground {
     this.currentTheme = 'theme-cyberpunk';
     this.animationFrameId = null;
     this.time = 0;
+    this.gridOffset = 0;
 
     this.init();
   }
@@ -46,6 +48,14 @@ class ReactiveBackground {
   setTheme(themeId) {
     this.currentTheme = themeId;
     this.setupTheme(themeId);
+
+    // Sync body class for ambient lighting
+    const allThemes = [
+      'theme-cyberpunk', 'theme-cosmic', 'theme-amber', 'theme-matrix',
+      'theme-royal', 'theme-synthwave', 'theme-ocean', 'theme-zen'
+    ];
+    allThemes.forEach((t) => document.body.classList.remove(t));
+    document.body.classList.add(themeId);
   }
 
   setupTheme(themeId) {
@@ -103,13 +113,55 @@ class ReactiveBackground {
         });
       }
     } else if (themeId === 'theme-royal') {
-      // Golden auroral wave nodes
       for (let i = 0; i < 40; i++) {
         this.particles.push({
           x: (this.width / 40) * i,
           baseY: this.height * 0.5,
           phase: i * 0.2,
           color: i % 2 === 0 ? '#ffd700' : '#00e5ff'
+        });
+      }
+    } else if (themeId === 'theme-synthwave') {
+      // Synthwave digital dust
+      for (let i = 0; i < 50; i++) {
+        this.particles.push({
+          x: Math.random() * this.width,
+          y: Math.random() * (this.height * 0.65),
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: -(Math.random() * 1.2 + 0.3),
+          size: Math.random() * 2.5 + 1,
+          color: Math.random() > 0.5 ? '#ff007f' : '#00f0ff',
+          alpha: Math.random() * 0.7 + 0.3
+        });
+      }
+    } else if (themeId === 'theme-ocean') {
+      // Deep sea luminous plankton & medusae spores
+      for (let i = 0; i < 45; i++) {
+        this.particles.push({
+          x: Math.random() * this.width,
+          y: Math.random() * this.height,
+          baseRadius: Math.random() * 4 + 2,
+          pulseSpeed: Math.random() * 0.05 + 0.02,
+          driftSpeed: Math.random() * 0.6 + 0.2,
+          phase: Math.random() * Math.PI * 2,
+          color: Math.random() > 0.6 ? '#00f5d4' : Math.random() > 0.3 ? '#00bbf9' : '#7b2cbf',
+          alpha: Math.random() * 0.6 + 0.2
+        });
+      }
+    } else if (themeId === 'theme-zen') {
+      // Golden parchment fluttering leaves
+      for (let i = 0; i < 40; i++) {
+        this.particles.push({
+          x: Math.random() * this.width,
+          y: Math.random() * this.height,
+          vy: Math.random() * 0.8 + 0.4,
+          swaySpeed: Math.random() * 0.03 + 0.01,
+          swayAmount: Math.random() * 1.5 + 0.8,
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.02,
+          size: Math.random() * 6 + 4,
+          color: Math.random() > 0.4 ? '#d4af37' : '#c89666',
+          alpha: Math.random() * 0.6 + 0.25
         });
       }
     }
@@ -125,7 +177,10 @@ class ReactiveBackground {
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         size: Math.random() * 3 + 2,
-        color: this.currentTheme === 'theme-amber' ? '#ffd700' : '#00f0ff',
+        color: this.currentTheme === 'theme-amber' || this.currentTheme === 'theme-royal' ? '#ffd700' :
+               this.currentTheme === 'theme-matrix' ? '#00ff88' :
+               this.currentTheme === 'theme-synthwave' ? '#ff007f' :
+               this.currentTheme === 'theme-ocean' ? '#00f5d4' : '#00f0ff',
         alpha: 1,
         isBurst: true,
         life: 1
@@ -135,6 +190,7 @@ class ReactiveBackground {
 
   animate() {
     this.time += 0.02;
+    this.gridOffset = (this.gridOffset + 1.2) % 40;
     this.ctx.clearRect(0, 0, this.width, this.height);
 
     if (this.currentTheme === 'theme-cyberpunk') {
@@ -147,9 +203,15 @@ class ReactiveBackground {
       this.renderMatrix();
     } else if (this.currentTheme === 'theme-royal') {
       this.renderRoyal();
+    } else if (this.currentTheme === 'theme-synthwave') {
+      this.renderSynthwave();
+    } else if (this.currentTheme === 'theme-ocean') {
+      this.renderOcean();
+    } else if (this.currentTheme === 'theme-zen') {
+      this.renderZen();
     }
 
-    // Render burst particles
+    // Render interactive click bursts
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       if (p.isBurst) {
@@ -171,12 +233,12 @@ class ReactiveBackground {
     this.animationFrameId = requestAnimationFrame(() => this.animate());
   }
 
+  // --- THEME 1: NEON CYBERPUNK ---
   renderCyberpunk() {
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
       if (p.isBurst) continue;
 
-      // Mouse gravity/reaction
       const dx = this.mouse.x - p.x;
       const dy = this.mouse.y - p.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -194,14 +256,12 @@ class ReactiveBackground {
       if (p.y < 0) p.y = this.height;
       if (p.y > this.height) p.y = 0;
 
-      // Draw particle
       this.ctx.beginPath();
       this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       this.ctx.fillStyle = p.color;
       this.ctx.globalAlpha = p.alpha;
       this.ctx.fill();
 
-      // Draw connecting lines
       for (let j = i + 1; j < this.particles.length; j++) {
         const p2 = this.particles[j];
         if (p2.isBurst) continue;
@@ -221,6 +281,7 @@ class ReactiveBackground {
     this.ctx.globalAlpha = 1;
   }
 
+  // --- THEME 2: COSMIC NEBULA ---
   renderCosmic() {
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
@@ -241,6 +302,7 @@ class ReactiveBackground {
     this.ctx.globalAlpha = 1;
   }
 
+  // --- THEME 3: COZY AMBER & FIREPLACE ---
   renderAmber() {
     for (let i = 0; i < this.particles.length; i++) {
       const p = this.particles[i];
@@ -266,6 +328,7 @@ class ReactiveBackground {
     this.ctx.globalAlpha = 1;
   }
 
+  // --- THEME 4: EMERALD MATRIX ---
   renderMatrix() {
     this.ctx.font = '14px monospace';
     for (let i = 0; i < this.particles.length; i++) {
@@ -286,6 +349,7 @@ class ReactiveBackground {
     this.ctx.globalAlpha = 1;
   }
 
+  // --- THEME 5: POLAR AURORA ---
   renderRoyal() {
     this.ctx.beginPath();
     this.ctx.moveTo(0, this.height);
@@ -301,12 +365,151 @@ class ReactiveBackground {
     this.ctx.closePath();
 
     const gradient = this.ctx.createLinearGradient(0, this.height * 0.3, this.width, this.height);
-    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.12)');
-    gradient.addColorStop(0.5, 'rgba(0, 229, 255, 0.15)');
+    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.14)');
+    gradient.addColorStop(0.5, 'rgba(0, 229, 255, 0.16)');
     gradient.addColorStop(1, 'rgba(157, 78, 221, 0.08)');
 
     this.ctx.fillStyle = gradient;
     this.ctx.fill();
+  }
+
+  // --- THEME 6: 80s SYNTHWAVE SUNSET ---
+  renderSynthwave() {
+    const horizon = this.height * 0.65;
+    const centerX = this.width / 2;
+
+    // 1. Draw glowing retro sun
+    const sunRadius = Math.min(100, this.width * 0.12);
+    const sunY = horizon - sunRadius * 0.5;
+    const sunGrad = this.ctx.createLinearGradient(centerX, sunY - sunRadius, centerX, sunY + sunRadius);
+    sunGrad.addColorStop(0, '#ffd700');
+    sunGrad.addColorStop(0.5, '#ff007f');
+    sunGrad.addColorStop(1, '#7b2cbf');
+
+    this.ctx.beginPath();
+    this.ctx.arc(centerX, sunY, sunRadius, 0, Math.PI * 2);
+    this.ctx.fillStyle = sunGrad;
+    this.ctx.shadowBlur = 35;
+    this.ctx.shadowColor = '#ff007f';
+    this.ctx.fill();
+    this.ctx.shadowBlur = 0;
+
+    // Horizontal slit lines across the sun
+    this.ctx.fillStyle = 'rgba(7, 9, 14, 0.9)';
+    for (let y = sunY - sunRadius * 0.2; y < sunY + sunRadius; y += 14) {
+      const lineH = Math.min(6, (y - (sunY - sunRadius * 0.2)) * 0.15 + 2);
+      this.ctx.fillRect(centerX - sunRadius, y, sunRadius * 2, lineH);
+    }
+
+    // 2. Perspective grid floor
+    this.ctx.strokeStyle = 'rgba(255, 0, 127, 0.35)';
+    this.ctx.lineWidth = 1;
+
+    // Moving horizontal grid lines
+    for (let y = horizon + (this.gridOffset % 30); y < this.height; y += 30) {
+      const distFromHorizon = (y - horizon) / (this.height - horizon);
+      this.ctx.globalAlpha = Math.min(1, distFromHorizon * 0.9);
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, y);
+      this.ctx.lineTo(this.width, y);
+      this.ctx.stroke();
+    }
+
+    // Perspective vanishing lines
+    const rays = 14;
+    for (let i = 0; i <= rays; i++) {
+      const bottomX = (this.width / rays) * i;
+      this.ctx.globalAlpha = 0.35;
+      this.ctx.beginPath();
+      this.ctx.moveTo(centerX, horizon);
+      this.ctx.lineTo(bottomX, this.height);
+      this.ctx.stroke();
+    }
+    this.ctx.globalAlpha = 1;
+
+    // Floating digital dust
+    for (let p of this.particles) {
+      if (p.isBurst) continue;
+      p.y += p.vy;
+      p.x += p.vx;
+      if (p.y < 0) {
+        p.y = horizon - 10;
+        p.x = Math.random() * this.width;
+      }
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      this.ctx.fillStyle = p.color;
+      this.ctx.globalAlpha = p.alpha;
+      this.ctx.fill();
+    }
+    this.ctx.globalAlpha = 1;
+  }
+
+  // --- THEME 7: BIOLUMINESCENT OCEAN ---
+  renderOcean() {
+    for (let p of this.particles) {
+      if (p.isBurst) continue;
+
+      p.phase += p.pulseSpeed;
+      p.y -= p.driftSpeed;
+      p.x += Math.sin(p.phase) * 0.8;
+
+      if (p.y < -20) {
+        p.y = this.height + 20;
+        p.x = Math.random() * this.width;
+      }
+
+      // Mouse water ripple effect
+      const dx = this.mouse.x - p.x;
+      const dy = this.mouse.y - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 140) {
+        const force = (140 - dist) / 140;
+        p.x -= (dx / dist) * force * 2;
+        p.y -= (dy / dist) * force * 2;
+      }
+
+      const pulse = Math.sin(p.phase) * 0.3 + 1;
+      const currentRadius = p.baseRadius * pulse;
+
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
+      this.ctx.fillStyle = p.color;
+      this.ctx.globalAlpha = p.alpha * (0.6 + Math.sin(p.phase) * 0.4);
+      this.ctx.shadowBlur = 18;
+      this.ctx.shadowColor = p.color;
+      this.ctx.fill();
+      this.ctx.shadowBlur = 0;
+    }
+    this.ctx.globalAlpha = 1;
+  }
+
+  // --- THEME 8: MINIMALIST ZEN LIBRARY ---
+  renderZen() {
+    for (let p of this.particles) {
+      if (p.isBurst) continue;
+
+      p.y += p.vy;
+      p.x += Math.sin(this.time * p.swaySpeed + p.y * 0.01) * p.swayAmount;
+      p.rotation += p.rotSpeed;
+
+      if (p.y > this.height + 20) {
+        p.y = -20;
+        p.x = Math.random() * this.width;
+      }
+
+      this.ctx.save();
+      this.ctx.translate(p.x, p.y);
+      this.ctx.rotate(p.rotation);
+      this.ctx.beginPath();
+      // Draw stylized leaf / petal
+      this.ctx.ellipse(0, 0, p.size, p.size * 0.45, Math.PI / 4, 0, Math.PI * 2);
+      this.ctx.fillStyle = p.color;
+      this.ctx.globalAlpha = p.alpha;
+      this.ctx.fill();
+      this.ctx.restore();
+    }
+    this.ctx.globalAlpha = 1;
   }
 }
 

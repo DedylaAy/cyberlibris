@@ -158,6 +158,7 @@ const DEFAULT_DATABASE = {
       complexity: 5,
       xpMultiplier: "x3.0 XP",
       featuredBadge: "ХИТ СЕЗОНА",
+      coverImage: "https://covers.openlibrary.org/b/id/10524458-M.jpg",
       coverStyle: "linear-gradient(135deg, #ff8c00, #ff0055, #4a00e0)",
       coverIcon: "💻",
       tags: ["Архитектура", "Паттерны", "DevOps", "Рефакторинг", "GitHub"],
@@ -187,6 +188,7 @@ const DEFAULT_DATABASE = {
       complexity: 5,
       xpMultiplier: "x3.0 XP",
       featuredBadge: "ХАРДКОР",
+      coverImage: "https://covers.openlibrary.org/b/id/10521270-M.jpg",
       coverStyle: "linear-gradient(135deg, #f12711, #f5af19)",
       coverIcon: "⚛️",
       tags: ["Квантовые вычисления", "Распределенные БД", "Сверхсистемы"],
@@ -211,6 +213,7 @@ const DEFAULT_DATABASE = {
       complexity: 4,
       xpMultiplier: "x2.0 XP",
       featuredBadge: "КУЛЬТОВАЯ КЛАССИКА",
+      coverImage: "https://covers.openlibrary.org/b/id/8235116-M.jpg",
       coverStyle: "linear-gradient(135deg, #050505, #4a00e0, #8e2de2)",
       coverIcon: "🕶️",
       tags: ["Киберпанк", "ИИ", "Матрица", "Классика"],
@@ -235,6 +238,7 @@ const DEFAULT_DATABASE = {
       complexity: 4,
       xpMultiplier: "x2.0 XP",
       featuredBadge: "ШЕДЕВР",
+      coverImage: "https://covers.openlibrary.org/b/id/8315126-M.jpg",
       coverStyle: "linear-gradient(135deg, #870000, #400036)",
       coverIcon: "🕯️",
       tags: ["Мистика", "Классика", "Философия"],
@@ -259,6 +263,7 @@ const DEFAULT_DATABASE = {
       complexity: 3,
       xpMultiplier: "x1.5 XP",
       featuredBadge: "ВЫБОР РЕДАКЦИИ",
+      coverImage: "https://covers.openlibrary.org/b/id/8228691-M.jpg",
       coverStyle: "linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc)",
       coverIcon: "🧠",
       tags: ["ИИ", "Сингулярность", "Философия разума"],
@@ -283,6 +288,7 @@ const DEFAULT_DATABASE = {
       complexity: 2,
       xpMultiplier: "x1.0 XP",
       featuredBadge: "ДЛЯ НОВИЧКОВ",
+      coverImage: "https://covers.openlibrary.org/b/id/8231856-M.jpg",
       coverStyle: "linear-gradient(135deg, #2c3e50, #4ca1af)",
       coverIcon: "⚔️",
       tags: ["Стратегия", "Мудрость", "Мышление"],
@@ -293,6 +299,56 @@ const DEFAULT_DATABASE = {
           id: 1,
           title: "Стратегические оценки и расчет победы",
           content: "Тот, кто знает врага и знает себя, не окажется в опасности и в ста битвах. Тот, кто не знает врага, но знает себя, будет то побеждать, то терпеть поражение."
+        }
+      ]
+    },
+    {
+      id: "book_1984",
+      title: "1984: Министерство Правды и Свобода Мысли",
+      author: "Джордж Оруэлл",
+      genre: "Научная Фантастика",
+      year: 1949,
+      rating: 4.98,
+      rarity: "legendary",
+      complexity: 5,
+      xpMultiplier: "x3.0 XP",
+      featuredBadge: "МИРОВОЙ ШЕДЕВР",
+      coverImage: "https://covers.openlibrary.org/b/id/12843475-M.jpg",
+      coverStyle: "linear-gradient(135deg, #870000, #190a05)",
+      coverIcon: "👁️",
+      tags: ["Антиутопия", "Свобода", "Классика", "Мысль"],
+      description: "Был холодный ясный апрельский день, и часы пробили тринадцать. Культовая книга о сохранении человечности, достоинства и свободной мысли.",
+      estimatedReadTime: "15 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Часть 1: Большой Брат следит за тобой",
+          content: "Был холодный ясный апрельский день, и часы пробили тринадцать. Уткнув подбородок в грудь, чтобы спастись от злого ветра, Уинстон Смит быстро скользнул в стеклянные двери жилого дома «Победа».\n\nНа плакате было написано: «БОЛЬШОЙ БРАТ СМОТРИТ НА ТЕБЯ». Свобода — это возможность сказать, что дважды два — четыре. Если это дозволено, все остальное отсюда следует."
+        }
+      ]
+    },
+    {
+      id: "book_dune",
+      title: "Дюна: Хроники Песчаного Мира",
+      author: "Фрэнк Герберт",
+      genre: "Научная Фантастика",
+      year: 1965,
+      rating: 4.97,
+      rarity: "legendary",
+      complexity: 5,
+      xpMultiplier: "x3.0 XP",
+      featuredBadge: "ХИТ СТОЛЕТИЯ",
+      coverImage: "https://covers.openlibrary.org/b/id/11153217-M.jpg",
+      coverStyle: "linear-gradient(135deg, #e65c00, #f9d423)",
+      coverIcon: "🪐",
+      tags: ["Арракис", "Пряность", "Эпос", "Космос"],
+      description: "Я не должен бояться. Страх убивает разум. Страх — это малая смерть, несущая полное уничтожение. Монументальная сага о планете Арракис.",
+      estimatedReadTime: "20 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Глава 1: Испытание Человечности",
+          content: "— Слышал ли ты о Гом Джаббаре, смертельном яде на кончике иглы? Помести правую руку в коробку, юноша. Это испытание на человека.\n\nПол Атрейдес почувствовал, как жар охватывает ладонь. Но он помнил Литанию против страха: «Я встречу свой страх лицом к лицу. Я позволю ему пройти через меня. И когда он уйдет, останусь только я»."
         }
       ]
     }
@@ -307,11 +363,14 @@ const DEFAULT_DATABASE = {
       { id: "frame-flame", name: "Плазменное Пламя", price: 950, icon: "🔥", description: "Пылающая плазменная граница." }
     ],
     backgrounds: [
-      { id: "theme-cyberpunk", name: "Неоновый Киберпанк", price: 0, icon: "🌆", description: "Интерактивные неоновые частицы." },
-      { id: "theme-cosmic", name: "Космическая Туманность", price: 150, icon: "🌌", description: "Параллакс звезд и туманность." },
-      { id: "theme-amber", name: "Уютный Янтарь & Камин", price: 200, icon: "☕", description: "Теплые парящие золотые угольки." },
-      { id: "theme-matrix", name: "Изумрудная Матрица", price: 350, icon: "📟", description: "Струящийся цифровой код матрицы." },
-      { id: "theme-royal", name: "Полярная Аврора", price: 600, icon: "✨", description: "Золотистое северное сияние." }
+      { id: "theme-cyberpunk", name: "Неоновый Киберпанк", price: 0, icon: "🌆", description: "Интерактивные неоновые частицы и лазерные связи." },
+      { id: "theme-cosmic", name: "Космическая Туманность", price: 150, icon: "🌌", description: "Параллакс далеких звезд и фиолетовая туманность." },
+      { id: "theme-amber", name: "Уютный Янтарь & Камин", price: 200, icon: "☕", description: "Теплые парящие золотые угольки для вдумчивого чтения." },
+      { id: "theme-matrix", name: "Изумрудная Матрица", price: 350, icon: "📟", description: "Струящийся зеленый цифровой код матрицы." },
+      { id: "theme-royal", name: "Полярная Аврора", price: 500, icon: "✨", description: "Золотистое северное сияние и звездная пыль." },
+      { id: "theme-synthwave", name: "Синтвейв Закат 80-х", price: 650, icon: "🌴", description: "Неоновое солнце, ретро-сетка горизонта и лазерные лучи." },
+      { id: "theme-ocean", name: "Глубоководный Океан", price: 750, icon: "🌊", description: "Биолюминесцентные глубоководные споры и аквамарин." },
+      { id: "theme-zen", name: "Минималистичный Дзен", price: 850, icon: "🍃", description: "Парящие золотые осенние листья в легком вихре." }
     ],
     titles: [
       { id: "title-fan", name: "Любитель", price: 0 },
@@ -382,6 +441,13 @@ const DEFAULT_DATABASE = {
       { id: "m8", label: "База Данных", icon: "🗄️", match: "db" }
     ]
   },
+  dailyQuests: [
+    { id: "quest_read_2min", icon: "📖", title: "Академический Час", description: "Провести не менее 2 минут за чтением любой книги", target: 2, current: 0, unit: "мин", rewardLumens: 40, rewardXp: 80, completed: false, claimed: false },
+    { id: "quest_speed_rush", icon: "⚡", title: "Словесный Шторм", description: "Завершить раунд в мини-игре «Словесный Шторм»", target: 1, current: 0, unit: "раунд", rewardLumens: 50, rewardXp: 100, completed: false, claimed: false },
+    { id: "quest_cryptor", icon: "🧩", title: "Крипто-Аналитик", description: "Разгадать хотя бы одну шифровку в «Кибер-Крипторе»", target: 1, current: 0, unit: "цитата", rewardLumens: 50, rewardXp: 100, completed: false, claimed: false },
+    { id: "quest_open_library", icon: "🌐", title: "Исследователь Сети", description: "Импортировать книгу из Всемирного каталога Open Library", target: 1, current: 0, unit: "книга", rewardLumens: 35, rewardXp: 70, completed: false, claimed: false },
+    { id: "quest_change_theme", icon: "🎨", title: "Смена Декораций", description: "Сменить визуальный фон платформы", target: 1, current: 0, unit: "фон", rewardLumens: 30, rewardXp: 50, completed: false, claimed: false }
+  ],
   auditLogs: [
     {
       id: "log_init",
@@ -395,7 +461,7 @@ const DEFAULT_DATABASE = {
 
 class DatabaseEngine {
   constructor() {
-    this.storageKey = 'cyberlibris_database_v3_2';
+    this.storageKey = 'cyberlibris_database_v3_3';
     this.data = null;
     this.listeners = [];
     this.saveTimeout = null;
@@ -523,6 +589,54 @@ class DatabaseEngine {
       this.addAuditLog('BOOK_DELETED', `Удалено произведение: "${book.title}"`);
       this.save(`Delete book ${book.title}`);
     }
+  }
+
+  importBookFromOpenLibrary(book) {
+    if (!this.data.books) this.data.books = [];
+    const existing = this.data.books.find(
+      (b) => b.title.toLowerCase() === book.title.toLowerCase()
+    );
+    if (existing) {
+      return { success: false, message: 'Эта книга уже добавлена в каталог!' };
+    }
+    this.data.books.unshift(book);
+    this.addAuditLog('BOOK_IMPORTED', `Импортировано из OpenLibrary: "${book.title}" (${book.author})`);
+    this.save(`Import book: ${book.title}`);
+    return { success: true, book: book };
+  }
+
+  getDailyQuests() {
+    if (!this.data.dailyQuests || this.data.dailyQuests.length === 0) {
+      this.data.dailyQuests = JSON.parse(JSON.stringify(DEFAULT_DATABASE.dailyQuests || []));
+    }
+    return this.data.dailyQuests;
+  }
+
+  updateQuestProgress(questId, amount = 1) {
+    const quests = this.getDailyQuests();
+    const q = quests.find((item) => item.id === questId);
+    if (q && !q.completed) {
+      q.current = Math.min(q.target, q.current + amount);
+      if (q.current >= q.target) {
+        q.completed = true;
+      }
+      this.save('Update daily quest progress');
+      this.notify('quest_update', q);
+      return q;
+    }
+    return null;
+  }
+
+  claimQuest(questId) {
+    const quests = this.getDailyQuests();
+    const q = quests.find((item) => item.id === questId);
+    if (q && q.completed && !q.claimed) {
+      q.claimed = true;
+      this.save('Claim quest reward');
+      this.notify('quest_claim', q);
+      return q;
+    }
+    return null;
   }
 
   getShopItems() {

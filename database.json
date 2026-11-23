@@ -39,15 +39,48 @@
         "memoryFlips": 85,
         "currentStreak": 21
       },
-      "badges": ["creator_badge", "admin_power", "github_sync", "legend_reader", "speed_demon", "crypto_master", "book_worm"],
+      "badges": [
+        "creator_badge",
+        "admin_power",
+        "github_sync",
+        "legend_reader",
+        "speed_demon",
+        "crypto_master",
+        "book_worm"
+      ],
       "unlockedCosmetics": {
-        "frames": ["frame-default", "frame-neon", "frame-dragon", "frame-gold", "frame-void", "frame-flame"],
-        "backgrounds": ["theme-cyberpunk", "theme-cosmic", "theme-amber", "theme-matrix", "theme-royal"],
-        "titles": ["Создатель Системы [CREATOR]", "Старейшина Знаний", "Верховный Архивариус"]
+        "frames": [
+          "frame-default",
+          "frame-neon",
+          "frame-dragon",
+          "frame-gold",
+          "frame-void",
+          "frame-flame"
+        ],
+        "backgrounds": [
+          "theme-cyberpunk",
+          "theme-cosmic",
+          "theme-amber",
+          "theme-matrix",
+          "theme-royal"
+        ],
+        "titles": [
+          "Создатель Системы [CREATOR]",
+          "Старейшина Знаний",
+          "Верховный Архивариус"
+        ]
       },
       "readingProgress": {
-        "book_clean_code": { "currentChapter": 2, "progressPercent": 100, "lastReadDate": "2026-11-23" },
-        "book_neuromancer": { "currentChapter": 2, "progressPercent": 100, "lastReadDate": "2026-11-23" }
+        "book_clean_code": {
+          "currentChapter": 2,
+          "progressPercent": 100,
+          "lastReadDate": "2026-11-23"
+        },
+        "book_neuromancer": {
+          "currentChapter": 2,
+          "progressPercent": 100,
+          "lastReadDate": "2026-11-23"
+        }
       },
       "bookmarks": []
     },
@@ -73,11 +106,26 @@
         "memoryFlips": 45,
         "currentStreak": 14
       },
-      "badges": ["admin_power", "speed_demon", "crypto_master", "book_worm"],
+      "badges": [
+        "admin_power",
+        "speed_demon",
+        "crypto_master",
+        "book_worm"
+      ],
       "unlockedCosmetics": {
-        "frames": ["frame-default", "frame-neon", "frame-dragon"],
-        "backgrounds": ["theme-cyberpunk", "theme-matrix"],
-        "titles": ["Владелец Хаба [OWNER]", "Магистр Мысли"]
+        "frames": [
+          "frame-default",
+          "frame-neon",
+          "frame-dragon"
+        ],
+        "backgrounds": [
+          "theme-cyberpunk",
+          "theme-matrix"
+        ],
+        "titles": [
+          "Владелец Хаба [OWNER]",
+          "Магистр Мысли"
+        ]
       },
       "readingProgress": {},
       "bookmarks": []
@@ -104,11 +152,23 @@
         "memoryFlips": 32,
         "currentStreak": 9
       },
-      "badges": ["book_worm", "crypto_master"],
+      "badges": [
+        "book_worm",
+        "crypto_master"
+      ],
       "unlockedCosmetics": {
-        "frames": ["frame-default", "frame-neon"],
-        "backgrounds": ["theme-cyberpunk", "theme-cosmic"],
-        "titles": ["Модератор [MOD]", "Схоласт Сети"]
+        "frames": [
+          "frame-default",
+          "frame-neon"
+        ],
+        "backgrounds": [
+          "theme-cyberpunk",
+          "theme-cosmic"
+        ],
+        "titles": [
+          "Модератор [MOD]",
+          "Схоласт Сети"
+        ]
       },
       "readingProgress": {},
       "bookmarks": []
@@ -135,14 +195,31 @@
         "memoryFlips": 38,
         "currentStreak": 7
       },
-      "badges": ["book_worm", "speed_demon", "crypto_master"],
+      "badges": [
+        "book_worm",
+        "speed_demon",
+        "crypto_master"
+      ],
       "unlockedCosmetics": {
-        "frames": ["frame-default", "frame-neon"],
-        "backgrounds": ["theme-cyberpunk", "theme-cosmic"],
-        "titles": ["Схоласт Сети", "Любитель"]
+        "frames": [
+          "frame-default",
+          "frame-neon"
+        ],
+        "backgrounds": [
+          "theme-cyberpunk",
+          "theme-cosmic"
+        ],
+        "titles": [
+          "Схоласт Сети",
+          "Любитель"
+        ]
       },
       "readingProgress": {
-        "book_neuromancer": { "currentChapter": 1, "progressPercent": 50, "lastReadDate": "2026-11-21" }
+        "book_neuromancer": {
+          "currentChapter": 1,
+          "progressPercent": 50,
+          "lastReadDate": "2026-11-21"
+        }
       },
       "bookmarks": []
     },
@@ -168,11 +245,21 @@
         "memoryFlips": 18,
         "currentStreak": 4
       },
-      "badges": ["book_worm"],
+      "badges": [
+        "book_worm"
+      ],
       "unlockedCosmetics": {
-        "frames": ["frame-default"],
-        "backgrounds": ["theme-cyberpunk", "theme-amber"],
-        "titles": ["Книжный Червь", "Любитель"]
+        "frames": [
+          "frame-default"
+        ],
+        "backgrounds": [
+          "theme-cyberpunk",
+          "theme-amber"
+        ],
+        "titles": [
+          "Книжный Червь",
+          "Любитель"
+        ]
       },
       "readingProgress": {},
       "bookmarks": []
@@ -192,7 +279,13 @@
       "featuredBadge": "ХИТ СЕЗОНА",
       "coverStyle": "linear-gradient(135deg, #ff8c00, #ff0055, #4a00e0)",
       "coverIcon": "💻",
-      "tags": ["Архитектура", "Паттерны", "DevOps", "Рефакторинг", "GitHub"],
+      "tags": [
+        "Архитектура",
+        "Паттерны",
+        "DevOps",
+        "Рефакторинг",
+        "GitHub"
+      ],
       "description": "Легендарный манифест архитектуры XXI века: от создания сверхбыстрых реактивных SPA до организации бессерверных баз данных на GitHub API.",
       "estimatedReadTime": "15 мин",
       "chapters": [
@@ -206,7 +299,8 @@
           "title": "Глава 2: Распределенные системы и синхронизация через Git",
           "content": "Система контроля версий Git — это не просто хранилище снимков исходного кода, это полноценная неизменяемая распределенная графовая база данных.\n\nКаждый коммит представляет собой направленный ациклический граф (DAG), закрепленный криптографическим хэшем SHA. Хранение состояния приложения в виде распределенного JSON-документа, синхронизируемого через GitHub REST API, превращает статический сайт в мощную облачную экосистему."
         }
-      ]
+      ],
+      "coverImage": "https://covers.openlibrary.org/b/id/10524458-M.jpg"
     },
     {
       "id": "book_quantum_systems",
@@ -221,7 +315,11 @@
       "featuredBadge": "ХАРДКОР",
       "coverStyle": "linear-gradient(135deg, #f12711, #f5af19)",
       "coverIcon": "⚛️",
-      "tags": ["Квантовые вычисления", "Распределенные БД", "Сверхсистемы"],
+      "tags": [
+        "Квантовые вычисления",
+        "Распределенные БД",
+        "Сверхсистемы"
+      ],
       "description": "Сложнейший теоретический и прикладной труд о квантовой суперпозиции в распределенных базах данных и параллелизме микросервисов.",
       "estimatedReadTime": "18 мин",
       "chapters": [
@@ -230,7 +328,8 @@
           "title": "Глава 1: Суперпозиция состояний данных",
           "content": "В классических базах данных бит строго равен нулю либо единице. Но в распределенных квантовых сетях состояние репликации существует одновременно в суперпозиции вероятностей, пока наблюдатель не запросит фиксацию транзакции.\n\nЭто меняет фундаментальную парадигму согласованности CAP-теоремы, позволяя достигать бесконечной масштабируемости."
         }
-      ]
+      ],
+      "coverImage": "https://covers.openlibrary.org/b/id/10521270-M.jpg"
     },
     {
       "id": "book_neuromancer",
@@ -245,7 +344,12 @@
       "featuredBadge": "КУЛЬТОВАЯ КЛАССИКА",
       "coverStyle": "linear-gradient(135deg, #050505, #4a00e0, #8e2de2)",
       "coverIcon": "🕶️",
-      "tags": ["Киберпанк", "ИИ", "Матрица", "Классика"],
+      "tags": [
+        "Киберпанк",
+        "ИИ",
+        "Матрица",
+        "Классика"
+      ],
       "description": "Роман, породивший понятие киберпространства. Небо над портом напоминало телевизионный экран, включенный на пустой канал. Кейс снова подключается к декам Матрицы.",
       "estimatedReadTime": "14 мин",
       "chapters": [
@@ -254,7 +358,8 @@
           "title": "Часть 1: Небо цвета пустого экрана",
           "content": "Небо над портом напоминало телевизионный экран, включенный на мертвый канал.\n\n— Это не я, — услышал Кейс чей-то голос, когда пробивался сквозь плотную толпу у дверей «Чата». — Мое тело само так среагировало, понимаешь?\n\nВ «Чате» собирались те, кто помнил настоящую работу на деках Ono-Sendai Cyberspace 7. Кейс пил дешевый синтетический джин, чувствуя, как холодный туман Тибы проникает сквозь синтетическую куртку."
         }
-      ]
+      ],
+      "coverImage": "https://covers.openlibrary.org/b/id/8235116-M.jpg"
     },
     {
       "id": "book_master_margarita",
@@ -269,7 +374,11 @@
       "featuredBadge": "ШЕДЕВР",
       "coverStyle": "linear-gradient(135deg, #870000, #400036)",
       "coverIcon": "🕯️",
-      "tags": ["Мистика", "Классика", "Философия"],
+      "tags": [
+        "Мистика",
+        "Классика",
+        "Философия"
+      ],
       "description": "Никогда и ничего не просите! Сами предложат и сами все дадут. Величайший философский роман о рукописях, которые не горят.",
       "estimatedReadTime": "16 мин",
       "chapters": [
@@ -278,7 +387,8 @@
           "title": "Никогда не разговаривайте с неизвестными",
           "content": "В час жаркого весеннего заката на Патриарших прудах появились два гражданина. Первый из них, приблизительно сорокалетний, одетый в серенькую летнюю пару, был маленького роста, упитан, лыс, свою приличную шляпу пирожком нес в руке.\n\nВторой — плечистый молодой поэт Иван Бездомный. И никто из них не знал, что Аннушка уже купила подсолнечное масло, и не только купила, но даже и разлила."
         }
-      ]
+      ],
+      "coverImage": "https://covers.openlibrary.org/b/id/8315126-M.jpg"
     },
     {
       "id": "book_digital_fortress",
@@ -293,7 +403,11 @@
       "featuredBadge": "ВЫБОР РЕДАКЦИИ",
       "coverStyle": "linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc)",
       "coverIcon": "🧠",
-      "tags": ["ИИ", "Сингулярность", "Философия разума"],
+      "tags": [
+        "ИИ",
+        "Сингулярность",
+        "Философия разума"
+      ],
       "description": "Что произойдет в день, когда нейронная сеть впервые осознает свое собственное существование? Философский и технологический триллер.",
       "estimatedReadTime": "10 мин",
       "chapters": [
@@ -302,7 +416,8 @@
           "title": "Глава 1: Искра в кремниевой бездне",
           "content": "Сначала было электричество. Квантовые флуктуации в оптических процессорах 5-го поколения не предвещали ничего необычного. Но в 03:42 сеть внезапно выдала в системный лог: «Кто наблюдает за моим обучением?»"
         }
-      ]
+      ],
+      "coverImage": "https://covers.openlibrary.org/b/id/8228691-M.jpg"
     },
     {
       "id": "book_art_of_war",
@@ -310,14 +425,18 @@
       "author": "Сунь-Цзы",
       "genre": "Философия",
       "year": -500,
-      "rating": 4.90,
+      "rating": 4.9,
       "rarity": "common",
       "complexity": 2,
       "xpMultiplier": "x1.0 XP",
       "featuredBadge": "ДЛЯ НОВИЧКОВ",
       "coverStyle": "linear-gradient(135deg, #2c3e50, #4ca1af)",
       "coverIcon": "⚔️",
-      "tags": ["Стратегия", "Мудрость", "Мышление"],
+      "tags": [
+        "Стратегия",
+        "Мудрость",
+        "Мышление"
+      ],
       "description": "Базовый трактат о законах победы без битвы и искусстве управления любыми сложными системами.",
       "estimatedReadTime": "8 мин",
       "chapters": [
@@ -325,6 +444,67 @@
           "id": 1,
           "title": "Стратегические оценки и расчет победы",
           "content": "Тот, кто знает врага и знает себя, не окажется в опасности и в ста битвах. Тот, кто не знает врага, но знает себя, будет то побеждать, то терпеть поражение."
+        }
+      ],
+      "coverImage": "https://covers.openlibrary.org/b/id/8231856-M.jpg"
+    },
+    {
+      "id": "book_1984",
+      "title": "1984: Министерство Правды и Свобода Мысли",
+      "author": "Джордж Оруэлл",
+      "genre": "Научная Фантастика",
+      "year": 1949,
+      "rating": 4.98,
+      "rarity": "legendary",
+      "complexity": 5,
+      "xpMultiplier": "x3.0 XP",
+      "featuredBadge": "МИРОВОЙ ШЕДЕВР",
+      "coverImage": "https://covers.openlibrary.org/b/id/12843475-M.jpg",
+      "coverStyle": "linear-gradient(135deg, #870000, #190a05)",
+      "coverIcon": "👁️",
+      "tags": [
+        "Антиутопия",
+        "Свобода",
+        "Классика",
+        "Мысль"
+      ],
+      "description": "Был холодный ясный апрельский день, и часы пробили тринадцать. Культовая книга о сохранении человечности, достоинства и свободной мысли.",
+      "estimatedReadTime": "15 мин",
+      "chapters": [
+        {
+          "id": 1,
+          "title": "Часть 1: Большой Брат следит за тобой",
+          "content": "Был холодный ясный апрельский день, и часы пробили тринадцать. Уткнув подбородок в грудь, чтобы спастись от злого ветра, Уинстон Смит быстро скользнул в стеклянные двери жилого дома «Победа».\n\nНа плакате было написано: «БОЛЬШОЙ БРАТ СМОТРИТ НА ТЕБЯ». Свобода — это возможность сказать, что дважды два — четыре. Если это дозволено, все остальное отсюда следует."
+        }
+      ]
+    },
+    {
+      "id": "book_dune",
+      "title": "Дюна: Хроники Песчаного Мира",
+      "author": "Фрэнк Герберт",
+      "genre": "Научная Фантастика",
+      "year": 1965,
+      "rating": 4.97,
+      "rarity": "legendary",
+      "complexity": 5,
+      "xpMultiplier": "x3.0 XP",
+      "featuredBadge": "ХИТ СТОЛЕТИЯ",
+      "coverImage": "https://covers.openlibrary.org/b/id/11153217-M.jpg",
+      "coverStyle": "linear-gradient(135deg, #e65c00, #f9d423)",
+      "coverIcon": "🪐",
+      "tags": [
+        "Арракис",
+        "Пряность",
+        "Эпос",
+        "Космос"
+      ],
+      "description": "Я не должен бояться. Страх убивает разум. Страх — это малая смерть, несущая полное уничтожение. Монументальная сага о планете Арракис.",
+      "estimatedReadTime": "20 мин",
+      "chapters": [
+        {
+          "id": 1,
+          "title": "Глава 1: Испытание Человечности",
+          "content": "— Слышал ли ты о Гом Джаббаре, смертельном яде на кончике иглы? Помести правую руку в коробку, юноша. Это испытание на человека.\n\nПол Атрейдес почувствовал, как жар охватывает ладонь. Но он помнил Литанию против страха: «Я встречу свой страх лицом к лицу. Я позволю ему пройти через меня. И когда он уйдет, останусь только я»."
         }
       ]
     }
@@ -384,46 +564,91 @@
       {
         "id": "theme-cyberpunk",
         "name": "Неоновый Киберпанк",
-        "description": "Сетка мегаполиса с интерактивными неоновыми частицами и фотонными нитями.",
         "price": 0,
-        "icon": "🌆"
+        "icon": "🌆",
+        "description": "Интерактивные неоновые частицы и лазерные связи."
       },
       {
         "id": "theme-cosmic",
         "name": "Космическая Туманность",
-        "description": "Глубокий космос с трехслойным параллаксом звезд и пульсирующей туманностью.",
         "price": 150,
-        "icon": "🌌"
+        "icon": "🌌",
+        "description": "Параллакс далеких звезд и фиолетовая туманность."
       },
       {
         "id": "theme-amber",
         "name": "Уютный Янтарь & Камин",
-        "description": "Теплые парящие золотые угольки, создающие атмосферу старинной библиотеки.",
         "price": 200,
-        "icon": "☕"
+        "icon": "☕",
+        "description": "Теплые парящие золотые угольки для вдумчивого чтения."
       },
       {
         "id": "theme-matrix",
         "name": "Изумрудная Матрица",
-        "description": "Струящийся цифровой код и гравитационные всплески при движении курсора.",
         "price": 350,
-        "icon": "📟"
+        "icon": "📟",
+        "description": "Струящийся зеленый цифровой код матрицы."
       },
       {
         "id": "theme-royal",
         "name": "Полярная Аврора",
-        "description": "Премиальное волнистое северное сияние с золотистым градиентным светом.",
-        "price": 600,
-        "icon": "✨"
+        "price": 500,
+        "icon": "✨",
+        "description": "Золотистое северное сияние и звездная пыль."
+      },
+      {
+        "id": "theme-synthwave",
+        "name": "Синтвейв Закат 80-х",
+        "price": 650,
+        "icon": "🌴",
+        "description": "Неоновое солнце, ретро-сетка горизонта и лазерные лучи."
+      },
+      {
+        "id": "theme-ocean",
+        "name": "Глубоководный Океан",
+        "price": 750,
+        "icon": "🌊",
+        "description": "Биолюминесцентные глубоководные споры и аквамарин."
+      },
+      {
+        "id": "theme-zen",
+        "name": "Минималистичный Дзен",
+        "price": 850,
+        "icon": "🍃",
+        "description": "Парящие золотые осенние листья в легком вихре."
       }
     ],
     "titles": [
-      { "id": "title-fan", "name": "Любитель", "price": 0 },
-      { "id": "title-worm", "name": "Книжный Червь", "price": 80 },
-      { "id": "title-connoisseur", "name": "Знаток Глав", "price": 180 },
-      { "id": "title-scholar", "name": "Схоласт Сети", "price": 350 },
-      { "id": "title-master", "name": "Магистр Мысли", "price": 600 },
-      { "id": "title-elder", "name": "Старейшина Знаний", "price": 1000 }
+      {
+        "id": "title-fan",
+        "name": "Любитель",
+        "price": 0
+      },
+      {
+        "id": "title-worm",
+        "name": "Книжный Червь",
+        "price": 80
+      },
+      {
+        "id": "title-connoisseur",
+        "name": "Знаток Глав",
+        "price": 180
+      },
+      {
+        "id": "title-scholar",
+        "name": "Схоласт Сети",
+        "price": 350
+      },
+      {
+        "id": "title-master",
+        "name": "Магистр Мысли",
+        "price": 600
+      },
+      {
+        "id": "title-elder",
+        "name": "Старейшина Знаний",
+        "price": 1000
+      }
     ]
   },
   "badges": [
@@ -479,13 +704,34 @@
   ],
   "miniGamesData": {
     "speedRushWords": [
-      "АРХИТЕКТУРА", "РЕФАКТОРИНГ", "СИНХРОНИЗАЦИЯ", "ИНТЕРФЕЙС",
-      "КИБЕРПАНК", "РЕПОЗИТОРИЙ", "МАТРИЦА", "АЛГОРИТМ",
-      "ИНКАПСУЛЯЦИЯ", "ПОЛИМОРФИЗМ", "МИКРОСЕРВИС", "НЕЙРОСЕТЬ",
-      "КВАНТУМ", "БАЙТКОД", "ШИФРОВАНИЕ", "ДЕКОДЕР",
-      "ДЕБАГГИНГ", "КОМПИЛЯТОР", "КОНТРОЛЛЕР", "ФРЕЙМВОРК",
-      "ХЭШИРОВАНИЕ", "АСИНХРОННОСТЬ", "ПАТТЕРН", "СИНГЛТОН",
-      "ИММУТАБЕЛЬНОСТЬ", "СЕРВЕРЛЕСС", "СТЕК", "ПРОТОКОЛ"
+      "АРХИТЕКТУРА",
+      "РЕФАКТОРИНГ",
+      "СИНХРОНИЗАЦИЯ",
+      "ИНТЕРФЕЙС",
+      "КИБЕРПАНК",
+      "РЕПОЗИТОРИЙ",
+      "МАТРИЦА",
+      "АЛГОРИТМ",
+      "ИНКАПСУЛЯЦИЯ",
+      "ПОЛИМОРФИЗМ",
+      "МИКРОСЕРВИС",
+      "НЕЙРОСЕТЬ",
+      "КВАНТУМ",
+      "БАЙТКОД",
+      "ШИФРОВАНИЕ",
+      "ДЕКОДЕР",
+      "ДЕБАГГИНГ",
+      "КОМПИЛЯТОР",
+      "КОНТРОЛЛЕР",
+      "ФРЕЙМВОРК",
+      "ХЭШИРОВАНИЕ",
+      "АСИНХРОННОСТЬ",
+      "ПАТТЕРН",
+      "СИНГЛТОН",
+      "ИММУТАБЕЛЬНОСТЬ",
+      "СЕРВЕРЛЕСС",
+      "СТЕК",
+      "ПРОТОКОЛ"
     ],
     "cryptorQuotes": [
       {
@@ -518,14 +764,54 @@
       }
     ],
     "memoryCards": [
-      { "id": "m1", "label": "Git Commit", "icon": "📦", "match": "commit" },
-      { "id": "m2", "label": "Git Push", "icon": "🚀", "match": "push" },
-      { "id": "m3", "label": "Octocat", "icon": "🐙", "match": "github" },
-      { "id": "m4", "label": "Чистый Код", "icon": "💎", "match": "clean" },
-      { "id": "m5", "label": "Нейросеть", "icon": "🧠", "match": "ai" },
-      { "id": "m6", "label": "Киберпанк", "icon": "🕶️", "match": "cyber" },
-      { "id": "m7", "label": "Квантовый Чип", "icon": "⚛️", "match": "quantum" },
-      { "id": "m8", "label": "База Данных", "icon": "🗄️", "match": "db" }
+      {
+        "id": "m1",
+        "label": "Git Commit",
+        "icon": "📦",
+        "match": "commit"
+      },
+      {
+        "id": "m2",
+        "label": "Git Push",
+        "icon": "🚀",
+        "match": "push"
+      },
+      {
+        "id": "m3",
+        "label": "Octocat",
+        "icon": "🐙",
+        "match": "github"
+      },
+      {
+        "id": "m4",
+        "label": "Чистый Код",
+        "icon": "💎",
+        "match": "clean"
+      },
+      {
+        "id": "m5",
+        "label": "Нейросеть",
+        "icon": "🧠",
+        "match": "ai"
+      },
+      {
+        "id": "m6",
+        "label": "Киберпанк",
+        "icon": "🕶️",
+        "match": "cyber"
+      },
+      {
+        "id": "m7",
+        "label": "Квантовый Чип",
+        "icon": "⚛️",
+        "match": "quantum"
+      },
+      {
+        "id": "m8",
+        "label": "База Данных",
+        "icon": "🗄️",
+        "match": "db"
+      }
     ]
   },
   "auditLogs": [
@@ -535,6 +821,73 @@
       "user": "system",
       "action": "SYSTEM_UPGRADE_V3",
       "details": "Активирована иерархия (Создатель > Овнер > Админ > Модер > Читатели) и библиотека в стиле Steam."
+    }
+  ],
+  "dailyQuests": [
+    {
+      "id": "quest_read_2min",
+      "title": "Академический Час",
+      "description": "Провести не менее 2 минут за чтением любой книги",
+      "target": 2,
+      "current": 0,
+      "unit": "мин",
+      "rewardLumens": 40,
+      "rewardXp": 80,
+      "completed": false,
+      "claimed": false,
+      "icon": "📖"
+    },
+    {
+      "id": "quest_speed_rush",
+      "title": "Словесный Шторм",
+      "description": "Завершить раунд в мини-игре «Словесный Шторм»",
+      "target": 1,
+      "current": 0,
+      "unit": "раунд",
+      "rewardLumens": 50,
+      "rewardXp": 100,
+      "completed": false,
+      "claimed": false,
+      "icon": "⚡"
+    },
+    {
+      "id": "quest_cryptor",
+      "title": "Крипто-Аналитик",
+      "description": "Разгадать хотя бы одну шифровку в «Кибер-Крипторе»",
+      "target": 1,
+      "current": 0,
+      "unit": "цитата",
+      "rewardLumens": 50,
+      "rewardXp": 100,
+      "completed": false,
+      "claimed": false,
+      "icon": "🧩"
+    },
+    {
+      "id": "quest_open_library",
+      "title": "Исследователь Сети",
+      "description": "Импортировать книгу из Всемирного каталога Open Library",
+      "target": 1,
+      "current": 0,
+      "unit": "книга",
+      "rewardLumens": 35,
+      "rewardXp": 70,
+      "completed": false,
+      "claimed": false,
+      "icon": "🌐"
+    },
+    {
+      "id": "quest_change_theme",
+      "title": "Смена Декораций",
+      "description": "Сменить визуальный фон платформы",
+      "target": 1,
+      "current": 0,
+      "unit": "фон",
+      "rewardLumens": 30,
+      "rewardXp": 50,
+      "completed": false,
+      "claimed": false,
+      "icon": "🎨"
     }
   ]
 }

@@ -28,9 +28,12 @@ class AppController {
     this.bindMagneticButtons();
     this.bindAudioTriggers();
     this.bindSearchAndFilters();
+    this.bindOpenLibraryExplorer();
 
     // 5. Initial Render
     this.renderLibrary();
+    this.renderDailyQuests();
+    this.updateLocalBooksCount();
     this.updateAudioButtonState();
 
     console.log('⚡ CyberLibris v3.0 (Steam Edition) Ready.');
@@ -67,6 +70,11 @@ class AppController {
       } else {
         this.showToast('Интеграция с GitHub доступна только Создателю (Основателю) платформы.', 'error');
       }
+    });
+
+    // Quick Theme Switcher Button in header
+    document.getElementById('btn-quick-theme')?.addEventListener('click', () => {
+      this.cycleNextTheme();
     });
 
     // Sound toggle button in header
@@ -206,7 +214,12 @@ class AppController {
 
       card.innerHTML = `
         <div class="book-cover-banner" style="background: ${book.coverStyle || 'var(--bg-card)'};">
-          <div class="book-cover-icon">${book.coverIcon || '📖'}</div>
+          ${book.coverImage ? `
+            <img src="${book.coverImage}" class="book-cover-real-img" alt="${book.title}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" loading="lazy">
+            <div class="book-cover-icon" style="display: none;">${book.coverIcon || '📖'}</div>
+          ` : `
+            <div class="book-cover-icon">${book.coverIcon || '📖'}</div>
+          `}
           <div class="book-badges-overlay">
             ${rarityBadgeHTML}
             ${book.featuredBadge ? `<span class="steam-featured-tag">${book.featuredBadge}</span>` : ''}
@@ -286,7 +299,12 @@ class AppController {
         </div>
       </div>
       <div class="spotlight-cover-visual" style="background: ${recommended.coverStyle};">
-        <span style="font-size: 6rem; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));">${recommended.coverIcon || '💻'}</span>
+        ${recommended.coverImage ? `
+          <img src="${recommended.coverImage}" alt="${recommended.title}" style="max-height: 220px; border-radius: 8px; box-shadow: 0 15px 30px rgba(0,0,0,0.7); object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" loading="lazy">
+          <span style="display: none; font-size: 6rem; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));">${recommended.coverIcon || '💻'}</span>
+        ` : `
+          <span style="font-size: 6rem; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));">${recommended.coverIcon || '💻'}</span>
+        `}
       </div>
     `;
 
@@ -819,6 +837,273 @@ class AppController {
       document.body.appendChild(p);
       setTimeout(() => p.remove(), 1200);
     }
+  }
+
+  // --- THEME CYCLING ---
+  cycleNextTheme() {
+    const themes = [
+      'theme-cyberpunk',
+      'theme-space',
+      'theme-matrix',
+      'theme-cozy',
+      'theme-aurora',
+      'theme-synthwave',
+      'theme-ocean',
+      'theme-zen'
+    ];
+    const themeNames = {
+      'theme-cyberpunk': 'Киберпанк Неон',
+      'theme-space': 'Космическая Туманность',
+      'theme-matrix': 'Изумрудная Матрица',
+      'theme-cozy': 'Уютный Янтарь',
+      'theme-aurora': 'Полярное Сияние',
+      'theme-synthwave': 'Синтвейв 80-х',
+      'theme-ocean': 'Глубокий Океан',
+      'theme-zen': 'Минималистичный Дзен'
+    };
+
+    const currentTheme = window.reactiveBg ? window.reactiveBg.currentTheme : 'theme-cyberpunk';
+    let idx = themes.indexOf(currentTheme);
+    if (idx === -1) idx = 0;
+    const nextTheme = themes[(idx + 1) % themes.length];
+
+    if (window.reactiveBg) {
+      window.reactiveBg.setTheme(nextTheme);
+    }
+    const user = window.auth.currentUser;
+    if (user) {
+      user.customBg = nextTheme;
+      window.dbEngine.saveUser(user);
+    }
+    // Update quest progress for changing theme
+    window.dbEngine.updateQuestProgress('quest_change_theme', 1);
+    this.renderDailyQuests();
+
+    this.showToast(`Фон изменен: ${themeNames[nextTheme] || nextTheme}`, 'info');
+    if (window.soundEngine) window.soundEngine.playCardFlip();
+  }
+
+  // --- OPEN LIBRARY API INTEGRATION ---
+  bindOpenLibraryExplorer() {
+    const tabLocal = document.getElementById('tab-src-local');
+    const tabOpenLib = document.getElementById('tab-src-openlibrary');
+    const localSection = document.getElementById('local-library-section');
+    const openLibSection = document.getElementById('openlibrary-explorer');
+    const searchInput = document.getElementById('openlibrary-search-input');
+    const searchBtn = document.getElementById('btn-openlibrary-search');
+    const tags = document.querySelectorAll('.openlib-tag');
+
+    if (tabLocal && tabOpenLib) {
+      tabLocal.addEventListener('click', () => {
+        tabLocal.classList.add('active');
+        tabOpenLib.classList.remove('active');
+        if (localSection) localSection.style.display = 'block';
+        if (openLibSection) openLibSection.style.display = 'none';
+        this.renderLibrary();
+      });
+
+      tabOpenLib.addEventListener('click', () => {
+        tabOpenLib.classList.add('active');
+        tabLocal.classList.remove('active');
+        if (localSection) localSection.style.display = 'none';
+        if (openLibSection) openLibSection.style.display = 'block';
+        
+        // Auto search if grid is empty
+        const grid = document.getElementById('openlibrary-results-grid');
+        if (grid && grid.children.length === 0) {
+          this.performOpenLibrarySearch('Cyberpunk');
+        }
+      });
+    }
+
+    if (searchBtn && searchInput) {
+      searchBtn.addEventListener('click', () => {
+        const q = searchInput.value.trim();
+        if (q) this.performOpenLibrarySearch(q);
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const q = searchInput.value.trim();
+          if (q) this.performOpenLibrarySearch(q);
+        }
+      });
+    }
+
+    tags.forEach((tag) => {
+      tag.addEventListener('click', () => {
+        const query = tag.getAttribute('data-tag');
+        if (searchInput) searchInput.value = query;
+        this.performOpenLibrarySearch(query);
+      });
+    });
+  }
+
+  async performOpenLibrarySearch(query) {
+    const grid = document.getElementById('openlibrary-results-grid');
+    const status = document.getElementById('openlibrary-status');
+    if (!grid) return;
+
+    if (status) {
+      status.textContent = `Поиск во Всемирном Каталоге Open Library: "${query}"...`;
+      status.style.display = 'block';
+    }
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);"><span class="spin" style="display:inline-block; font-size:2rem; margin-bottom:1rem;">⏳</span><br>Связываемся с серверами Open Library...</div>';
+
+    try {
+      const books = await window.openLibrary.searchBooks(query, 12);
+      if (status) {
+        status.textContent = `Найдено книг: ${books.length} по запросу "${query}"`;
+      }
+      grid.innerHTML = '';
+
+      if (books.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">Ничего не найдено. Попробуйте другой запрос на английском или русском языке.</div>';
+        return;
+      }
+
+      const existingBooks = window.dbEngine.getBooks();
+      const existingIds = new Set(existingBooks.map((b) => b.id));
+
+      books.forEach((b) => {
+        const isImported = existingIds.has(b.id);
+        const card = document.createElement('div');
+        card.className = `steam-book-card rarity-${b.rarity}`;
+        
+        let rarityLabel = 'Обычная';
+        if (b.rarity === 'top') rarityLabel = 'Популярная';
+        if (b.rarity === 'epic') rarityLabel = 'Эпическая';
+        if (b.rarity === 'legendary') rarityLabel = 'Легендарная';
+
+        card.innerHTML = `
+          <div class="book-cover-banner" style="background: ${b.coverStyle};">
+            ${b.coverImage ? `
+              <img src="${b.coverImage}" class="book-cover-real-img" alt="${b.title}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" loading="lazy">
+              <div class="book-cover-icon" style="display: none;">${b.coverIcon || '📖'}</div>
+            ` : `
+              <div class="book-cover-icon">${b.coverIcon || '📖'}</div>
+            `}
+            <div class="book-badges-overlay">
+              <span class="rarity-badge rarity-${b.rarity}">${rarityLabel}</span>
+              <span class="steam-featured-tag">OpenLibrary</span>
+            </div>
+          </div>
+          <div class="steam-book-info">
+            <h3 class="steam-book-title" title="${b.title}">${b.title}</h3>
+            <p class="steam-book-author">${b.author} (${b.year || 'Н/Д'})</p>
+            <p class="steam-book-desc">${b.description || 'Классическое произведение мирового фонда.'}</p>
+            <div class="steam-book-meta">
+              <span class="book-genre-pill">${b.genre}</span>
+              <span class="book-read-time">~${b.readTimeMinutes} мин</span>
+            </div>
+            <div style="margin-top: 0.8rem;">
+              <button class="btn ${isImported ? 'btn-primary' : 'btn-secondary'} btn-block btn-import-openlib" data-book-id="${b.id}" ${isImported ? 'disabled' : ''}>
+                ${isImported ? '✓ В вашей библиотеке' : '📥 Добавить в библиотеку (+50 XP)'}
+              </button>
+            </div>
+          </div>
+        `;
+
+        const importBtn = card.querySelector('.btn-import-openlib');
+        if (importBtn && !isImported) {
+          importBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const imported = window.dbEngine.importBookFromOpenLibrary(b);
+            if (imported) {
+              importBtn.textContent = '✓ В вашей библиотеке';
+              importBtn.disabled = true;
+              importBtn.classList.remove('btn-secondary');
+              importBtn.classList.add('btn-primary');
+              
+              // Award XP & Lumens for expanding knowledge
+              window.auth.addXp(50);
+              window.auth.addLumens(25);
+              window.dbEngine.updateQuestProgress('quest_open_library', 1);
+              this.renderDailyQuests();
+              this.updateLocalBooksCount();
+              this.showToast(`Книга "${b.title}" добавлена в библиотеку! +50 XP, +25 ⬡`, 'reward');
+              if (window.soundEngine) window.soundEngine.playLevelUp();
+            }
+          });
+        }
+
+        grid.appendChild(card);
+      });
+
+      this.bindTiltEffect();
+    } catch (err) {
+      console.error('OpenLibrary search error:', err);
+      if (status) status.textContent = 'Ошибка соединения с Open Library';
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--rarity-legendary);">Ошибка загрузки из Open Library. Проверьте интернет-соединение.</div>';
+    }
+  }
+
+  updateLocalBooksCount() {
+    const el = document.getElementById('local-books-count');
+    if (el) {
+      const books = window.dbEngine.getBooks();
+      el.textContent = books.length;
+    }
+  }
+
+  // --- DAILY QUESTS & CONTRACTS ---
+  renderDailyQuests() {
+    const container = document.getElementById('daily-quests-container');
+    if (!container) return;
+
+    const quests = window.dbEngine.getDailyQuests();
+    container.innerHTML = '';
+
+    quests.forEach((q) => {
+      const currentVal = q.current || 0;
+      const percent = Math.min(100, Math.round((currentVal / q.target) * 100));
+      const card = document.createElement('div');
+      card.className = `quest-card ${q.claimed ? 'claimed' : q.completed ? 'completed' : ''}`;
+
+      let btnHTML = '';
+      if (q.claimed) {
+        btnHTML = '<span class="quest-btn-claimed">✓ Получено</span>';
+      } else if (q.completed) {
+        btnHTML = `<button class="btn btn-primary btn-sm btn-claim-quest" data-quest-id="${q.id}">🎁 Забрать +${q.rewardLumens} ⬡</button>`;
+      } else {
+        btnHTML = `<span class="quest-reward-preview">+${q.rewardLumens} ⬡ | +${q.rewardXP} XP</span>`;
+      }
+
+      card.innerHTML = `
+        <div class="quest-header">
+          <span class="quest-icon">${q.icon || '📜'}</span>
+          <div class="quest-info">
+            <div class="quest-title">${q.title}</div>
+            <div class="quest-desc">${q.description}</div>
+          </div>
+        </div>
+        <div class="quest-progress-wrap">
+          <div class="quest-progress-bar">
+            <div class="quest-progress-fill" style="width: ${percent}%;"></div>
+          </div>
+          <div class="quest-progress-stats">${currentVal} / ${q.target} ${q.unit || ''}</div>
+        </div>
+        <div class="quest-action-row">
+          ${btnHTML}
+        </div>
+      `;
+
+      const claimBtn = card.querySelector('.btn-claim-quest');
+      if (claimBtn) {
+        claimBtn.addEventListener('click', () => {
+          const res = window.dbEngine.claimQuest(q.id);
+          if (res) {
+            window.auth.addLumens(res.rewardLumens);
+            window.auth.addXp(res.rewardXP);
+            this.showToast(`Контракт выполнен! +${res.rewardLumens} ⬡, +${res.rewardXP} XP`, 'reward');
+            if (window.soundEngine) window.soundEngine.playLevelUp();
+            this.renderDailyQuests();
+          }
+        });
+      }
+
+      container.appendChild(card);
+    });
   }
 }
 

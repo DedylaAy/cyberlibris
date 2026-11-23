@@ -186,6 +186,11 @@ class MiniGamesSuite {
       window.auth.updateStat('gamesWon', 1);
     }
 
+    if (window.dbEngine) {
+      window.dbEngine.updateQuestProgress('quest_speed_rush', 1);
+      if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+    }
+
     window.app.showToast(`⚡ Раунд завершен! Счёт: ${this.speedScore}. Награда: +${lumensEarned} ⬡, +${xpEarned} XP!`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
   }
@@ -326,6 +331,11 @@ class MiniGamesSuite {
       window.auth.addXp(xp);
       window.auth.updateStat('cryptorSolved', 1);
       window.auth.updateStat('gamesWon', 1);
+
+      if (window.dbEngine) {
+        window.dbEngine.updateQuestProgress('quest_cryptor', 1);
+        if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+      }
 
       window.app.showToast(`🎉 Цитата расшифрована! Награда: +${lumens} ⬡, +${xp} XP!`, 'reward');
       if (window.soundEngine) window.soundEngine.playLevelUp();
@@ -570,9 +580,17 @@ class MiniGamesSuite {
     const user = window.auth.currentUser;
     if (!user) return;
 
-    if (category === 'frames') user.avatarFrame = itemId;
-    else if (category === 'backgrounds') user.customBg = itemId;
-    else if (category === 'titles') user.title = itemName;
+    if (category === 'frames') {
+      user.avatarFrame = itemId;
+    } else if (category === 'backgrounds') {
+      user.customBg = itemId;
+      if (window.dbEngine) {
+        window.dbEngine.updateQuestProgress('quest_change_theme', 1);
+        if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+      }
+    } else if (category === 'titles') {
+      user.title = itemName;
+    }
 
     window.auth.saveUser();
     window.auth.syncUserToUI();
