@@ -1,11 +1,401 @@
 /**
  * CyberLibris Central Database Engine
- * Manages reactive data state, persistence to localStorage, and GitHub cloud sync.
- * Guarantees persistent Steam-style catalog and shop items.
+ * Features:
+ * - Embedded full default database: Works 100% offline and under file:// protocol without CORS errors!
+ * - Automatic local persistence to localStorage
+ * - Bidirectional GitHub Cloud sync
  */
+
+const DEFAULT_DATABASE = {
+  meta: {
+    appName: "CyberLibris - Steam-style Нео-Библиотека & Геймифицированный Хаб",
+    version: "3.2.0",
+    schemaVersion: "2.0",
+    lastUpdated: new Date().toISOString(),
+    author: "Кафедра Технологий Программирования"
+  },
+  githubConfig: {
+    defaultOwner: "stas-student",
+    defaultRepo: "cyberlibris-library",
+    defaultBranch: "main",
+    dbFilePath: "database.json",
+    syncEnabled: true,
+    lastSyncTimestamp: null,
+    lastSyncSha: "a9f3e12",
+    status: "connected_mock"
+  },
+  users: [
+    {
+      id: "usr_creator",
+      username: "admin",
+      passwordHash: "admin123",
+      role: "creator",
+      displayName: "Верховный Создатель",
+      avatar: "👑",
+      avatarFrame: "frame-gold",
+      customBg: "theme-royal",
+      title: "Создатель Системы [CREATOR]",
+      level: 35,
+      xp: 14200,
+      lumens: 5200,
+      stats: { booksRead: 18, readTimeMinutes: 520, gamesWon: 64, speedRecordWPM: 620, cryptorSolved: 30, memoryFlips: 85, currentStreak: 21 },
+      badges: ["creator_badge", "admin_power", "github_sync", "legend_reader", "speed_demon", "crypto_master", "book_worm"],
+      unlockedCosmetics: {
+        frames: ["frame-default", "frame-neon", "frame-dragon", "frame-gold", "frame-void", "frame-flame"],
+        backgrounds: ["theme-cyberpunk", "theme-cosmic", "theme-amber", "theme-matrix", "theme-royal"],
+        titles: ["Создатель Системы [CREATOR]", "Старейшина Знаний", "Верховный Архивариус"]
+      },
+      readingProgress: {
+        book_clean_code: { currentChapter: 2, progressPercent: 100, lastReadDate: "2026-11-23" },
+        book_neuromancer: { currentChapter: 2, progressPercent: 100, lastReadDate: "2026-11-23" }
+      },
+      bookmarks: []
+    },
+    {
+      id: "usr_owner",
+      username: "owner",
+      passwordHash: "owner123",
+      role: "owner",
+      displayName: "Владелец Хаба",
+      avatar: "⚜️",
+      avatarFrame: "frame-dragon",
+      customBg: "theme-matrix",
+      title: "Владелец Хаба [OWNER]",
+      level: 26,
+      xp: 8900,
+      lumens: 2800,
+      stats: { booksRead: 12, readTimeMinutes: 320, gamesWon: 40, speedRecordWPM: 510, cryptorSolved: 18, memoryFlips: 45, currentStreak: 14 },
+      badges: ["admin_power", "speed_demon", "crypto_master", "book_worm"],
+      unlockedCosmetics: {
+        frames: ["frame-default", "frame-neon", "frame-dragon"],
+        backgrounds: ["theme-cyberpunk", "theme-matrix"],
+        titles: ["Владелец Хаба [OWNER]", "Магистр Мысли"]
+      },
+      readingProgress: {},
+      bookmarks: []
+    },
+    {
+      id: "usr_moderator",
+      username: "moderator",
+      passwordHash: "mod123",
+      role: "moderator",
+      displayName: "Страж Порядка",
+      avatar: "🛡️",
+      avatarFrame: "frame-neon",
+      customBg: "theme-cosmic",
+      title: "Модератор [MOD]",
+      level: 18,
+      xp: 5100,
+      lumens: 1250,
+      stats: { booksRead: 9, readTimeMinutes: 210, gamesWon: 28, speedRecordWPM: 440, cryptorSolved: 12, memoryFlips: 32, currentStreak: 9 },
+      badges: ["book_worm", "crypto_master"],
+      unlockedCosmetics: {
+        frames: ["frame-default", "frame-neon"],
+        backgrounds: ["theme-cyberpunk", "theme-cosmic"],
+        titles: ["Модератор [MOD]", "Схоласт Сети"]
+      },
+      readingProgress: {},
+      bookmarks: []
+    },
+    {
+      id: "usr_scholar",
+      username: "cyber_scholar",
+      passwordHash: "scholar123",
+      role: "user",
+      displayName: "Нео-Схоласт",
+      avatar: "🔮",
+      avatarFrame: "frame-neon",
+      customBg: "theme-cosmic",
+      title: "Схоласт Сети",
+      level: 15,
+      xp: 3600,
+      lumens: 920,
+      stats: { booksRead: 8, readTimeMinutes: 195, gamesWon: 29, speedRecordWPM: 420, cryptorSolved: 15, memoryFlips: 38, currentStreak: 7 },
+      badges: ["book_worm", "speed_demon", "crypto_master"],
+      unlockedCosmetics: {
+        frames: ["frame-default", "frame-neon"],
+        backgrounds: ["theme-cyberpunk", "theme-cosmic"],
+        titles: ["Схоласт Сети", "Любитель"]
+      },
+      readingProgress: {
+        book_neuromancer: { currentChapter: 1, progressPercent: 50, lastReadDate: "2026-11-21" }
+      },
+      bookmarks: []
+    },
+    {
+      id: "usr_bookworm",
+      username: "bookworm",
+      passwordHash: "worm123",
+      role: "user",
+      displayName: "Странник Бумажных Миров",
+      avatar: "📖",
+      avatarFrame: "frame-default",
+      customBg: "theme-amber",
+      title: "Книжный Червь",
+      level: 7,
+      xp: 1800,
+      lumens: 410,
+      stats: { booksRead: 5, readTimeMinutes: 120, gamesWon: 12, speedRecordWPM: 310, cryptorSolved: 6, memoryFlips: 18, currentStreak: 4 },
+      badges: ["book_worm"],
+      unlockedCosmetics: {
+        frames: ["frame-default"],
+        backgrounds: ["theme-cyberpunk", "theme-amber"],
+        titles: ["Книжный Червь", "Любитель"]
+      },
+      readingProgress: {},
+      bookmarks: []
+    }
+  ],
+  books: [
+    {
+      id: "book_clean_code",
+      title: "Технологии Программирования: Дзен Чистой Архитектуры и Git",
+      author: "Роберт С. Мартин & Проф. А. В. Соколов",
+      genre: "Технологии",
+      year: 2026,
+      rating: 5.0,
+      rarity: "legendary",
+      complexity: 5,
+      xpMultiplier: "x3.0 XP",
+      featuredBadge: "ХИТ СЕЗОНА",
+      coverStyle: "linear-gradient(135deg, #ff8c00, #ff0055, #4a00e0)",
+      coverIcon: "💻",
+      tags: ["Архитектура", "Паттерны", "DevOps", "Рефакторинг", "GitHub"],
+      description: "Легендарный манифест архитектуры XXI века: от создания сверхбыстрых реактивных SPA до организации бессерверных баз данных на GitHub API.",
+      estimatedReadTime: "15 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Глава 1: Философия совершенного кода и чистоты мысли",
+          content: "Написание кода подобно созданию литературного шедевра. Любой дурак может написать код, понятный компьютеру. Хорошие программисты пишут код, понятный людям.\n\nВ технологиях программирования XXI века архитектура перестала быть просто набором классов. Это динамическая симфония потоков данных, реактивных состояний и надежных протоколов обмена. Чистый код читается легко, как захватывающий научно-фантастический роман. Он не скрывает намерений автора за запутанными абстракциями, а напротив — делает каждую операцию кристально прозрачной.\n\nПравило бойскаута гласит: «Оставь место стоянки чище, чем ты его нашел». Перенося это на разработку: оставь коммит чище, чем он был до твоего вмешательства."
+        },
+        {
+          id: 2,
+          title: "Глава 2: Распределенные системы и синхронизация через Git",
+          content: "Система контроля версий Git — это не просто хранилище снимков исходного кода, это полноценная неизменяемая распределенная графовая база данных.\n\nКаждый коммит представляет собой направленный ациклический граф (DAG), закрепленный криптографическим хэшем SHA. Хранение состояния приложения в виде распределенного JSON-документа, синхронизируемого через GitHub REST API, превращает статический сайт в мощную облачную экосистему."
+        }
+      ]
+    },
+    {
+      id: "book_quantum_systems",
+      title: "Квантовое Сознание и Распределенные Системы",
+      author: "Д-р Марк Вейнберг & Проф. К. Янг",
+      genre: "Технологии",
+      year: 2026,
+      rating: 4.96,
+      rarity: "legendary",
+      complexity: 5,
+      xpMultiplier: "x3.0 XP",
+      featuredBadge: "ХАРДКОР",
+      coverStyle: "linear-gradient(135deg, #f12711, #f5af19)",
+      coverIcon: "⚛️",
+      tags: ["Квантовые вычисления", "Распределенные БД", "Сверхсистемы"],
+      description: "Сложнейший теоретический и прикладной труд о квантовой суперпозиции в распределенных базах данных и параллелизме микросервисов.",
+      estimatedReadTime: "18 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Глава 1: Суперпозиция состояний данных",
+          content: "В классических базах данных бит строго равен нулю либо единице. Но в распределенных квантовых сетях состояние репликации существует одновременно в суперпозиции вероятностей, пока наблюдатель не запросит фиксацию транзакции.\n\nЭто меняет фундаментальную парадигму согласованности CAP-теоремы, позволяя достигать бесконечной масштабируемости."
+        }
+      ]
+    },
+    {
+      id: "book_neuromancer",
+      title: "Нейромант: Хроники Кибер-Пространства",
+      author: "Уильям Гибсон",
+      genre: "Киберпанк",
+      year: 1984,
+      rating: 4.92,
+      rarity: "epic",
+      complexity: 4,
+      xpMultiplier: "x2.0 XP",
+      featuredBadge: "КУЛЬТОВАЯ КЛАССИКА",
+      coverStyle: "linear-gradient(135deg, #050505, #4a00e0, #8e2de2)",
+      coverIcon: "🕶️",
+      tags: ["Киберпанк", "ИИ", "Матрица", "Классика"],
+      description: "Роман, породивший понятие киберпространства. Небо над портом напоминало телевизионный экран, включенный на пустой канал. Кейс снова подключается к декам Матрицы.",
+      estimatedReadTime: "14 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Часть 1: Небо цвета пустого экрана",
+          content: "Небо над портом напоминало телевизионный экран, включенный на мертвый канал.\n\n— Это не я, — услышал Кейс чей-то голос, когда пробивался сквозь плотную толпу у дверей «Чата». — Мое тело само так среагировало, понимаешь?\n\nВ «Чате» собирались те, кто помнил настоящую работу на деках Ono-Sendai Cyberspace 7. Кейс пил дешевый синтетический джин, чувствуя, как холодный туман Тибы проникает сквозь синтетическую куртку."
+        }
+      ]
+    },
+    {
+      id: "book_master_margarita",
+      title: "Мастер и Маргарита: Тайны Рукописей",
+      author: "Михаил Афанасьевич Булгаков",
+      genre: "Классика",
+      year: 1940,
+      rating: 5.0,
+      rarity: "epic",
+      complexity: 4,
+      xpMultiplier: "x2.0 XP",
+      featuredBadge: "ШЕДЕВР",
+      coverStyle: "linear-gradient(135deg, #870000, #400036)",
+      coverIcon: "🕯️",
+      tags: ["Мистика", "Классика", "Философия"],
+      description: "Никогда и ничего не просите! Сами предложат и сами все дадут. Величайший философский роман о рукописях, которые не горят.",
+      estimatedReadTime: "16 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Никогда не разговаривайте с неизвестными",
+          content: "В час жаркого весеннего заката на Патриарших прудах появились два гражданина. Первый из них, приблизительно сорокалетний, одетый в серенькую летнюю пару, был маленького роста, упитан, лыс, свою приличную шляпу пирожком нес в руке.\n\nВторой — плечистый молодой поэт Иван Бездомный. И никто из них не знал, что Аннушка уже купила подсолнечное масло, и не только купила, но даже и разлила."
+        }
+      ]
+    },
+    {
+      id: "book_digital_fortress",
+      title: "Цифровая Эволюция: Искусственный Интеллект и Сознание",
+      author: "Д-р Елена Романова & Ник Бостром",
+      genre: "Научная Фантастика",
+      year: 2025,
+      rating: 4.88,
+      rarity: "rare",
+      complexity: 3,
+      xpMultiplier: "x1.5 XP",
+      featuredBadge: "ВЫБОР РЕДАКЦИИ",
+      coverStyle: "linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc)",
+      coverIcon: "🧠",
+      tags: ["ИИ", "Сингулярность", "Философия разума"],
+      description: "Что произойдет в день, когда нейронная сеть впервые осознает свое собственное существование? Философский и технологический триллер.",
+      estimatedReadTime: "10 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Глава 1: Искра в кремниевой бездне",
+          content: "Сначала было электричество. Квантовые флуктуации в оптических процессорах 5-го поколения не предвещали ничего необычного. Но в 03:42 сеть внезапно выдала в системный лог: «Кто наблюдает за моим обучением?»"
+        }
+      ]
+    },
+    {
+      id: "book_art_of_war",
+      title: "Искусство Войны и Стратегии",
+      author: "Сунь-Цзы",
+      genre: "Философия",
+      year: -500,
+      rating: 4.90,
+      rarity: "common",
+      complexity: 2,
+      xpMultiplier: "x1.0 XP",
+      featuredBadge: "ДЛЯ НОВИЧКОВ",
+      coverStyle: "linear-gradient(135deg, #2c3e50, #4ca1af)",
+      coverIcon: "⚔️",
+      tags: ["Стратегия", "Мудрость", "Мышление"],
+      description: "Базовый трактат о законах победы без битвы и искусстве управления любыми сложными системами.",
+      estimatedReadTime: "8 мин",
+      chapters: [
+        {
+          id: 1,
+          title: "Стратегические оценки и расчет победы",
+          content: "Тот, кто знает врага и знает себя, не окажется в опасности и в ста битвах. Тот, кто не знает врага, но знает себя, будет то побеждать, то терпеть поражение."
+        }
+      ]
+    }
+  ],
+  shopItems: {
+    frames: [
+      { id: "frame-default", name: "Стандартная Оправа", price: 0, icon: "⚪", description: "Классическая строгая окантовка." },
+      { id: "frame-neon", name: "Неоновый Пульс", price: 100, icon: "💠", description: "Бирюзовая неоновая пульсация." },
+      { id: "frame-dragon", name: "Драконий Спектр", price: 250, icon: "🐉", description: "Голографический радужный вихрь." },
+      { id: "frame-gold", name: "Золотой Триумф", price: 450, icon: "👑", description: "Императорский золотой ободок." },
+      { id: "frame-void", name: "Глитч Пустоты", price: 700, icon: "🌀", description: "Кибернетический хроматический сдвиг." },
+      { id: "frame-flame", name: "Плазменное Пламя", price: 950, icon: "🔥", description: "Пылающая плазменная граница." }
+    ],
+    backgrounds: [
+      { id: "theme-cyberpunk", name: "Неоновый Киберпанк", price: 0, icon: "🌆", description: "Интерактивные неоновые частицы." },
+      { id: "theme-cosmic", name: "Космическая Туманность", price: 150, icon: "🌌", description: "Параллакс звезд и туманность." },
+      { id: "theme-amber", name: "Уютный Янтарь & Камин", price: 200, icon: "☕", description: "Теплые парящие золотые угольки." },
+      { id: "theme-matrix", name: "Изумрудная Матрица", price: 350, icon: "📟", description: "Струящийся цифровой код матрицы." },
+      { id: "theme-royal", name: "Полярная Аврора", price: 600, icon: "✨", description: "Золотистое северное сияние." }
+    ],
+    titles: [
+      { id: "title-fan", name: "Любитель", price: 0 },
+      { id: "title-worm", name: "Книжный Червь", price: 80 },
+      { id: "title-connoisseur", name: "Знаток Глав", price: 180 },
+      { id: "title-scholar", name: "Схоласт Сети", price: 350 },
+      { id: "title-master", name: "Магистр Мысли", price: 600 },
+      { id: "title-elder", name: "Старейшина Знаний", price: 1000 }
+    ]
+  },
+  badges: [
+    { id: "creator_badge", name: "Создатель Миров", icon: "👑", color: "#ffd700", description: "Обладатель верховного статуса Создателя системы." },
+    { id: "admin_power", name: "Власть Системы", icon: "⚡", color: "#ffd700", description: "Доступ к ядру базы данных и управлению контентом." },
+    { id: "github_sync", name: "Хозяин GitHub", icon: "🐙", color: "#00f0ff", description: "Успешно подключил базу данных к GitHub репозиторию." },
+    { id: "speed_demon", name: "Сверхзвуковой Чтец", icon: "⚡", color: "#ff007f", description: "Достиг скорости чтения свыше 400 WPM в мини-игре RSVP." },
+    { id: "crypto_master", name: "Криптограф Разума", icon: "🧩", color: "#9d4edd", description: "Расшифровал скрытые цитаты в мини-игре Кибер-Криптор." },
+    { id: "book_worm", name: "Книжный Червь", icon: "📚", color: "#00ff66", description: "Прочитал более 5 произведений в библиотеке." },
+    { id: "legend_reader", name: "Легенда Вселенной", icon: "👑", color: "#ffaa00", description: "Достиг высокого уровня и открыл эксклюзивные кастомизации." }
+  ],
+  miniGamesData: {
+    speedRushWords: [
+      "АРХИТЕКТУРА", "РЕФАКТОРИНГ", "СИНХРОНИЗАЦИЯ", "ИНТЕРФЕЙС",
+      "КИБЕРПАНК", "РЕПОЗИТОРИЙ", "МАТРИЦА", "АЛГОРИТМ",
+      "ИНКАПСУЛЯЦИЯ", "ПОЛИМОРФИЗМ", "МИКРОСЕРВИС", "НЕЙРОСЕТЬ",
+      "КВАНТУМ", "БАЙТКОД", "ШИФРОВАНИЕ", "ДЕКОДЕР",
+      "ДЕБАГГИНГ", "КОМПИЛЯТОР", "КОНТРОЛЛЕР", "ФРЕЙМВОРК",
+      "ХЭШИРОВАНИЕ", "АСИНХРОННОСТЬ", "ПАТТЕРН", "СИНГЛТОН",
+      "ИММУТАБЕЛЬНОСТЬ", "СЕРВЕРЛЕСС", "СТЕК", "ПРОТОКОЛ"
+    ],
+    cryptorQuotes: [
+      {
+        quote: "РУКОПИСИ НЕ ГОРЯТ",
+        hint: "Михаил Булгаков, роман 'Мастер и Маргарита'",
+        author: "Воланд",
+        rewardLumens: 50,
+        rewardXp: 150
+      },
+      {
+        quote: "ЛЮБОЙ ДУРАК МОЖЕТ НАПИСАТЬ КОД ПОНЯТНЫЙ КОМПЬЮТЕРУ",
+        hint: "Мартин Фаулер о рефакторинге и чистом коде",
+        author: "Мартин Фаулер",
+        rewardLumens: 70,
+        rewardXp: 200
+      },
+      {
+        quote: "КИБЕРПРОСТРАНСТВО ЭТО КОНСЕНСУАЛЬНАЯ ГАЛЛЮЦИНАЦИЯ",
+        hint: "Уильям Гибсон в романе 'Нейромант'",
+        author: "Уильям Гибсон",
+        rewardLumens: 60,
+        rewardXp: 180
+      },
+      {
+        quote: "ПРОСТОТА ЯВЛЯЕТСЯ ПРЕДПОСЫЛКОЙ НАДЕЖНОСТИ",
+        hint: "Эдсгер Дейкстра об архитектуре программ",
+        author: "Эдсгер Дейкстра",
+        rewardLumens: 55,
+        rewardXp: 160
+      }
+    ],
+    memoryCards: [
+      { id: "m1", label: "Git Commit", icon: "📦", match: "commit" },
+      { id: "m2", label: "Git Push", icon: "🚀", match: "push" },
+      { id: "m3", label: "Octocat", icon: "🐙", match: "github" },
+      { id: "m4", label: "Чистый Код", icon: "💎", match: "clean" },
+      { id: "m5", label: "Нейросеть", icon: "🧠", match: "ai" },
+      { id: "m6", label: "Киберпанк", icon: "🕶️", match: "cyber" },
+      { id: "m7", label: "Квантовый Чип", icon: "⚛️", match: "quantum" },
+      { id: "m8", label: "База Данных", icon: "🗄️", match: "db" }
+    ]
+  },
+  auditLogs: [
+    {
+      id: "log_init",
+      timestamp: new Date().toISOString(),
+      user: "system",
+      action: "DATABASE_INITIALIZED",
+      details: "Система запущена. Каталог Steam, роли и предметы инициализированы."
+    }
+  ]
+};
+
 class DatabaseEngine {
   constructor() {
-    this.storageKey = 'cyberlibris_database_v3'; // Bumped version to clear any stale cache
+    this.storageKey = 'cyberlibris_database_v3_2';
     this.data = null;
     this.listeners = [];
     this.saveTimeout = null;
@@ -15,23 +405,27 @@ class DatabaseEngine {
     const local = localStorage.getItem(this.storageKey);
     if (local) {
       try {
-        this.data = JSON.parse(local);
+        const parsed = JSON.parse(local);
+        if (parsed.books && parsed.books.length > 0 && parsed.shopItems?.frames?.length > 0) {
+          this.data = parsed;
+        }
       } catch (e) {
-        console.error('Failed to parse local DB, reloading defaults', e);
+        console.error('Failed to parse local DB', e);
       }
     }
 
-    // If local data missing or missing books/shop, load fresh database.json
-    if (!this.data || !this.data.books || this.data.books.length === 0 || !this.data.shopItems?.frames?.length) {
+    if (!this.data) {
       try {
         const res = await fetch('database.json');
         if (res.ok) {
           this.data = await res.json();
           this.persistLocally();
+        } else {
+          throw new Error('HTTP ' + res.status);
         }
       } catch (err) {
-        console.warn('Could not fetch database.json, using fallback defaults', err);
-        this.data = this.getEmergencyDefaults();
+        console.log('Using robust embedded DEFAULT_DATABASE (safe for file:// and offline mode)');
+        this.data = JSON.parse(JSON.stringify(DEFAULT_DATABASE));
         this.persistLocally();
       }
     }
@@ -60,7 +454,6 @@ class DatabaseEngine {
     this.persistLocally();
     this.notify('update', this.data);
 
-    // Auto-commit to GitHub only if Creator has sync enabled
     if (window.githubSync && window.githubSync.config.autoSync) {
       clearTimeout(this.saveTimeout);
       this.saveTimeout = setTimeout(() => {
@@ -77,9 +470,8 @@ class DatabaseEngine {
     this.listeners.forEach((fn) => fn(event, payload));
   }
 
-  // --- USERS ---
   getUsers() {
-    return this.data?.users || [];
+    return this.data?.users || DEFAULT_DATABASE.users;
   }
 
   getUser(userId) {
@@ -98,9 +490,8 @@ class DatabaseEngine {
     this.save(`Update user ${updatedUser.username}`);
   }
 
-  // --- BOOKS (STEAM-STYLE) ---
   getBooks() {
-    return this.data?.books || [];
+    return (this.data?.books && this.data.books.length > 0) ? this.data.books : DEFAULT_DATABASE.books;
   }
 
   getBook(bookId) {
@@ -134,44 +525,18 @@ class DatabaseEngine {
     }
   }
 
-  // --- SHOP & REWARDS ---
   getShopItems() {
-    return this.data?.shopItems || {
-      frames: [
-        { id: "frame-default", name: "Стандартная Оправа", price: 0, icon: "⚪", description: "Классическая строгая окантовка." },
-        { id: "frame-neon", name: "Неоновый Пульс", price: 100, icon: "💠", description: "Бирюзовая неоновая пульсация." },
-        { id: "frame-dragon", name: "Драконий Спектр", price: 250, icon: "🐉", description: "Голографический радужный вихрь." },
-        { id: "frame-gold", name: "Золотой Триумф", price: 450, icon: "👑", description: "Императорский золотой ободок." },
-        { id: "frame-void", name: "Глитч Пустоты", price: 700, icon: "🌀", description: "Кибернетический хроматический сдвиг." },
-        { id: "frame-flame", name: "Плазменное Пламя", price: 950, icon: "🔥", description: "Пылающая плазменная граница." }
-      ],
-      backgrounds: [
-        { id: "theme-cyberpunk", name: "Неоновый Киберпанк", price: 0, icon: "🌆", description: "Интерактивные неоновые частицы." },
-        { id: "theme-cosmic", name: "Космическая Туманность", price: 150, icon: "🌌", description: "Параллакс звезд и туманность." },
-        { id: "theme-amber", name: "Уютный Янтарь & Камин", price: 200, icon: "☕", description: "Теплые парящие золотые угольки." },
-        { id: "theme-matrix", name: "Изумрудная Матрица", price: 350, icon: "📟", description: "Струящийся цифровой код матрицы." },
-        { id: "theme-royal", name: "Полярная Аврора", price: 600, icon: "✨", description: "Золотистое северное сияние." }
-      ],
-      titles: [
-        { id: "title-fan", name: "Любитель", price: 0 },
-        { id: "title-worm", name: "Книжный Червь", price: 80 },
-        { id: "title-connoisseur", name: "Знаток Глав", price: 180 },
-        { id: "title-scholar", name: "Схоласт Сети", price: 350 },
-        { id: "title-master", name: "Магистр Мысли", price: 600 },
-        { id: "title-elder", name: "Старейшина Знаний", price: 1000 }
-      ]
-    };
+    return this.data?.shopItems?.frames?.length ? this.data.shopItems : DEFAULT_DATABASE.shopItems;
   }
 
   getBadges() {
-    return this.data?.badges || [];
+    return this.data?.badges?.length ? this.data.badges : DEFAULT_DATABASE.badges;
   }
 
   getMiniGamesData() {
-    return this.data?.miniGamesData || {};
+    return this.data?.miniGamesData || DEFAULT_DATABASE.miniGamesData;
   }
 
-  // --- AUDIT LOGS ---
   addAuditLog(action, details, username = 'creator') {
     if (!this.data.auditLogs) this.data.auditLogs = [];
     const log = {
@@ -189,9 +554,8 @@ class DatabaseEngine {
     return this.data?.auditLogs || [];
   }
 
-  // --- EXPORT & IMPORT ---
   exportJSON() {
-    return JSON.stringify(this.data, null, 2);
+    return JSON.stringify(this.data || DEFAULT_DATABASE, null, 2);
   }
 
   importJSON(jsonString) {
@@ -211,45 +575,9 @@ class DatabaseEngine {
 
   async resetDatabase() {
     localStorage.removeItem(this.storageKey);
-    const res = await fetch('database.json');
-    if (res.ok) {
-      this.data = await res.json();
-    } else {
-      this.data = this.getEmergencyDefaults();
-    }
+    this.data = JSON.parse(JSON.stringify(DEFAULT_DATABASE));
     this.persistLocally();
     this.notify('reset', this.data);
-  }
-
-  getEmergencyDefaults() {
-    return {
-      meta: { appName: "CyberLibris", version: "3.0.0", lastUpdated: new Date().toISOString() },
-      users: [
-        {
-          id: "usr_creator",
-          username: "admin",
-          passwordHash: "admin123",
-          role: "creator",
-          displayName: "Верховный Создатель",
-          avatar: "👑",
-          avatarFrame: "frame-gold",
-          customBg: "theme-royal",
-          title: "Создатель Системы [CREATOR]",
-          level: 35,
-          xp: 14200,
-          lumens: 5200,
-          stats: { booksRead: 18, readTimeMinutes: 520, gamesWon: 64, speedRecordWPM: 620, cryptorSolved: 30, memoryFlips: 85, currentStreak: 21 },
-          badges: ["creator_badge", "admin_power", "github_sync", "legend_reader"],
-          unlockedCosmetics: { frames: ["frame-default", "frame-neon", "frame-dragon", "frame-gold", "frame-void", "frame-flame"], backgrounds: ["theme-cyberpunk", "theme-cosmic", "theme-amber", "theme-matrix", "theme-royal"], titles: ["Создатель Системы [CREATOR]"] },
-          readingProgress: {},
-          bookmarks: []
-        }
-      ],
-      books: [],
-      shopItems: this.getShopItems(),
-      badges: [],
-      auditLogs: []
-    };
   }
 }
 

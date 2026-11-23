@@ -1,33 +1,24 @@
 @echo off
-chcp 65001 > nul
-title CyberLibris Launcher
+setlocal
+cd /d "%~dp0"
 
-echo =========================================================================
-echo  ⚡ CyberLibris v3.0 — Steam Edition
-echo  Дисциплина: Технологии программирования
-echo =========================================================================
-echo.
-echo [1/2] Запуск сервера в фоновом режиме...
+echo ===================================================
+echo  CyberLibris Web Launcher
+echo ===================================================
 
-:: Проверяем, запущен ли уже сервер на порту 8080
-netstat -ano | findstr :8080 > nul
+netstat -ano | findstr :8080 >nul 2>nul
+if %ERRORLEVEL% EQU 0 goto :open_browser
+
+where python >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-    echo [OK] Сервер уже работает на порту 8080.
-) else (
-    :: Запускаем python в отдельном фоновом процессе
-    start "" /B python -m http.server 8080
-    echo [OK] Сервер успешно запущен в фоне на http://localhost:8080
+    start "CyberLibris Server" /min python server.py
+    ping -n 2 127.0.0.1 >nul 2>nul
+    goto :open_browser
 )
 
-echo [2/2] Открытие CyberLibris в браузере...
-timeout /t 1 /nobreak > nul
-start http://localhost:8080
+start "" "index.html"
+exit /b 0
 
-echo.
-echo =========================================================================
-echo  Приложение открыто в браузере!
-echo  Окно командной строки сейчас закроется автоматически.
-echo  Для полной остановки сервера используйте stop.bat
-echo =========================================================================
-timeout /t 2 > nul
-exit
+:open_browser
+start "" "http://localhost:8080"
+exit /b 0

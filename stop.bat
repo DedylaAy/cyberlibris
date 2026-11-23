@@ -1,17 +1,12 @@
 @echo off
-chcp 65001 > nul
-title CyberLibris Server Stopper
+setlocal
+cd /d "%~dp0"
 
-echo =========================================================================
-echo  Остановка локального сервера CyberLibris (Порт 8080)...
-echo =========================================================================
+echo Stopping CyberLibris Server on port 8080...
 
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080') do (
-    echo Завершение процесса с PID %%a...
-    taskkill /F /PID %%a > nul 2>&1
+    taskkill /F /PID %%a >nul 2>nul
 )
 
-echo.
-echo [OK] Сервер остановлен. Порт 8080 освобожден.
-timeout /t 2 > nul
-exit
+echo Done.
+exit /b 0
