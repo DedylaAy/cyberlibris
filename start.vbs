@@ -1,19 +1,14 @@
 Set WshShell = CreateObject("WScript.Shell")
-scriptDir = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
+Set fso = CreateObject("Scripting.FileSystemObject")
+scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
 WshShell.CurrentDirectory = scriptDir
 
-' Check if port 8080 is already running
-Set oExec = WshShell.Exec("cmd /c netstat -ano | findstr :8080")
-Do While oExec.Status = 0
-    WScript.Sleep 50
-Loop
-output = oExec.StdOut.ReadAll()
+' Kill any previous stuck server on port 8080
+WshShell.Run "cmd /c for /f ""tokens=5"" %a in ('netstat -aon ^| findstr :8080 ^| findstr LISTENING') do taskkill /F /PID %a", 0, True
 
-If InStr(output, ":8080") = 0 Then
-    ' Start server in completely hidden window (0)
-    WshShell.Run "python server.py", 0, False
-    WScript.Sleep 1000
-End If
+' Start python server completely hidden
+WshShell.Run "python server.py 8080", 0, False
+WScript.Sleep 1000
 
-' Open default browser
-WshShell.Run "http://localhost:8080"
+' Open default browser directly via IPv4 to bypass any IPv6 DNS hang
+WshShell.Run "http://127.0.0.1:8080"

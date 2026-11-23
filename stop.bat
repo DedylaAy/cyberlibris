@@ -2,11 +2,12 @@
 setlocal
 cd /d "%~dp0"
 
-echo Stopping CyberLibris Server on port 8080...
-
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080') do (
+echo Stopping CyberLibris Server...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080 ^| findstr LISTENING') do (
     taskkill /F /PID %%a >nul 2>nul
 )
-
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8081 ^| findstr LISTENING') do (
+    taskkill /F /PID %%a >nul 2>nul
+)
 echo Done.
 exit /b 0
