@@ -441,7 +441,7 @@ class AppController {
       allBadges.forEach((b) => {
         const has = user.badges?.includes(b.id);
         const el = document.createElement('div');
-        el.className = `profile-badge-card ${has ? 'unlocked' : 'locked'} tilt-card`;
+        el.className = `profile-badge-card ${has ? 'unlocked' : 'locked'}`;
         el.innerHTML = `
           <div class="profile-badge-icon">${b.icon}</div>
           <div class="profile-badge-name">${b.name}</div>
@@ -635,31 +635,86 @@ class AppController {
 
   bindTiltEffect() {
     document.querySelectorAll('.tilt-card').forEach((card) => {
+      if (card._tiltInitialized) return;
+      card._tiltInitialized = true;
+
+      let currentX = 0;
+      let currentY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let currentLift = 0;
+      let targetLift = 0;
+      let isHovered = false;
+      let rafId = null;
+
+      const updateLerp = () => {
+        // Fluid linear interpolation (Lerp factor 0.08) creates silky, organic movement
+        currentX += (targetX - currentX) * 0.08;
+        currentY += (targetY - currentY) * 0.08;
+        currentLift += (targetLift - currentLift) * 0.08;
+
+        card.style.transform = `perspective(1000px) rotateX(${currentX.toFixed(2)}deg) rotateY(${currentY.toFixed(2)}deg) translateY(${currentLift.toFixed(2)}px)`;
+
+        const diffX = Math.abs(targetX - currentX);
+        const diffY = Math.abs(targetY - currentY);
+        const diffLift = Math.abs(targetLift - currentLift);
+
+        if (!isHovered && diffX < 0.02 && diffY < 0.02 && diffLift < 0.02) {
+          card.style.transform = '';
+          rafId = null;
+          return;
+        }
+
+        rafId = requestAnimationFrame(updateLerp);
+      };
+
+      const startRaf = () => {
+        if (!rafId) {
+          rafId = requestAnimationFrame(updateLerp);
+        }
+      };
+
+      card.addEventListener('mouseenter', () => {
+        isHovered = true;
+        targetLift = -4;
+        startRaf();
+      });
+
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        const rotateX = ((y - centerY) / centerY) * -8;
-        const rotateY = ((x - centerX) / centerX) * 8;
 
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+        // Subtle, elegant angle (max 3.5 deg instead of jarring 8 deg)
+        targetX = ((y - centerY) / centerY) * -3.5;
+        targetY = ((x - centerX) / centerX) * 3.5;
+        targetLift = -5;
+
+        startRaf();
       });
 
       card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
+        isHovered = false;
+        targetX = 0;
+        targetY = 0;
+        targetLift = 0;
+        startRaf();
       });
     });
   }
 
   bindMagneticButtons() {
     document.querySelectorAll('.magnetic-btn').forEach((btn) => {
+      if (btn._magneticInitialized) return;
+      btn._magneticInitialized = true;
+
       btn.addEventListener('mousemove', (e) => {
         const rect = btn.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        btn.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
+        btn.style.transform = `translate(${x * 0.18}px, ${y * 0.18}px)`;
       });
 
       btn.addEventListener('mouseleave', () => {
