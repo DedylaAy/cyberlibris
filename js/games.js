@@ -1,42 +1,93 @@
 /**
  * CyberLibris Mini-Games Suite & Customization Wardrobe
- * Fixed: Robust word generation (no infinite loops), full shop fallbacks, Yandex Browser compatibility.
+ * -------------------------------------------------------------
+ * 1. «Словесный Шторм» (Цитаты великих личностей и мыслителей)
+ * 2. «Литературный Квиз Эрудита» (Интеллектуальная викторина по книгам)
+ * 3. Артефактный Магазин (Трата Люменов на аватарные рамки, титулы, фоны и темы)
  */
+
 class MiniGamesSuite {
   constructor() {
     this.currentGame = 'speed';
 
-    // Speed Rush State
+    // Game 1: Speed Rush (Цитаты великих людей)
     this.speedScore = 0;
     this.speedCombo = 1;
     this.speedTimeLeft = 30;
     this.speedTimer = null;
     this.speedCurrentTarget = '';
+    this.speedCurrentAuthor = '';
     this.speedIsActive = false;
 
-    // Default rich dictionary to prevent any infinite loops
-    this.defaultWords = [
-      'АРХИТЕКТУРА', 'РЕФАКТОРИНГ', 'СИНХРОНИЗАЦИЯ', 'ИНТЕРФЕЙС',
-      'КИБЕРПАНК', 'РЕПОЗИТОРИЙ', 'МАТРИЦА', 'АЛГОРИТМ',
-      'ИНКАПСУЛЯЦИЯ', 'ПОЛИМОРФИЗМ', 'МИКРОСЕРВИС', 'НЕЙРОСЕТЬ',
-      'КВАНТУМ', 'БАЙТКОД', 'ШИФРОВАНИЕ', 'ДЕКОДЕР',
-      'ДЕБАГГИНГ', 'КОМПИЛЯТОР', 'КОНТРОЛЛЕР', 'ФРЕЙМВОРК',
-      'ХЭШИРОВАНИЕ', 'АСИНХРОННОСТЬ', 'ПАТТЕРН', 'СИНГЛТОН',
-      'ИММУТАБЕЛЬНОСТЬ', 'СЕРВЕРЛЕСС', 'СТЕК', 'ПРОТОКОЛ'
+    this.famousQuotes = [
+      { word: "ГОЛОДНЫМИ", quote: "Оставайтесь голодными, оставайтесь безрассудными.", author: "Стив Джобс" },
+      { word: "КРАСОТА", quote: "Красота спасёт этот безумный мир.", author: "Фёдор Достоевский" },
+      { word: "НАЧАТЬ", quote: "Секрет того, чтобы преуспеть — просто начать.", author: "Марк Твен" },
+      { word: "ВООБРАЖЕНИЕ", quote: "Воображение куда важнее, чем сухие знания.", author: "Альберт Эйнштейн" },
+      { word: "СИЛЬНЕЕ", quote: "То, что нас не убивает, делает нас сильнее.", author: "Фридрих Ницше" },
+      { word: "РОЛИ", quote: "Будь собой, все остальные роли уже безнадежно заняты.", author: "Оскар Уайльд" },
+      { word: "ПРОСТЫ", quote: "Все мысли, имеющие огромные последствия, всегда просты.", author: "Лев Толстой" },
+      { word: "НЕ ГОРЯТ", quote: "Поверьте мне, настоящие рукописи никогда не горят.", author: "Михаил Булгаков" },
+      { word: "СТРАХ", quote: "Страх убивает разум. Страх — это малая смерть.", author: "Фрэнк Герберт (Дюна)" },
+      { word: "ИСТИНА", quote: "Отбросьте все невозможное; то, что останется, и есть истина.", author: "Шерлок Холмс" },
+      { word: "ПОБЕДА", quote: "Лучшая победа — это покорить врага без единого выстрела.", author: "Сунь-Цзы" },
+      { word: "ВРЕМЯ", quote: "Всему свой час, и время всякой вещи под этим небом.", author: "Царь Соломон" }
     ];
 
-    // Cryptor State
-    this.cryptorQuote = null;
-    this.cryptorGuessed = new Set();
-    this.cryptorMistakes = 0;
-    this.cryptorMaxMistakes = 5;
-
-    // Memory State
-    this.memoryCards = [];
-    this.memoryFlipped = [];
-    this.memoryMatchedCount = 0;
-    this.memoryMoves = 0;
-    this.memoryLock = false;
+    // Game 2: Literary Quiz Erudite
+    this.quizQuestions = [
+      {
+        question: "В каком бессмертном романе Москву посещает Воланд со своей свитой и котом Бегемотом?",
+        options: ["«Мастер и Маргарита»", "«Белая гвардия»", "«Собачье сердце»", "«Роковые яйца»"],
+        correct: 0,
+        hint: "Михаил Булгаков"
+      },
+      {
+        question: "Кто является автором древнейшего и самого почитаемого военного трактата «Искусство войны»?",
+        options: ["Конфуций", "Сунь-Цзы", "Лао-Цзы", "Сыма Цянь"],
+        correct: 1,
+        hint: "Стратегия победы без боя"
+      },
+      {
+        question: "Как звали главного героя культовой антиутопии Джорджа Оруэлла «1984»?",
+        options: ["Родион Раскольников", "Уинстон Смит", "О'Брайен", "Пьер Безухов"],
+        correct: 1,
+        hint: "Сотрудник Министерства Правды"
+      },
+      {
+        question: "Какая суровая пустынная планета служила единственным источником Пряности в романе Фрэнка Герберта?",
+        options: ["Каладан", "Гьеди Прайм", "Арракис (Дюна)", "Солярис"],
+        correct: 2,
+        hint: "Песчаные черви и фримены"
+      },
+      {
+        question: "Какой студент мучился вопросом: «Тварь ли я дрожащая или право имею?»",
+        options: ["Родион Раскольников", "Дмитрий Карамазов", "Евгений Онегин", "Андрей Болконский"],
+        correct: 0,
+        hint: "Ф.М. Достоевский, «Преступление и наказание»"
+      },
+      {
+        question: "«Небо над портом напоминало телевизионный экран, включенный на мертвый канал» — первые строки какого шедевра киберпанка?",
+        options: ["«Лавина» Нила Стивенсона", "«Нейромант» Уильяма Гибсона", "«Видоизмененный углерод»", "«Мечтают ли андроиды об электроовцах?»"],
+        correct: 1,
+        hint: "Кейс и Тиба-Сити"
+      },
+      {
+        question: "Кто произнес знаменитую фразу: «Время разбрасывать камни, и время собирать камни»?",
+        options: ["Царь Соломон (Экклезиаст)", "Аристотель", "Сократ", "Марк Аврелий"],
+        correct: 0,
+        hint: "Книга Экклезиаста"
+      },
+      {
+        question: "Какое великое произведение Льва Толстого описывает Бородинское сражение и небо Аустерлица?",
+        options: ["«Анна Каренина»", "«Воскресение»", "«Война и мир»", "«Смерть Ивана Ильича»"],
+        correct: 2,
+        hint: "Монументальная четырехтомная эпопея"
+      }
+    ];
+    this.quizIdx = 0;
+    this.quizScore = 0;
+    this.quizStreak = 0;
   }
 
   init() {
@@ -55,11 +106,8 @@ class MiniGamesSuite {
     // Speed Rush Controls
     document.getElementById('btn-start-speed-rush')?.addEventListener('click', () => this.startSpeedRush());
 
-    // Cryptor Controls
-    document.getElementById('btn-next-cryptor')?.addEventListener('click', () => this.loadCryptorQuote());
-
-    // Memory Controls
-    document.getElementById('btn-restart-memory')?.addEventListener('click', () => this.initMemoryGame());
+    // Quiz Controls
+    document.getElementById('btn-next-quiz')?.addEventListener('click', () => this.nextQuizQuestion());
   }
 
   switchGame(gameId) {
@@ -71,23 +119,20 @@ class MiniGamesSuite {
     if (view) view.style.display = 'block';
 
     if (gameId === 'speed') {
-      // Ready state for speed rush
       if (!this.speedIsActive) {
         document.getElementById('speed-target-word').textContent = 'НАЖМИТЕ СТАРТ';
         document.getElementById('speed-options-grid').innerHTML = '';
         document.getElementById('btn-start-speed-rush').style.display = 'inline-flex';
       }
-    } else if (gameId === 'cryptor') {
-      this.loadCryptorQuote();
-    } else if (gameId === 'memory') {
-      this.initMemoryGame();
+    } else if (gameId === 'quiz') {
+      this.initQuizGame();
     }
 
     if (window.soundEngine) window.soundEngine.playCardFlip();
   }
 
   // =========================================================================
-  // GAME 1: SPEED RUSH (СЛОВЕСНЫЙ ШТОРМ)
+  // GAME 1: SPEED RUSH 2.0 (ЦИТАТЫ ВЕЛИКИХ ЛИЧНОСТЕЙ)
   // =========================================================================
 
   startSpeedRush() {
@@ -114,56 +159,61 @@ class MiniGamesSuite {
   }
 
   nextSpeedWord() {
-    const rawList = window.dbEngine.getMiniGamesData()?.speedRushWords;
-    const list = (rawList && rawList.length >= 4) ? rawList : this.defaultWords;
+    const item = this.famousQuotes[Math.floor(Math.random() * this.famousQuotes.length)];
+    this.speedCurrentTarget = item.word;
+    this.speedCurrentAuthor = item.author;
 
-    this.speedCurrentTarget = list[Math.floor(Math.random() * list.length)];
     const targetEl = document.getElementById('speed-target-word');
-    if (targetEl) targetEl.textContent = this.speedCurrentTarget;
-
-    // Pick 3 distinct distractors safely without infinite loop
-    const options = [this.speedCurrentTarget];
-    const pool = list.filter((w) => w !== this.speedCurrentTarget).sort(() => Math.random() - 0.5);
-
-    for (let i = 0; i < Math.min(3, pool.length); i++) {
-      options.push(pool[i]);
+    if (targetEl) {
+      targetEl.innerHTML = `
+        <span style="display:block; font-size: 0.95rem; color: var(--accent-magenta); margin-bottom: 0.4rem;">«${item.quote}»</span>
+        <span style="font-size: 1.8rem; letter-spacing: 2px;">${item.word}</span>
+        <span style="display:block; font-size: 0.8rem; color: var(--text-dim); margin-top: 0.4rem;">— ${item.author}</span>
+      `;
     }
 
-    // Shuffle options
-    options.sort(() => Math.random() - 0.5);
+    // Generate 4 button choices (1 correct, 3 decoys)
+    const allWords = this.famousQuotes.map(q => q.word);
+    const decoys = allWords.filter(w => w !== this.speedCurrentTarget).sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [this.speedCurrentTarget, ...decoys].sort(() => Math.random() - 0.5);
 
     const grid = document.getElementById('speed-options-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
     options.forEach((word) => {
-      const card = document.createElement('div');
-      card.className = 'speed-word-card tilt-card';
-      card.textContent = word;
-      card.addEventListener('click', () => this.handleSpeedChoice(word, card));
-      grid.appendChild(card);
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-secondary speed-word-card';
+      btn.style.padding = '1.2rem 1.5rem';
+      btn.style.fontSize = '1.1rem';
+      btn.style.fontWeight = '800';
+      btn.textContent = word;
+
+      btn.addEventListener('click', () => this.handleSpeedWordChoice(word, btn));
+      grid.appendChild(btn);
     });
   }
 
-  handleSpeedChoice(selectedWord, cardEl) {
+  handleSpeedWordChoice(chosenWord, btn) {
     if (!this.speedIsActive) return;
 
-    if (selectedWord === this.speedCurrentTarget) {
-      cardEl.classList.add('correct');
-      if (window.soundEngine) window.soundEngine.playCorrect();
+    if (chosenWord === this.speedCurrentTarget) {
+      btn.style.background = 'var(--accent-green)';
+      btn.style.borderColor = 'var(--accent-green)';
       this.speedScore += 100 * this.speedCombo;
       this.speedCombo = Math.min(5, this.speedCombo + 1);
+
       document.getElementById('speed-score-display').textContent = this.speedScore;
       document.getElementById('speed-combo-display').textContent = `x${this.speedCombo}`;
 
-      setTimeout(() => {
-        if (this.speedIsActive) this.nextSpeedWord();
-      }, 180);
+      if (window.soundEngine) window.soundEngine.playCorrect();
+      setTimeout(() => this.nextSpeedWord(), 250);
     } else {
-      cardEl.classList.add('wrong');
-      if (window.soundEngine) window.soundEngine.playWrong();
+      btn.style.background = 'var(--accent-magenta)';
+      btn.style.borderColor = 'var(--accent-magenta)';
       this.speedCombo = 1;
       document.getElementById('speed-combo-display').textContent = 'x1';
+      if (window.soundEngine) window.soundEngine.playError();
     }
   }
 
@@ -174,11 +224,11 @@ class MiniGamesSuite {
     const btn = document.getElementById('btn-start-speed-rush');
     if (btn) {
       btn.style.display = 'inline-flex';
-      btn.textContent = 'Сыграть снова';
+      btn.textContent = '⚡ Сыграть снова';
     }
 
-    const lumensEarned = Math.round(this.speedScore / 12);
-    const xpEarned = Math.round(this.speedScore / 4);
+    const lumensEarned = Math.round(this.speedScore / 10);
+    const xpEarned = Math.round(this.speedScore / 3);
 
     if (window.auth) {
       window.auth.addLumens(lumensEarned);
@@ -196,358 +246,164 @@ class MiniGamesSuite {
   }
 
   // =========================================================================
-  // GAME 2: CYBER CRYPTOR (КИБЕР-КРИПТОР)
+  // GAME 2: LITERARY QUIZ ERUDITE (КВИЗ ЭРУДИТА)
   // =========================================================================
 
-  loadCryptorQuote() {
-    const defaultQuotes = [
-      {
-        quote: "РУКОПИСИ НЕ ГОРЯТ",
-        hint: "Михаил Булгаков, роман 'Мастер и Маргарита'",
-        author: "Воланд",
-        rewardLumens: 50,
-        rewardXp: 150
-      },
-      {
-        quote: "ЛЮБОЙ ДУРАК МОЖЕТ НАПИСАТЬ КОД ПОНЯТНЫЙ КОМПЬЮТЕРУ",
-        hint: "Мартин Фаулер о рефакторинге и чистом коде",
-        author: "Мартин Фаулер",
-        rewardLumens: 70,
-        rewardXp: 200
-      },
-      {
-        quote: "КИБЕРПРОСТРАНСТВО ЭТО КОНСЕНСУАЛЬНАЯ ГАЛЛЮЦИНАЦИЯ",
-        hint: "Уильям Гибсон в романе 'Нейромант'",
-        author: "Уильям Гибсон",
-        rewardLumens: 60,
-        rewardXp: 180
-      },
-      {
-        quote: "ПРОСТОТА ЯВЛЯЕТСЯ ПРЕДПОСЫЛКОЙ НАДЕЖНОСТИ",
-        hint: "Эдсгер Дейкстра об архитектуре программ",
-        author: "Эдсгер Дейкстра",
-        rewardLumens: 55,
-        rewardXp: 160
-      }
-    ];
-
-    const quotes = window.dbEngine.getMiniGamesData()?.cryptorQuotes || defaultQuotes;
-    this.cryptorQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    this.cryptorGuessed.clear();
-    this.cryptorMistakes = 0;
-
-    const authorEl = document.getElementById('cryptor-author');
-    if (authorEl) authorEl.textContent = this.cryptorQuote.author || 'Неизвестный автор';
-    const hintEl = document.getElementById('cryptor-hint');
-    if (hintEl) hintEl.textContent = this.cryptorQuote.hint || 'Литературный артефакт';
-
-    this.renderCryptorPhrase();
-    this.renderCryptorKeyboard();
-    this.updateCryptorShields();
+  initQuizGame() {
+    this.quizIdx = 0;
+    this.quizScore = 0;
+    this.quizStreak = 0;
+    this.renderQuizQuestion();
   }
 
-  renderCryptorPhrase() {
-    const container = document.getElementById('cryptor-phrase-display');
-    if (!container || !this.cryptorQuote) return;
-    container.innerHTML = '';
+  renderQuizQuestion() {
+    const q = this.quizQuestions[this.quizIdx % this.quizQuestions.length];
+    const qTextEl = document.getElementById('quiz-question-text');
+    const qNumEl = document.getElementById('quiz-number-display');
+    const qScoreEl = document.getElementById('quiz-score-display');
+    const qStreakEl = document.getElementById('quiz-streak-display');
+    const answersGrid = document.getElementById('quiz-answers-grid');
 
-    const words = this.cryptorQuote.quote.split(' ');
-    words.forEach((word) => {
-      const group = document.createElement('div');
-      group.className = 'cryptor-word-group';
+    if (qNumEl) qNumEl.textContent = `Вопрос ${this.quizIdx + 1} из ${this.quizQuestions.length}`;
+    if (qScoreEl) qScoreEl.textContent = `${this.quizScore} ⬡`;
+    if (qStreakEl) qStreakEl.textContent = `Серия: ${this.quizStreak} 🔥`;
+    if (qTextEl) qTextEl.textContent = q.question;
 
-      for (let ch of word) {
-        const slot = document.createElement('div');
-        slot.className = 'cryptor-slot';
-        if (this.cryptorGuessed.has(ch)) {
-          slot.textContent = ch;
-          slot.classList.add('revealed');
-        } else {
-          slot.textContent = '';
-        }
-        group.appendChild(slot);
-      }
-      container.appendChild(group);
-    });
-  }
+    if (!answersGrid) return;
+    answersGrid.innerHTML = '';
 
-  renderCryptorKeyboard() {
-    const kb = document.getElementById('cryptor-keyboard');
-    if (!kb) return;
-    kb.innerHTML = '';
-    const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
-
-    for (let char of letters) {
+    q.options.forEach((opt, idx) => {
       const btn = document.createElement('button');
-      btn.className = 'crypto-key';
-      btn.textContent = char;
-      btn.disabled = this.cryptorGuessed.has(char);
-      btn.addEventListener('click', () => this.handleCryptorGuess(char, btn));
-      kb.appendChild(btn);
-    }
-  }
+      btn.className = 'btn-quiz-answer';
+      btn.innerHTML = `<span style="color:var(--accent-cyan); font-weight:900; margin-right:0.6rem;">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
 
-  handleCryptorGuess(char, btnEl) {
-    btnEl.disabled = true;
-    this.cryptorGuessed.add(char);
+      btn.addEventListener('click', () => {
+        const allBtns = answersGrid.querySelectorAll('.btn-quiz-answer');
+        allBtns.forEach(b => b.disabled = true);
 
-    if (this.cryptorQuote.quote.includes(char)) {
-      if (window.soundEngine) window.soundEngine.playCorrect();
-      this.renderCryptorPhrase();
-      this.checkCryptorWin();
-    } else {
-      this.cryptorMistakes++;
-      if (window.soundEngine) window.soundEngine.playWrong();
-      this.updateCryptorShields();
-      if (this.cryptorMistakes >= this.cryptorMaxMistakes) {
-        window.app.showToast('⚠️ Щиты истощены! Шифр перезагружен.', 'error');
-        setTimeout(() => this.loadCryptorQuote(), 1200);
-      }
-    }
-  }
+        if (idx === q.correct) {
+          btn.style.background = 'rgba(0, 255, 136, 0.25)';
+          btn.style.borderColor = 'var(--accent-green)';
+          this.quizStreak += 1;
+          const reward = 25 * Math.min(3, this.quizStreak);
+          this.quizScore += reward;
 
-  updateCryptorShields() {
-    const count = Math.max(0, this.cryptorMaxMistakes - this.cryptorMistakes);
-    let shieldsStr = '';
-    for (let i = 0; i < count; i++) shieldsStr += '🛡️ ';
-    const el = document.getElementById('cryptor-shields');
-    if (el) el.textContent = shieldsStr || '⚠️ Щиты сняты';
-  }
+          if (window.auth) {
+            window.auth.addLumens(reward);
+            window.auth.addXp(reward * 2);
+          }
 
-  checkCryptorWin() {
-    const lettersInQuote = new Set(this.cryptorQuote.quote.replace(/[^А-ЯЁ]/g, ''));
-    let allFound = true;
-    for (let l of lettersInQuote) {
-      if (!this.cryptorGuessed.has(l)) {
-        allFound = false;
-        break;
-      }
-    }
+          if (window.dbEngine) {
+            window.dbEngine.updateQuestProgress('quest_cryptor', 1);
+            if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+          }
 
-    if (allFound) {
-      const lumens = this.cryptorQuote.rewardLumens || 60;
-      const xp = this.cryptorQuote.rewardXp || 180;
-      window.auth.addLumens(lumens);
-      window.auth.addXp(xp);
-      window.auth.updateStat('cryptorSolved', 1);
-      window.auth.updateStat('gamesWon', 1);
+          window.app.showToast(`✓ Верно! +${reward} ⬡, +${reward * 2} XP!`, 'reward');
+          if (window.soundEngine) window.soundEngine.playCorrect();
+        } else {
+          btn.style.background = 'rgba(255, 0, 127, 0.25)';
+          btn.style.borderColor = 'var(--accent-magenta)';
+          allBtns[q.correct].style.background = 'rgba(0, 255, 136, 0.25)';
+          allBtns[q.correct].style.borderColor = 'var(--accent-green)';
+          this.quizStreak = 0;
+          if (window.soundEngine) window.soundEngine.playError();
+        }
 
-      if (window.dbEngine) {
-        window.dbEngine.updateQuestProgress('quest_cryptor', 1);
-        if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
-      }
+        setTimeout(() => {
+          this.quizIdx += 1;
+          this.renderQuizQuestion();
+        }, 1600);
+      });
 
-      window.app.showToast(`🎉 Цитата расшифрована! Награда: +${lumens} ⬡, +${xp} XP!`, 'reward');
-      if (window.soundEngine) window.soundEngine.playLevelUp();
-      setTimeout(() => this.loadCryptorQuote(), 2500);
-    }
-  }
-
-  // =========================================================================
-  // GAME 3: MEMORY MATRIX (МАТРИЦА ПАМЯТИ)
-  // =========================================================================
-
-  initMemoryGame() {
-    const defaultCards = [
-      { id: "m1", label: "Git Commit", icon: "📦", match: "commit" },
-      { id: "m2", label: "Git Push", icon: "🚀", match: "push" },
-      { id: "m3", label: "Octocat", icon: "🐙", match: "github" },
-      { id: "m4", label: "Чистый Код", icon: "💎", match: "clean" },
-      { id: "m5", label: "Нейросеть", icon: "🧠", match: "ai" },
-      { id: "m6", label: "Киберпанк", icon: "🕶️", match: "cyber" },
-      { id: "m7", label: "Квантовый Чип", icon: "⚛️", match: "quantum" },
-      { id: "m8", label: "База Данных", icon: "🗄️", match: "db" }
-    ];
-
-    const baseCards = window.dbEngine.getMiniGamesData()?.memoryCards || defaultCards;
-    // Duplicate for 8 pairs = 16 cards
-    const deck = [...baseCards, ...baseCards].map((c, idx) => ({
-      ...c,
-      instanceId: `card_${idx}_${c.match}`
-    }));
-
-    deck.sort(() => Math.random() - 0.5);
-    this.memoryCards = deck;
-    this.memoryFlipped = [];
-    this.memoryMatchedCount = 0;
-    this.memoryMoves = 0;
-    this.memoryLock = false;
-
-    document.getElementById('memory-moves-count').textContent = '0';
-    document.getElementById('memory-pairs-left').textContent = `${baseCards.length}`;
-
-    const grid = document.getElementById('memory-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    deck.forEach((card) => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'memory-card';
-      cardEl.dataset.id = card.instanceId;
-      cardEl.dataset.match = card.match;
-
-      cardEl.innerHTML = `
-        <div class="memory-card-face memory-card-front">
-          <div class="card-cyber-pattern">⬡</div>
-        </div>
-        <div class="memory-card-face memory-card-back">
-          <div class="card-icon">${card.icon}</div>
-          <div class="card-label">${card.label}</div>
-        </div>
-      `;
-
-      cardEl.addEventListener('click', () => this.flipMemoryCard(cardEl, card));
-      grid.appendChild(cardEl);
+      answersGrid.appendChild(btn);
     });
   }
 
-  flipMemoryCard(cardEl, cardData) {
-    if (this.memoryLock) return;
-    if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
-
-    cardEl.classList.add('flipped');
-    if (window.soundEngine) window.soundEngine.playCardFlip();
-    this.memoryFlipped.push({ element: cardEl, data: cardData });
-
-    if (this.memoryFlipped.length === 2) {
-      this.memoryMoves++;
-      document.getElementById('memory-moves-count').textContent = this.memoryMoves;
-      this.checkMemoryMatch();
-    }
-  }
-
-  checkMemoryMatch() {
-    this.memoryLock = true;
-    const [c1, c2] = this.memoryFlipped;
-
-    if (c1.data.match === c2.data.match) {
-      setTimeout(() => {
-        c1.element.classList.add('matched');
-        c2.element.classList.add('matched');
-        if (window.soundEngine) window.soundEngine.playCorrect();
-        this.memoryMatchedCount++;
-        this.memoryFlipped = [];
-        this.memoryLock = false;
-
-        const totalPairs = this.memoryCards.length / 2;
-        document.getElementById('memory-pairs-left').textContent = `${totalPairs - this.memoryMatchedCount}`;
-
-        if (this.memoryMatchedCount === totalPairs) {
-          this.endMemoryGame();
-        }
-      }, 400);
-    } else {
-      setTimeout(() => {
-        c1.element.classList.remove('flipped');
-        c2.element.classList.remove('flipped');
-        if (window.soundEngine) window.soundEngine.playWrong();
-        this.memoryFlipped = [];
-        this.memoryLock = false;
-      }, 900);
-    }
-  }
-
-  endMemoryGame() {
-    const lumens = Math.max(35, 120 - this.memoryMoves * 2);
-    const xp = 180;
-    window.auth.addLumens(lumens);
-    window.auth.addXp(xp);
-    window.auth.updateStat('memoryFlips', 1);
-    window.auth.updateStat('gamesWon', 1);
-
-    window.app.showToast(`🏆 Матрица раскрыта за ${this.memoryMoves} ходов! +${lumens} ⬡, +${xp} XP!`, 'reward');
-    if (window.soundEngine) window.soundEngine.playLevelUp();
-  }
-
   // =========================================================================
-  // SHOP & WARDROBE (КАСТОМИЗАЦИЯ ПРОФИЛЯ)
+  // SHOP & CUSTOMIZATION WARDROBE (ТРАТА ВАЛЮТЫ)
   // =========================================================================
 
   bindShopTabs() {
     document.querySelectorAll('.shop-tab-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const cat = e.currentTarget.dataset.shopTab;
-        document.querySelectorAll('.shop-tab-btn').forEach((b) => b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
+        document.querySelectorAll('.shop-tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.shopTab === cat));
         this.renderShopCategory(cat);
       });
     });
-  }
 
-  renderShop() {
+    this.renderShopCategory('frames');
     this.updateShopUserPreview();
-    const activeTab = document.querySelector('.shop-tab-btn.active')?.dataset.shopTab || 'frames';
-    this.renderShopCategory(activeTab);
   }
 
   updateShopUserPreview() {
-    const user = window.auth?.currentUser;
+    const user = window.auth.currentUser;
     if (!user) return;
 
-    const wrap = document.getElementById('shop-preview-avatar-wrap');
+    const wrap = document.getElementById('shop-preview-avatar');
     if (wrap) {
       wrap.className = `avatar-frame-wrap preview-avatar-large ${user.avatarFrame || 'frame-default'}`;
-      wrap.innerHTML = `<div class="avatar-inner">${user.avatar || '⚡'}</div>`;
+      wrap.innerHTML = `<div class="avatar-inner">${user.avatar || '📖'}</div>`;
     }
-    const nameEl = document.getElementById('shop-preview-name');
-    if (nameEl) nameEl.textContent = user.displayName || user.username;
+
     const titleEl = document.getElementById('shop-preview-title');
-    if (titleEl) titleEl.textContent = user.title || window.auth.getUserRankTag(user.level);
-    const lumensEl = document.getElementById('shop-user-lumens');
-    if (lumensEl) lumensEl.textContent = `${user.lumens || 0} ⬡`;
+    if (titleEl) {
+      titleEl.innerHTML = window.auth.getRoleBadgeHTML(user.role, user.level);
+    }
   }
 
   renderShopCategory(category) {
-    const user = window.auth?.currentUser;
-    const allShopItems = window.dbEngine.getShopItems();
-    const items = allShopItems[category] || [];
     const grid = document.getElementById('shop-items-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
-    if (items.length === 0) {
-      grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1;">Товары этой категории загружаются...</p>';
-      return;
-    }
+    const shopData = window.dbEngine.getShopItems();
+    const items = (shopData && shopData[category]) ? shopData[category] : [];
+    const user = window.auth.currentUser;
 
     items.forEach((item) => {
-      const isUnlocked = user?.unlockedCosmetics?.[category]?.includes(item.id) || item.price === 0;
+      const isOwned = user?.inventory?.[category]?.includes(item.id) || item.price === 0;
       const isEquipped = (category === 'frames' && user?.avatarFrame === item.id) ||
                          (category === 'backgrounds' && user?.customBg === item.id) ||
                          (category === 'titles' && user?.title === item.name);
 
       const card = document.createElement('div');
-      card.className = 'shop-item-card tilt-card';
+      card.className = `shop-item-card ${isEquipped ? 'equipped' : isOwned ? 'owned' : ''}`;
 
       card.innerHTML = `
-        <div>
-          <div class="shop-item-header">
-            <div class="shop-item-icon">${item.icon || '✨'}</div>
-            <div>
-              <div class="shop-item-title">${item.name}</div>
-              <span class="logo-badge" style="font-size: 0.6rem;">${category.toUpperCase()}</span>
+        <div class="shop-item-preview">
+          ${category === 'frames' ? `
+            <div class="avatar-frame-wrap ${item.id}" style="width: 70px; height: 70px; margin: 0 auto;">
+              <div class="avatar-inner" style="font-size: 2rem;">${user?.avatar || '📖'}</div>
             </div>
-          </div>
-          <div class="shop-item-desc">${item.description || ''}</div>
+          ` : category === 'backgrounds' ? `
+            <div style="height: 70px; border-radius: 8px; background: ${item.preview || 'var(--bg-card)'}; display:flex; align-items:center; justify-content:center; font-size:1.8rem;">
+              🎨
+            </div>
+          ` : `
+            <div style="height: 70px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; color:var(--accent-gold);">
+              👑 ${item.name}
+            </div>
+          `}
         </div>
-        <div class="shop-item-footer">
-          <div class="shop-price-tag">
-            ${isUnlocked ? '<span style="color: var(--accent-green); font-size: 0.85rem;">РАЗБЛОКИРОВАНО</span>' : `<span>${item.price}</span> ⬡`}
-          </div>
-          <div>
-            ${
-              isEquipped
-                ? '<button class="btn btn-secondary btn-sm" disabled>Используется</button>'
-                : isUnlocked
-                ? `<button class="btn btn-primary btn-sm btn-equip" data-cat="${category}" data-id="${item.id}" data-name="${item.name}">Надеть</button>`
-                : `<button class="btn btn-gold btn-sm btn-buy" data-cat="${category}" data-id="${item.id}" data-price="${item.price}" data-name="${item.name}">Купить</button>`
-            }
-          </div>
+        <div class="shop-item-info">
+          <div class="shop-item-name">${item.name}</div>
+          <div class="shop-item-desc">${item.description || ''}</div>
+          <div class="shop-item-price">${isOwned ? 'КУПЛЕНО' : `${item.price} ⬡`}</div>
+        </div>
+        <div class="shop-item-actions">
+          ${isEquipped ? `
+            <button class="btn btn-secondary btn-sm" disabled>✓ Активно</button>
+          ` : isOwned ? `
+            <button class="btn btn-primary btn-sm btn-equip" data-cat="${category}" data-id="${item.id}">Применить</button>
+          ` : `
+            <button class="btn btn-gold btn-sm btn-buy" data-cat="${category}" data-id="${item.id}" data-price="${item.price}">Купить за ${item.price} ⬡</button>
+          `}
         </div>
       `;
 
-      card.querySelector('.btn-equip')?.addEventListener('click', () => this.equipItem(category, item.id, item.name));
       card.querySelector('.btn-buy')?.addEventListener('click', () => this.buyItem(category, item.id, item.price, item.name));
+      card.querySelector('.btn-equip')?.addEventListener('click', () => this.equipItem(category, item.id, item.name));
 
       grid.appendChild(card);
     });
@@ -557,20 +413,26 @@ class MiniGamesSuite {
 
   buyItem(category, itemId, price, itemName) {
     const user = window.auth.currentUser;
-    if (!user) return;
+    if (!user) {
+      window.app.openModal('modal-auth');
+      return;
+    }
 
     if ((user.lumens || 0) < price) {
-      window.app.showToast('Недостаточно люменов (⬡)! Читайте книги или играйте в игры.', 'error');
-      if (window.soundEngine) window.soundEngine.playWrong();
+      window.app.showToast('Недостаточно Люменов (⬡)! Читайте книги и выполняйте квесты.', 'error');
+      if (window.soundEngine) window.soundEngine.playError();
       return;
     }
 
     user.lumens -= price;
-    if (!user.unlockedCosmetics) user.unlockedCosmetics = { frames: [], backgrounds: [], titles: [] };
-    if (!user.unlockedCosmetics[category]) user.unlockedCosmetics[category] = [];
-    user.unlockedCosmetics[category].push(itemId);
+    if (!user.inventory) user.inventory = { frames: [], backgrounds: [], titles: [] };
+    if (!user.inventory[category]) user.inventory[category] = [];
+    user.inventory[category].push(itemId);
 
-    window.app.showToast(`🎉 Куплено: "${itemName}"!`, 'reward');
+    window.auth.saveUser();
+    window.auth.syncUserToUI();
+
+    window.app.showToast(`🎉 Куплено: "${itemName}" (-${price} ⬡)!`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
 
     this.equipItem(category, itemId, itemName);
@@ -584,6 +446,7 @@ class MiniGamesSuite {
       user.avatarFrame = itemId;
     } else if (category === 'backgrounds') {
       user.customBg = itemId;
+      if (window.reactiveBg) window.reactiveBg.setTheme(itemId);
       if (window.dbEngine) {
         window.dbEngine.updateQuestProgress('quest_change_theme', 1);
         if (window.app?.renderDailyQuests) window.app.renderDailyQuests();

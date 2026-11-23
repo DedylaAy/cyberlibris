@@ -384,7 +384,7 @@ const DEFAULT_DATABASE = {
   badges: [
     { id: "creator_badge", name: "Создатель Миров", icon: "👑", color: "#ffd700", description: "Обладатель верховного статуса Создателя системы." },
     { id: "admin_power", name: "Власть Системы", icon: "⚡", color: "#ffd700", description: "Доступ к ядру базы данных и управлению контентом." },
-    { id: "github_sync", name: "Хозяин GitHub", icon: "🐙", color: "#00f0ff", description: "Успешно подключил базу данных к GitHub репозиторию." },
+    { id: "github_sync", name: "Власть Системы", icon: "⚡", color: "#ffd700", description: "Полный доступ и синхронизация системных узлов платформы." },
     { id: "speed_demon", name: "Сверхзвуковой Чтец", icon: "⚡", color: "#ff007f", description: "Достиг скорости чтения свыше 400 WPM в мини-игре RSVP." },
     { id: "crypto_master", name: "Криптограф Разума", icon: "🧩", color: "#9d4edd", description: "Расшифровал скрытые цитаты в мини-игре Кибер-Криптор." },
     { id: "book_worm", name: "Книжный Червь", icon: "📚", color: "#00ff66", description: "Прочитал более 5 произведений в библиотеке." },
@@ -557,10 +557,17 @@ class DatabaseEngine {
   }
 
   getBooks() {
+    if (window.bookRelay) {
+      return window.bookRelay.getAllBooks();
+    }
     return (this.data?.books && this.data.books.length > 0) ? this.data.books : DEFAULT_DATABASE.books;
   }
 
   getBook(bookId) {
+    if (window.bookRelay) {
+      const relayed = window.bookRelay.getBookById(bookId);
+      if (relayed) return relayed;
+    }
     return this.getBooks().find((b) => b.id === bookId);
   }
 

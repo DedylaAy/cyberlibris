@@ -26,6 +26,9 @@ class ReaderEngine {
     document.getElementById('btn-font-dec')?.addEventListener('click', () => this.adjustFontSize(-2));
     document.getElementById('btn-font-inc')?.addEventListener('click', () => this.adjustFontSize(2));
 
+    // Manga vs Page mode toggle
+    document.getElementById('btn-toggle-manga-mode')?.addEventListener('click', () => this.toggleReadingMode());
+
     // Reader Themes
     document.querySelectorAll('.btn-reader-theme').forEach((btn) => {
       btn.addEventListener('click', (e) => {
@@ -78,46 +81,49 @@ class ReaderEngine {
 
   setupScrollTracker() {
     window.addEventListener('scroll', () => {
-      const article = document.querySelector('.reader-article');
-      if (!article || !document.getElementById('view-reader')?.classList.contains('active')) return;
-
-      const rect = article.getBoundingClientRect();
-      const totalHeight = article.offsetHeight - window.innerHeight;
-      const progress = Math.min(100, Math.max(0, ((-rect.top) / totalHeight) * 100));
+      if (!this.currentBook || !document.getElementById('view-reader')?.classList.contains('active')) return;
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollHeight <= 0) return;
+      const progress = Math.min(100, Math.max(0, Math.round((window.scrollY / scrollHeight) * 100)));
 
       const fill = document.getElementById('reading-progress-fill');
+      const valText = document.getElementById('reading-progress-percent');
       if (fill) fill.style.width = `${progress}%`;
+      if (valText) valText.textContent = `${progress}%`;
+
+      const user = window.auth?.currentUser;
+      if (user && window.bookRelay) {
+        window.bookRelay.updateProgress(user.username, this.currentBook.id, progress, this.currentChapterIdx);
+      }
     });
   }
 
-  openBook(bookId, chapterIdx = 0) {
-    const book = window.dbEngine.getBook(bookId);
+  openBook(bookId, chapterIdx = 0, initialMode = 'manga') {
+    let book = window.bookRelay ? window.bookRelay.getBookById(bookId) : null;
+    if (!book && window.dbEngine) book = window.dbEngine.getBook(bookId);
     if (!book) return;
 
     this.currentBook = book;
     this.currentChapterIdx = chapterIdx;
+    this.readingMode = initialMode;
 
-    const chapters = book.chapters || [];
-    const chapter = chapters[chapterIdx] || { title: 'Глава 1', content: 'Текст отсутствует.' };
+    const user = window.auth?.currentUser;
+    if (user && window.bookRelay) {
+      window.bookRelay.setReadingNow(user.username, book.id);
+    }
 
-    // Fill UI
-    document.getElementById('reader-book-title').textContent = book.title;
-    document.getElementById('reader-book-author').textContent = book.author;
-    document.getElementById('reader-chapter-title').textContent = chapter.title;
+    // Fill UI Header
+    const titleEl = document.getElementById('reader-book-title');
+    const authorEl = document.getElementById('reader-book-author');
+    if (titleEl) titleEl.textContent = book.title;
+    if (authorEl) authorEl.textContent = book.author;
 
-    // Render formatted paragraphs
-    const bodyEl = document.getElementById('reader-body-content');
-    bodyEl.innerHTML = chapter.content
-      .split('\n\n')
-      .filter((p) => p.trim())
-      .map((p) => `<p>${p}</p>`)
-      .join('');
+    const modeBtn = document.getElementById('btn-toggle-manga-mode');
+    if (modeBtn) {
+      modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
+    }
 
-    // Update navigation buttons
-    const prevBtn = document.getElementById('btn-prev-chapter');
-    const nextBtn = document.getElementById('btn-next-chapter');
-    if (prevBtn) prevBtn.disabled = chapterIdx <= 0;
-    if (nextBtn) nextBtn.disabled = chapterIdx >= chapters.length - 1;
+    this.renderContent();
 
     // Switch view
     window.app.switchView('reader');
@@ -128,15 +134,68 @@ class ReaderEngine {
     if (window.soundEngine) window.soundEngine.playCardFlip();
   }
 
+  toggleReadingMode() {
+    this.readingMode = this.readingMode === 'manga' ? 'page' : 'manga';
+    const modeBtn = document.getElementById('btn-toggle-manga-mode');
+    if (modeBtn) {
+      modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
+    }
+    this.renderContent();
+    window.app.showToast(this.readingMode === 'manga' ? 'Включен режим непрерывной ленты (скролл как манга)' : 'Включен постраничный режим', 'info');
+  }
+
+  renderContent() {
+    if (!this.currentBook) return;
+    const chapters = this.currentBook.chapters || [];
+    const bodyEl = document.getElementById('reader-body-content');
+    const navControls = document.getElementById('reader-chapter-nav');
+    const chapterEl = document.getElementById('reader-chapter-title');
+
+    if (!bodyEl) return;
+
+    if (this.readingMode === 'manga') {
+      if (chapterEl) chapterEl.textContent = 'Непрерывная лента (Все главы)';
+      if (navControls) navControls.style.display = 'none';
+
+      bodyEl.className = 'reader-manga-mode';
+      bodyEl.innerHTML = chapters.map((ch, idx) => `
+        <div class="manga-chapter-block" id="chapter-block-${idx}">
+          <div class="manga-chapter-title">${ch.title}</div>
+          <div class="manga-chapter-text">${ch.content.split('\n\n').filter((p) => p.trim()).map((p) => `<p>${p}</p>`).join('')}</div>
+        </div>
+      `).join('');
+    } else {
+      if (navControls) navControls.style.display = 'flex';
+      const chapter = chapters[this.currentChapterIdx] || { title: 'Глава 1', content: 'Текст отсутствует.' };
+      if (chapterEl) chapterEl.textContent = chapter.title;
+
+      bodyEl.className = 'reader-page-mode';
+      bodyEl.innerHTML = chapter.content
+        .split('\n\n')
+        .filter((p) => p.trim())
+        .map((p) => `<p>${p}</p>`)
+        .join('');
+
+      const prevBtn = document.getElementById('btn-prev-chapter');
+      const nextBtn = document.getElementById('btn-next-chapter');
+      if (prevBtn) prevBtn.disabled = this.currentChapterIdx <= 0;
+      if (nextBtn) nextBtn.disabled = this.currentChapterIdx >= chapters.length - 1;
+    }
+  }
+
   nextChapter() {
     if (this.currentBook && this.currentChapterIdx < (this.currentBook.chapters?.length || 0) - 1) {
-      this.openBook(this.currentBook.id, this.currentChapterIdx + 1);
+      this.currentChapterIdx += 1;
+      this.renderContent();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   prevChapter() {
     if (this.currentBook && this.currentChapterIdx > 0) {
-      this.openBook(this.currentBook.id, this.currentChapterIdx - 1);
+      this.currentChapterIdx -= 1;
+      this.renderContent();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 

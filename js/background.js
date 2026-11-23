@@ -46,13 +46,17 @@ class ReactiveBackground {
   }
 
   setTheme(themeId) {
+    if (themeId === 'theme-space') themeId = 'theme-cosmic';
+    if (themeId === 'theme-cozy') themeId = 'theme-amber';
+    if (themeId === 'theme-aurora') themeId = 'theme-royal';
+
     this.currentTheme = themeId;
     this.setupTheme(themeId);
 
-    // Sync body class for ambient lighting
+    // Sync body class for ambient lighting and full-page theme shift
     const allThemes = [
-      'theme-cyberpunk', 'theme-cosmic', 'theme-amber', 'theme-matrix',
-      'theme-royal', 'theme-synthwave', 'theme-ocean', 'theme-zen'
+      'theme-cyberpunk', 'theme-cosmic', 'theme-space', 'theme-amber', 'theme-cozy',
+      'theme-matrix', 'theme-royal', 'theme-aurora', 'theme-synthwave', 'theme-ocean', 'theme-zen'
     ];
     allThemes.forEach((t) => document.body.classList.remove(t));
     document.body.classList.add(themeId);
