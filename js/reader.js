@@ -120,6 +120,91 @@ class ReaderEngine {
     });
   }
 
+  saveProgress() {
+    if (!this.currentBook) return;
+    const bookId = this.currentBook.id;
+    const chIdx = typeof this.currentChapterIdx === 'number' ? this.currentChapterIdx : 0;
+    const chapters = this.currentBook.chapters || [];
+    const chTitle = chapters[chIdx]?.title || `Глава ${chIdx + 1}`;
+    const totalChapters = chapters.length || 1;
+    const percent = Math.min(100, Math.max(1, Math.round(((chIdx + 1) / totalChapters) * 100)));
+
+    const progress = {
+      bookId,
+      bookTitle: this.currentBook.title,
+      currentChapter: chIdx,
+      chapterTitle: chTitle,
+      progressPercent: percent,
+      readingMode: this.readingMode,
+      scrollY: window.scrollY || 0,
+      lastReadDate: new Date().toISOString()
+    };
+
+    // 1. Save in localStorage for immediate client persistence
+    try {
+      localStorage.setItem(`cyberlibris_progress_${bookId}`, JSON.stringify(progress));
+      localStorage.setItem('cyberlibris_last_read_book', bookId);
+    } catch (e) {}
+
+    // 2. Save in active user account & DB
+    const user = window.auth?.currentUser;
+    if (user) {
+      if (!user.readingProgress) user.readingProgress = {};
+      user.readingProgress[bookId] = progress;
+      window.auth.saveUser();
+    }
+
+    // 3. Update bookRelay shelves
+    if (user && window.bookRelay) {
+      window.bookRelay.updateProgress(user.username, bookId, percent, chIdx);
+    }
+  }
+
+  getSavedProgress(bookId) {
+    if (!bookId) return null;
+    const user = window.auth?.currentUser;
+    if (user?.readingProgress?.[bookId]) {
+      return user.readingProgress[bookId];
+    }
+    try {
+      const raw = localStorage.getItem(`cyberlibris_progress_${bookId}`);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return null;
+  }
+
+  setupMangaChapterObserver() {
+    if (this._mangaObserver) {
+      this._mangaObserver.disconnect();
+      this._mangaObserver = null;
+    }
+
+    if (this.readingMode !== 'manga') return;
+
+    const blocks = document.querySelectorAll('.manga-chapter-block');
+    if (!blocks || blocks.length === 0) return;
+
+    this._mangaObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const idx = parseInt(entry.target.dataset.idx || entry.target.id.replace('chapter-block-', ''));
+          if (!isNaN(idx) && idx !== this.currentChapterIdx) {
+            this.currentChapterIdx = idx;
+            const selectEl = document.getElementById('reader-chapter-select');
+            if (selectEl) selectEl.value = idx;
+            this.saveProgress();
+          }
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: '-15% 0px -65% 0px',
+      threshold: 0
+    });
+
+    blocks.forEach((el) => this._mangaObserver.observe(el));
+  }
+
   setupScrollTracker() {
     window.addEventListener('scroll', () => {
       if (!this.currentBook || !document.getElementById('view-reader')?.classList.contains('active')) return;
@@ -139,14 +224,33 @@ class ReaderEngine {
     });
   }
 
-  async openBook(bookId, chapterIdx = 0, initialMode = 'manga') {
+  async openBook(bookId, chapterIdx = null, initialMode = null) {
     let book = window.bookRelay ? window.bookRelay.getBookById(bookId) : null;
     if (!book && window.dbEngine) book = window.dbEngine.getBook(bookId);
     if (!book) return;
 
     this.currentBook = book;
-    this.currentChapterIdx = chapterIdx;
-    this.readingMode = initialMode;
+
+    // Retrieve saved reading progress for this book
+    const saved = this.getSavedProgress(bookId);
+    let resumed = false;
+
+    if (chapterIdx !== null && chapterIdx !== undefined) {
+      this.currentChapterIdx = chapterIdx;
+    } else if (saved && typeof saved.currentChapter === 'number' && saved.currentChapter >= 0) {
+      this.currentChapterIdx = saved.currentChapter;
+      resumed = true;
+    } else {
+      this.currentChapterIdx = 0;
+    }
+
+    if (initialMode) {
+      this.readingMode = initialMode;
+    } else if (saved?.readingMode) {
+      this.readingMode = saved.readingMode;
+    } else {
+      this.readingMode = 'manga';
+    }
 
     const user = window.auth?.currentUser;
     if (user && window.bookRelay) {
@@ -178,11 +282,32 @@ class ReaderEngine {
       }
     }
 
+    // Ensure within chapter range
+    if (this.currentChapterIdx >= (book.chapters?.length || 1)) {
+      this.currentChapterIdx = Math.max(0, (book.chapters?.length || 1) - 1);
+    }
+
     this.updateRelayBadge();
     this.updateChapterDropdown();
     this.renderContent();
 
-    // Запускаем трекер чтения
+    // If resumed from previous reading progress
+    if (resumed && this.currentChapterIdx > 0) {
+      const chTitle = book.chapters?.[this.currentChapterIdx]?.title || `Глава ${this.currentChapterIdx + 1}`;
+      window.app.showToast(`📖 Возобновлено чтение: ${chTitle}`, 'info');
+
+      if (this.readingMode === 'manga') {
+        setTimeout(() => {
+          const block = document.getElementById(`chapter-block-${this.currentChapterIdx}`);
+          if (block) {
+            block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 300);
+      }
+    }
+
+    // Save and track
+    this.saveProgress();
     this.startReadingTracker();
     if (window.soundEngine) window.soundEngine.playCardFlip();
   }
@@ -269,6 +394,7 @@ class ReaderEngine {
     const chapters = this.currentBook.chapters || [];
     if (idx >= 0 && idx < chapters.length) {
       this.currentChapterIdx = idx;
+      this.saveProgress();
       if (this.readingMode === 'manga') {
         const el = document.getElementById(`chapter-block-${idx}`);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -285,6 +411,7 @@ class ReaderEngine {
     if (modeBtn) {
       modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
     }
+    this.saveProgress();
     this.renderContent();
     window.app.showToast(this.readingMode === 'manga' ? 'Включен режим непрерывной ленты (скролл как манга)' : 'Включен постраничный режим', 'info');
   }
@@ -306,11 +433,13 @@ class ReaderEngine {
 
       bodyEl.className = 'reader-manga-mode';
       bodyEl.innerHTML = chapters.map((ch, idx) => `
-        <div class="manga-chapter-block" id="chapter-block-${idx}">
+        <div class="manga-chapter-block" id="chapter-block-${idx}" data-idx="${idx}">
           <div class="manga-chapter-title">${ch.title}</div>
           <div class="manga-chapter-text">${ch.content.split('\n\n').filter((p) => p.trim()).map((p) => `<p>${p}</p>`).join('')}</div>
         </div>
       `).join('');
+
+      this.setupMangaChapterObserver();
     } else {
       if (navControls) navControls.style.display = 'flex';
       const chapter = chapters[this.currentChapterIdx] || { title: 'Глава 1', content: 'Текст отсутствует.' };
@@ -333,6 +462,7 @@ class ReaderEngine {
   nextChapter() {
     if (this.currentBook && this.currentChapterIdx < (this.currentBook.chapters?.length || 0) - 1) {
       this.currentChapterIdx += 1;
+      this.saveProgress();
 
       // Reading progression rewards
       if (window.auth) {
@@ -369,6 +499,7 @@ class ReaderEngine {
   prevChapter() {
     if (this.currentBook && this.currentChapterIdx > 0) {
       this.currentChapterIdx -= 1;
+      this.saveProgress();
       this.renderContent();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

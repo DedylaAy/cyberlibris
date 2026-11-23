@@ -239,7 +239,7 @@ class AppController {
         `;
 
         mainEl.querySelector('#btn-carousel-read-now')?.addEventListener('click', () => {
-          window.readerEngine.openBook(book.id, 0, 'manga');
+          window.readerEngine.openBook(book.id);
         });
 
         mainEl.querySelector('#btn-carousel-details')?.addEventListener('click', () => {
@@ -470,6 +470,15 @@ class AppController {
       else if (b.rarity === 'masterpiece') rarityPillClass = 'rarity-pill-masterpiece';
       else if (b.rarity === 'epic') rarityPillClass = 'rarity-pill-epic';
 
+      const saved = window.readerEngine ? window.readerEngine.getSavedProgress(b.id) : null;
+      const hasProgress = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
+      const progressBadge = hasProgress 
+        ? `<span class="rarity-pill" style="background: rgba(0, 240, 255, 0.25); border: 1px solid var(--accent-cyan); color: #00f0ff; font-weight:700;">🔖 Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>`
+        : '';
+      const buttonLabel = hasProgress
+        ? `📖 Продолжить (Гл. ${saved.currentChapter + 1})`
+        : `ℹ️ Открыть карточку & Главы`;
+
       const card = document.createElement('div');
       card.className = `steam-book-card rarity-${b.rarity} tilt-card`;
       card.style.cursor = 'pointer';
@@ -479,6 +488,7 @@ class AppController {
           <img src="${b.coverImage}" class="book-cover-real-img" alt="${b.title}" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
           <div class="book-badges-overlay">
             <span class="rarity-pill ${rarityPillClass}">${b.rarityLabel || 'ШЕДЕВР'}</span>
+            ${progressBadge}
           </div>
         </div>
         <div class="steam-book-info">
@@ -491,7 +501,7 @@ class AppController {
           </div>
           <div style="margin-top: 0.8rem; display: flex; gap: 0.5rem;">
             <button class="btn btn-primary btn-block btn-open-card" data-book-id="${b.id}">
-              ℹ️ Открыть карточку & Главы
+              ${buttonLabel}
             </button>
           </div>
         </div>
@@ -583,20 +593,34 @@ class AppController {
       }
     }
 
+    // Check saved progress
+    const saved = window.readerEngine ? window.readerEngine.getSavedProgress(book.id) : null;
+    const hasProgress = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
+    const savedChNum = hasProgress ? saved.currentChapter + 1 : 1;
+    const savedChTitle = saved?.chapterTitle || `Глава ${savedChNum}`;
+
     // Read buttons
     const readMangaBtn = document.getElementById('btn-modal-read-manga');
     if (readMangaBtn) {
+      readMangaBtn.innerHTML = hasProgress 
+        ? `📜 Продолжить чтение (Гл. ${savedChNum})` 
+        : '📜 Читать в режиме ленты';
+      readMangaBtn.title = hasProgress ? `Возобновить чтение: ${savedChTitle}` : 'Читать в режиме непрерывной ленты';
       readMangaBtn.onclick = () => {
         this.closeAllModals();
-        window.readerEngine.openBook(book.id, 0, 'manga');
+        window.readerEngine.openBook(book.id, null, 'manga');
       };
     }
 
     const readPageBtn = document.getElementById('btn-modal-read-page');
     if (readPageBtn) {
+      readPageBtn.innerHTML = hasProgress 
+        ? `📖 Продолжить по главам (Гл. ${savedChNum})` 
+        : '📖 Читать по главам';
+      readPageBtn.title = hasProgress ? `Возобновить чтение: ${savedChTitle}` : 'Читать по главам';
       readPageBtn.onclick = () => {
         this.closeAllModals();
-        window.readerEngine.openBook(book.id, 0, 'page');
+        window.readerEngine.openBook(book.id, null, 'page');
       };
     }
 
@@ -804,7 +828,7 @@ class AppController {
       `;
       card.querySelector('.btn-stream-read')?.addEventListener('click', () => {
         window.bookRelay.relayedCatalog.unshift(b);
-        window.readerEngine.openBook(b.id, 0, 'manga');
+        window.readerEngine.openBook(b.id);
       });
       grid.appendChild(card);
     });
@@ -929,14 +953,15 @@ class AppController {
                 <div class="shelf-book-progress-fill" style="width: ${item.progressPercent}%;"></div>
               </div>
               <div style="font-size:0.75rem; color:var(--text-dim); display:flex; justify-content:space-between;">
-                <span>Прогресс:</span> <strong>${item.progressPercent}%</strong>
+                <span>Глава: <strong>${(item.chapterIdx || 0) + 1}</strong></span>
+                <span>${item.progressPercent}%</span>
               </div>
               <button class="btn btn-primary btn-sm btn-continue-reading" data-book-id="${b.id}" style="margin-top:0.4rem;">
                 Продолжить →
               </button>
             `;
             card.querySelector('.btn-continue-reading')?.addEventListener('click', () => {
-              window.readerEngine.openBook(b.id, item.chapterIdx || 0, 'manga');
+              window.readerEngine.openBook(b.id, typeof item.chapterIdx === 'number' ? item.chapterIdx : null, 'manga');
             });
             readingNowGrid.appendChild(card);
           }
