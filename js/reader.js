@@ -75,8 +75,49 @@ class ReaderEngine {
       });
     }
 
-    // Add Bookmark button
-    document.getElementById('btn-add-bookmark')?.addEventListener('click', () => this.createBookmark());
+    // Share Quote buttons
+    document.getElementById('btn-share-quote')?.addEventListener('click', () => this.openQuoteModal());
+    document.getElementById('floating-quote-btn')?.addEventListener('click', () => {
+      const sel = window.getSelection().toString().trim();
+      this.openQuoteModal(sel);
+    });
+    document.getElementById('btn-copy-quote')?.addEventListener('click', () => this.copyQuoteToClipboard());
+
+    // Bookmarks Modal
+    document.getElementById('btn-open-bookmarks')?.addEventListener('click', () => this.openBookmarksModal());
+    document.getElementById('btn-add-bookmark')?.addEventListener('click', () => this.openBookmarksModal());
+    document.getElementById('btn-save-current-bookmark')?.addEventListener('click', () => this.saveCurrentBookmark());
+
+    // Fullscreen toggle
+    document.getElementById('btn-toggle-fullscreen')?.addEventListener('click', () => this.toggleFullscreen());
+
+    // Selection listener for floating quote button
+    this.setupSelectionListener();
+  }
+
+  setupSelectionListener() {
+    document.addEventListener('selectionchange', () => {
+      const btn = document.getElementById('floating-quote-btn');
+      if (!btn) return;
+      if (!document.getElementById('view-reader')?.classList.contains('active')) {
+        btn.style.display = 'none';
+        return;
+      }
+
+      const sel = window.getSelection();
+      const text = sel ? sel.toString().trim() : '';
+      if (text.length >= 10 && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        if (rect && rect.top > 0) {
+          btn.style.display = 'block';
+          btn.style.left = `${Math.min(window.innerWidth - 80, Math.max(80, rect.left + rect.width / 2))}px`;
+          btn.style.top = `${Math.max(10, rect.top - 12)}px`;
+        }
+      } else {
+        btn.style.display = 'none';
+      }
+    });
   }
 
   setupScrollTracker() {
@@ -292,6 +333,34 @@ class ReaderEngine {
   nextChapter() {
     if (this.currentBook && this.currentChapterIdx < (this.currentBook.chapters?.length || 0) - 1) {
       this.currentChapterIdx += 1;
+
+      // Reading progression rewards
+      if (window.auth) {
+        window.auth.addXp(30);
+        window.auth.addLumens(10);
+        window.auth.updateStat('chaptersRead', 1);
+
+        const genre = (this.currentBook.genre || '').toLowerCase();
+        if (genre.includes('класс') || genre.includes('поэ')) {
+          window.auth.updateStat('classicChaptersRead', 1);
+        } else if (genre.includes('фантаст') || genre.includes('кибер')) {
+          window.auth.updateStat('scifiChaptersRead', 1);
+        } else if (genre.includes('воен') || genre.includes('стратег')) {
+          window.auth.updateStat('militaryChaptersRead', 1);
+        } else if (genre.includes('философ') || genre.includes('мысл')) {
+          window.auth.updateStat('philosophyChaptersRead', 1);
+        }
+
+        // Check if finished final chapter
+        if (this.currentChapterIdx === (this.currentBook.chapters?.length || 0) - 1) {
+          window.auth.updateStat('booksRead', 1);
+          window.auth.addXp(200);
+          window.auth.addLumens(100);
+          window.app.showToast('🏆 Поздравляем! Произведение полностью прочитано: +200 XP, +100 ⬡!', 'reward');
+          if (window.soundEngine) window.soundEngine.playLevelUp();
+        }
+      }
+
       this.renderContent();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -346,27 +415,168 @@ class ReaderEngine {
     });
   }
 
-  createBookmark() {
-    if (!this.currentBook) return;
-    const selection = window.getSelection().toString().trim();
-    const snippet = selection ? `"${selection.substring(0, 80)}..."` : `Глава: ${this.currentBook.chapters[this.currentChapterIdx]?.title}`;
+  // --- QUOTE SHARING SUITE ---
 
-    const note = prompt('Добавьте заметку к закладке (необязательно):', '');
+  openQuoteModal(customText = '') {
+    if (!this.currentBook) return;
+    const quoteText = customText || this.currentBook.quote || '«Книга — живой диалог сквозь столетия.»';
+    
+    const textEl = document.getElementById('share-quote-text');
+    const authorEl = document.getElementById('share-quote-author');
+    const bookEl = document.getElementById('share-quote-book');
+    const userEl = document.getElementById('share-quote-user');
+
+    if (textEl) textEl.textContent = `«${quoteText.replace(/^«|»$/g, '')}»`;
+    if (authorEl) authorEl.textContent = this.currentBook.author;
+    if (bookEl) bookEl.textContent = `«${this.currentBook.title}»`;
+    if (userEl) userEl.textContent = `@${window.auth.currentUser?.username || 'читатель'}`;
+
+    window.app.openModal('modal-share-quote');
+    if (window.soundEngine) window.soundEngine.playCardFlip();
+  }
+
+  copyQuoteToClipboard() {
+    if (!this.currentBook) return;
+    const textEl = document.getElementById('share-quote-text');
+    const quote = textEl ? textEl.textContent : '';
+    const shareText = `${quote}\n— ${this.currentBook.author}, «${this.currentBook.title}»\n\n📖 Читайте на CyberLibris: https://dedylaay.github.io/cyberlibris/`;
+
+    navigator.clipboard?.writeText(shareText).then(() => {
+      window.app.showToast('📋 Цитата скопирована в буфер обмена!', 'success');
+    }).catch(() => {
+      window.app.showToast('📋 Цитата готова к отправке!', 'success');
+    });
+
+    // Award XP and Lumens for sharing knowledge
+    window.auth.addXp(25);
+    window.auth.addLumens(15);
+    if (window.dbEngine) {
+      window.dbEngine.updateQuestProgress('quest_share_quote', 1);
+      if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+    }
+    window.app.showToast('✨ Вознаграждение за шеринг цитаты: +25 XP, +15 ⬡!', 'reward');
+    if (window.soundEngine) window.soundEngine.playCorrect();
+    window.app.closeAllModals();
+  }
+
+  // --- BOOKMARKS & NOTES SUITE ---
+
+  openBookmarksModal() {
+    if (!this.currentBook) return;
+    this.renderBookmarksList();
+    window.app.openModal('modal-bookmarks');
+    if (window.soundEngine) window.soundEngine.playClick();
+  }
+
+  saveCurrentBookmark() {
+    if (!this.currentBook) return;
+    const noteInput = document.getElementById('new-bookmark-note-input');
+    const note = noteInput ? noteInput.value.trim() : '';
+
+    const sel = window.getSelection().toString().trim();
+    const chTitle = this.currentBook.chapters?.[this.currentChapterIdx]?.title || `Глава ${this.currentChapterIdx + 1}`;
+    const snippet = sel ? `«${sel.substring(0, 100)}...»` : `Текущее место в "${chTitle}"`;
+
+    const user = window.auth.currentUser;
+    if (!user) return;
+    if (!user.bookmarks) user.bookmarks = [];
+
     const bookmark = {
       id: 'bm_' + Date.now(),
       bookId: this.currentBook.id,
-      chapterId: this.currentChapterIdx,
+      bookTitle: this.currentBook.title,
+      chapterIdx: this.currentChapterIdx,
+      chapterTitle: chTitle,
       textSnippet: snippet,
-      note: note || 'Без заметки',
-      createdAt: new Date().toISOString()
+      note: note || 'Быстрая закладка',
+      scrollY: window.scrollY,
+      createdAt: new Date().toLocaleDateString('ru-RU', { hour: '2-digit', minute: '2-digit' })
     };
 
-    if (!window.auth.currentUser.bookmarks) window.auth.currentUser.bookmarks = [];
-    window.auth.currentUser.bookmarks.push(bookmark);
+    user.bookmarks.unshift(bookmark);
     window.auth.saveUser();
 
-    window.app.showToast('🔖 Закладка успешно сохранена!', 'success');
+    if (window.dbEngine) {
+      window.dbEngine.updateQuestProgress('quest_share_quote', 1);
+      if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+    }
+
+    if (noteInput) noteInput.value = '';
+    this.renderBookmarksList();
+    window.app.showToast('🔖 Закладка успешно зафиксирована!', 'success');
     if (window.soundEngine) window.soundEngine.playCorrect();
+  }
+
+  renderBookmarksList() {
+    const listEl = document.getElementById('reader-bookmarks-list');
+    if (!listEl) return;
+    const user = window.auth.currentUser;
+    const bookmarks = (user?.bookmarks || []).filter(b => b.bookId === this.currentBook?.id);
+
+    if (bookmarks.length === 0) {
+      listEl.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text-dim); font-size: 0.85rem;">В этой книге пока нет закладок. Нажмите кнопку выше, чтобы сохранить текущее место.</div>';
+      return;
+    }
+
+    listEl.innerHTML = bookmarks.map(bm => `
+      <div class="bookmark-card-item" data-bm-id="${bm.id}" data-chapter="${bm.chapterIdx}" data-scroll="${bm.scrollY || 0}">
+        <div style="flex: 1; padding-right: 0.5rem;">
+          <div class="bookmark-snippet">${bm.textSnippet}</div>
+          <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <span class="bookmark-note">📝 ${bm.note}</span>
+            <span class="bookmark-date">🕒 ${bm.createdAt}</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.4rem; align-items: center;">
+          <button class="btn btn-secondary btn-sm btn-jump-bm" title="Перейти к закладке" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">
+            Перейти ↗
+          </button>
+          <button class="btn btn-secondary btn-sm btn-del-bm" title="Удалить закладку" style="padding: 0.3rem 0.5rem; font-size: 0.75rem; color: #ff5577;">
+            ✕
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('.btn-jump-bm').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const card = btn.closest('.bookmark-card-item');
+        const ch = parseInt(card.dataset.chapter) || 0;
+        const scroll = parseInt(card.dataset.scroll) || 0;
+        window.app.closeAllModals();
+        this.jumpToChapter(ch);
+        setTimeout(() => window.scrollTo({ top: scroll, behavior: 'smooth' }), 200);
+      });
+    });
+
+    listEl.querySelectorAll('.btn-del-bm').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const card = btn.closest('.bookmark-card-item');
+        const id = card.dataset.bmId;
+        this.deleteBookmark(id);
+      });
+    });
+  }
+
+  deleteBookmark(id) {
+    const user = window.auth.currentUser;
+    if (!user || !user.bookmarks) return;
+    user.bookmarks = user.bookmarks.filter(b => b.id !== id);
+    window.auth.saveUser();
+    this.renderBookmarksList();
+    window.app.showToast('🗑️ Закладка удалена', 'info');
+  }
+
+  toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+      window.app.showToast('⛶ Полноэкранный режим чтения включен', 'info');
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+      window.app.showToast('Полноэкранный режим выключен', 'info');
+    }
   }
 
   // --- RSVP SPEED READING (SPRITZ) ---

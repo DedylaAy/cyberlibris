@@ -468,3 +468,140 @@
   max-width: 550px;
   margin: 0 auto;
 }
+
+/* ==========================================================================
+   QUOTE CARD SHARING & FLOATING TOOLTIP
+   ========================================================================== */
+
+.quote-preview-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(20, 30, 48, 0.95), rgba(36, 59, 85, 0.95));
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem 2rem 1.8rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(0, 240, 255, 0.05);
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.quote-decor-mark {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  font-size: 6rem;
+  font-family: Georgia, serif;
+  color: rgba(0, 240, 255, 0.12);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.quote-card-text {
+  font-size: 1.15rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: #f0f4fc;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.quote-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.quote-book-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.quote-book-meta strong {
+  color: var(--accent-cyan);
+  font-size: 0.95rem;
+}
+
+.quote-book-meta span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.quote-brand-stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.quote-brand-stamp span {
+  color: var(--accent-gold);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Floating Quote Button */
+.floating-quote-btn {
+  position: fixed;
+  z-index: 999;
+  display: none;
+  background: rgba(13, 18, 30, 0.92);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  border-radius: 20px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4);
+  backdrop-filter: blur(10px);
+  transform: translate(-50%, -100%);
+  transition: transform 0.15s, background 0.2s;
+}
+
+.floating-quote-btn:hover {
+  background: var(--accent-cyan);
+  color: #0b0f19;
+  transform: translate(-50%, -110%) scale(1.05);
+}
+
+/* Bookmarks Drawer Items */
+.bookmark-card-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.bookmark-card-item:hover {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+.bookmark-snippet {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  margin-bottom: 0.25rem;
+  font-style: italic;
+}
+
+.bookmark-note {
+  font-size: 0.75rem;
+  color: var(--accent-gold);
+}
+
+.bookmark-date {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}

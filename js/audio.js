@@ -261,6 +261,39 @@ class AudioEngine {
       osc.start();
       this.ambientNodes = { osc, gain };
       return true;
+    } else if (type === 'fire') {
+      // Warm crackling fireplace & cozy library hearth
+      const bufferSize = this.ctx.sampleRate * 2;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        last = (last + 0.03 * white) / 1.03;
+        data[i] = last * 2.5;
+        if (Math.random() < 0.0015) {
+          data[i] += (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.5);
+        }
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(700, now);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.08 * this.volume, now);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      noise.start();
+      this.ambientNodes = { noise, gain };
+      return true;
     }
     return false;
   }

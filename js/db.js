@@ -448,6 +448,7 @@ const DEFAULT_DATABASE = {
     { id: "quest_read_2min", icon: "📖", title: "Академический Час", description: "Провести не менее 2 минут за чтением любой книги", target: 2, current: 0, unit: "мин", rewardLumens: 40, rewardXp: 80, completed: false, claimed: false },
     { id: "quest_speed_rush", icon: "⚡", title: "Словесный Шторм", description: "Завершить раунд в мини-игре «Словесный Шторм»", target: 1, current: 0, unit: "раунд", rewardLumens: 50, rewardXp: 100, completed: false, claimed: false },
     { id: "quest_cryptor", icon: "🧩", title: "Крипто-Аналитик", description: "Разгадать хотя бы одну шифровку в «Кибер-Крипторе»", target: 1, current: 0, unit: "цитата", rewardLumens: 50, rewardXp: 100, completed: false, claimed: false },
+    { id: "quest_share_quote", icon: "💬", title: "Глас Мыслителя", description: "Поделиться цитатой или зафиксировать закладку с заметкой", target: 1, current: 0, unit: "заметка", rewardLumens: 35, rewardXp: 75, completed: false, claimed: false },
     { id: "quest_open_library", icon: "🌐", title: "Исследователь Сети", description: "Импортировать книгу из Всемирного каталога Open Library", target: 1, current: 0, unit: "книга", rewardLumens: 35, rewardXp: 70, completed: false, claimed: false },
     { id: "quest_change_theme", icon: "🎨", title: "Смена Декораций", description: "Сменить визуальный фон платформы", target: 1, current: 0, unit: "фон", rewardLumens: 30, rewardXp: 50, completed: false, claimed: false }
   ],

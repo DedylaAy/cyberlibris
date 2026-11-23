@@ -567,6 +567,11 @@
               <button class="remanga-clear-btn" id="btn-clear-search" style="display:none;" title="Очистить поиск">✕</button>
             </div>
 
+            <!-- Random Book Button -->
+            <button class="btn btn-secondary" id="btn-random-book" title="Выбрать случайную книгу наугад" style="display:flex; align-items:center; gap:0.4rem; padding:0.6rem 0.9rem; font-size:0.85rem; white-space:nowrap; border-color: rgba(0,240,255,0.3); color: var(--accent-cyan);">
+              🎲 Случайная
+            </button>
+
             <!-- Sorting Dropdown -->
             <div class="remanga-select-group">
               <label class="remanga-label">Сортировка</label>
@@ -741,20 +746,32 @@
             <div class="reader-tool-group ambient-bar">
               <span style="font-size: 0.75rem; color: var(--text-dim);">Атмосфера:</span>
               <button class="ambient-chip" data-sound="rain">🌧️ Дождь</button>
+              <button class="ambient-chip" data-sound="fire">🔥 Камин</button>
               <button class="ambient-chip" data-sound="cyber">🏙️ Неон</button>
               <button class="ambient-chip" data-sound="binaural">🧘 432Hz</button>
             </div>
 
-            <!-- Actions: RSVP & Bookmark -->
+            <!-- Actions: RSVP, Quote Share, Bookmark, Fullscreen -->
             <div class="reader-tool-group">
               <button class="tool-btn" id="btn-start-rsvp" style="color: var(--accent-magenta); font-weight: 700;">
                 ⚡ Спринт RSVP
               </button>
-              <button class="tool-btn" id="btn-add-bookmark" title="Добавить закладку">
-                🔖 Закладка
+              <button class="tool-btn" id="btn-share-quote" title="Поделиться красивой цитатой (+25 XP)">
+                💬 Цитата
+              </button>
+              <button class="tool-btn" id="btn-open-bookmarks" title="Закладки и заметки">
+                🔖 Закладки
+              </button>
+              <button class="tool-btn" id="btn-toggle-fullscreen" title="Полноэкранный режим чтения">
+                ⛶
               </button>
             </div>
           </div>
+
+          <!-- Floating selection quote button -->
+          <button class="floating-quote-btn" id="floating-quote-btn">
+            ✨ Поделиться цитатой (+25 XP)
+          </button>
 
           <!-- Reader Article -->
           <article class="reader-article">
@@ -1749,6 +1766,78 @@
 
       <div id="admin-sim-results" style="background: rgba(0,0,0,0.5); padding: 1rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.8rem; color: #a0aec0; max-height: 200px; overflow-y: auto;">
         Нажмите симуляцию для проверки выдачи алгоритма...
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL: SHARE QUOTE (КАРТОЧКА ЦИТАТЫ И ШЕРИНГ)
+       =================================================================== -->
+  <div class="modal-overlay" id="modal-share-quote">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+          <span>💬</span> Поделиться Литературной Цитатой
+        </h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+      
+      <div class="quote-preview-card" id="quote-card-preview">
+        <div class="quote-decor-mark">“</div>
+        <p class="quote-card-text" id="share-quote-text">«Все счастливые семьи похожи друг на друга, каждая несчастливая семья несчастлива по-своему.»</p>
+        <div class="quote-card-footer">
+          <div class="quote-book-meta">
+            <strong id="share-quote-author">Лев Толстой</strong>
+            <span id="share-quote-book">«Анна Каренина»</span>
+          </div>
+          <div class="quote-brand-stamp">
+            <span>📖 CyberLibris</span>
+            <small id="share-quote-user">@читатель</small>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+        <button class="btn btn-primary btn-block" id="btn-copy-quote" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          📋 Скопировать цитату (+25 XP, +15 ⬡)
+        </button>
+        <button class="btn btn-secondary" id="btn-close-quote-modal" onclick="window.app.closeAllModals()">
+          Закрыть
+        </button>
+      </div>
+      <div id="quote-reward-hint" style="font-size: 0.78rem; color: var(--accent-gold); text-align: center; margin-top: 0.6rem;">
+        ⭐ Делитесь мудростью классиков и прокачивайте свой читательский профиль!
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL: BOOKMARKS & NOTES (ЗАКЛАДКИ И ЗАМЕТКИ)
+       =================================================================== -->
+  <div class="modal-overlay" id="modal-bookmarks">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 style="color: var(--accent-gold); display: flex; align-items: center; gap: 0.5rem;">
+          <span>🔖</span> Мои Закладки и Заметки
+        </h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+
+      <div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.35); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem;">
+        <h4 style="font-size: 0.9rem; color: var(--accent-cyan); margin-bottom: 0.5rem;">➕ Добавить закладку на текущем месте:</h4>
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <input type="text" id="new-bookmark-note-input" class="form-input" placeholder="Ваша заметка (например: 'Ключевая мысль о стратегии')...">
+        </div>
+        <button class="btn btn-primary btn-sm btn-block" id="btn-save-current-bookmark">
+          🔖 Зафиксировать текущую позицию
+        </button>
+      </div>
+
+      <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 0.75rem;">
+        Сохраненные закладки:
+      </h4>
+      <div id="reader-bookmarks-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 240px; overflow-y: auto;">
+        <!-- Populated dynamically -->
       </div>
     </div>
   </div>

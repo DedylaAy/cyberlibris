@@ -393,6 +393,18 @@ class AppController {
         if (window.soundEngine) window.soundEngine.playClick();
       });
     }
+
+    // Random Book Button
+    document.getElementById('btn-random-book')?.addEventListener('click', () => {
+      const allBooks = window.bookRelay.getAllBooks();
+      if (!allBooks || allBooks.length === 0) return;
+      const randomBook = allBooks[Math.floor(Math.random() * allBooks.length)];
+      if (randomBook) {
+        if (window.soundEngine) window.soundEngine.playLevelUp();
+        this.showToast(`🎲 Выбор Судьбы: «${randomBook.title}» (${randomBook.author})!`, 'reward');
+        this.openBookDetails(randomBook.id);
+      }
+    });
   }
 
   renderLibrary() {

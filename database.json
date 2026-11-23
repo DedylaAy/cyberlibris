@@ -660,6 +660,19 @@
       "icon": "🧩"
     },
     {
+      "id": "quest_share_quote",
+      "title": "Глас Мыслителя",
+      "description": "Поделиться цитатой или зафиксировать закладку с заметкой",
+      "target": 1,
+      "current": 0,
+      "unit": "заметка",
+      "rewardLumens": 35,
+      "rewardXp": 75,
+      "completed": false,
+      "claimed": false,
+      "icon": "💬"
+    },
+    {
       "id": "quest_open_library",
       "title": "Исследователь Сети",
       "description": "Импортировать книгу из Всемирного каталога Open Library",

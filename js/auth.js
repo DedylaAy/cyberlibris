@@ -259,13 +259,20 @@ class AuthManager {
 
   checkBadges() {
     const s = this.currentUser.stats || {};
-    if ((s.booksRead || 0) >= 1) this.awardBadge('first_book');
-    if ((s.booksRead || 0) >= 5) this.awardBadge('book_worm');
-    if ((s.speedRecordWPM || 0) >= 400) this.awardBadge('speed_demon');
-    if ((s.cryptorSolved || 0) >= 5) this.awardBadge('crypto_master');
-    if (this.currentUser.level >= 20) this.awardBadge('legend_reader');
-    if (this.isCreator()) this.awardBadge('creator_badge');
-    if (this.isAdmin()) this.awardBadge('admin_power');
+    if ((s.booksRead || 0) >= 1 || (s.chaptersRead || 0) >= 1) this.awardBadge('book_first_page');
+    if ((s.booksRead || 0) >= 3 || (s.chaptersRead || 0) >= 10) this.awardBadge('book_worm');
+    if ((s.reviewsWritten || 0) >= 1) this.awardBadge('literary_critic');
+    if ((s.quizzesPassed || 0) >= 3 || (s.cryptorSolved || 0) >= 3) this.awardBadge('quiz_erudite');
+    if ((s.classicChaptersRead || 0) >= 3) this.awardBadge('classic_connoisseur');
+    if ((s.scifiChaptersRead || 0) >= 3) this.awardBadge('scifi_explorer');
+    if ((s.militaryChaptersRead || 0) >= 3) this.awardBadge('military_veteran');
+    if ((s.philosophyChaptersRead || 0) >= 3) this.awardBadge('philosophy_sage');
+    
+    // Check night reading (between 22:00 and 06:00)
+    const currentHour = new Date().getHours();
+    if (currentHour >= 22 || currentHour < 6) {
+      if ((s.chaptersRead || 0) >= 2) this.awardBadge('night_reader');
+    }
   }
 
   triggerLevelUpCelebration(newLevel) {
