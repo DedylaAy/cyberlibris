@@ -1,10 +1,12 @@
 /**
  * CyberLibris Application Master Controller
+ * Steam-style Library with Rarity tiers, Recommendations, and Strict Hierarchy UI.
  */
 class AppController {
   constructor() {
     this.currentView = 'library';
     this.selectedGenre = 'all';
+    this.selectedRarity = 'all';
     this.searchQuery = '';
   }
 
@@ -31,7 +33,7 @@ class AppController {
     this.renderLibrary();
     this.updateAudioButtonState();
 
-    console.log('⚡ CyberLibris Web System Loaded Successfully.');
+    console.log('⚡ CyberLibris v3.0 (Steam Edition) Ready.');
   }
 
   // --- NAVIGATION & VIEW ROUTING ---
@@ -46,12 +48,10 @@ class AppController {
       });
     });
 
-    // Logo click goes to library
     document.querySelector('.logo-container')?.addEventListener('click', () => {
       this.switchView('library');
     });
 
-    // User pill click goes to profile
     document.getElementById('user-pill-container')?.addEventListener('click', (e) => {
       if (e.target.closest('#btn-open-login')) {
         this.openModal('modal-auth');
@@ -60,9 +60,13 @@ class AppController {
       }
     });
 
-    // GitHub Pill click opens GitHub config modal
+    // GitHub Pill click (Creator only)
     document.getElementById('btn-github-status')?.addEventListener('click', () => {
-      this.openGitHubModal();
+      if (window.auth.isCreator()) {
+        this.openGitHubModal();
+      } else {
+        this.showToast('Интеграция с GitHub доступна только Создателю (Основателю) платформы.', 'error');
+      }
     });
 
     // Sound toggle button in header
@@ -75,7 +79,7 @@ class AppController {
 
   switchView(viewName) {
     if (viewName === 'admin' && !window.auth.isAdmin()) {
-      this.showToast('Доступ запрещен. Необходимы права Администратора.', 'error');
+      this.showToast('Доступ запрещен. Необходимы права Администратора или Создателя.', 'error');
       return;
     }
 
@@ -96,7 +100,6 @@ class AppController {
       targetSection.classList.add('active');
     }
 
-    // Scroll top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // View-specific renders
@@ -110,7 +113,7 @@ class AppController {
     if (window.soundEngine) window.soundEngine.playClick();
   }
 
-  // --- LIBRARY VIEW ---
+  // --- STEAM-STYLE LIBRARY & RECOMMENDATIONS ---
 
   bindSearchAndFilters() {
     const searchInput = document.getElementById('library-search-input');
@@ -121,6 +124,7 @@ class AppController {
       });
     }
 
+    // Genre pills
     document.querySelectorAll('.genre-pill').forEach((pill) => {
       pill.addEventListener('click', (e) => {
         document.querySelectorAll('.genre-pill').forEach((p) => p.classList.remove('active'));
@@ -131,63 +135,105 @@ class AppController {
       });
     });
 
+    // Rarity pills (Steam style)
+    document.querySelectorAll('.rarity-filter-pill').forEach((pill) => {
+      pill.addEventListener('click', (e) => {
+        document.querySelectorAll('.rarity-filter-pill').forEach((p) => p.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        this.selectedRarity = e.currentTarget.dataset.rarity;
+        this.renderLibrary();
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+
+    // Admin add book button
     document.getElementById('btn-open-add-book-library')?.addEventListener('click', () => {
       if (window.auth.isAdmin()) {
         window.adminEngine.openAddBookModal();
       } else {
-        this.showToast('Добавлять книги в общественный архив могут только Администраторы!', 'info');
+        this.showToast('Добавлять книги могут только Администраторы!', 'info');
       }
     });
   }
 
   renderLibrary() {
+    const books = window.dbEngine.getBooks();
+    const currentUser = window.auth.currentUser;
+
+    // 1. Render Steam Spotlight Recommendation Banner
+    this.renderSteamSpotlight(books, currentUser);
+
+    // 2. Filter Grid
     const grid = document.getElementById('books-catalog-grid');
     if (!grid) return;
     grid.innerHTML = '';
 
-    const books = window.dbEngine.getBooks();
     const filtered = books.filter((book) => {
       const matchGenre = this.selectedGenre === 'all' || book.genre.toLowerCase() === this.selectedGenre.toLowerCase();
+      const matchRarity = this.selectedRarity === 'all' || (book.rarity || 'common') === this.selectedRarity;
       const matchSearch = !this.searchQuery ||
         book.title.toLowerCase().includes(this.searchQuery) ||
         book.author.toLowerCase().includes(this.searchQuery) ||
         (book.tags && book.tags.some((t) => t.toLowerCase().includes(this.searchQuery)));
-      return matchGenre && matchSearch;
+      return matchGenre && matchRarity && matchSearch;
     });
 
     if (filtered.length === 0) {
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
           <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
-          <h3>Ничего не найдено по вашему запросу</h3>
-          <p>Попробуйте выбрать другой жанр или очистить поиск.</p>
+          <h3>Ничего не найдено по заданным фильтрам</h3>
+          <p>Попробуйте сбросить фильтр редкости или изменить поисковый запрос.</p>
         </div>
       `;
       return;
     }
 
-    const currentUser = window.auth.currentUser;
-
     filtered.forEach((book) => {
       const userProgress = currentUser?.readingProgress?.[book.id]?.progressPercent || 0;
+      const rarity = book.rarity || 'common';
+
+      const rarityBadgeHTML =
+        rarity === 'legendary' ? '<span class="rarity-badge-legendary">🟠 ЛЕГЕНДАРНАЯ</span>' :
+        rarity === 'epic' ? '<span class="rarity-badge-epic">🟣 ЭПИЧЕСКАЯ</span>' :
+        rarity === 'rare' ? '<span class="rarity-badge-rare">🔵 ТОПОВАЯ</span>' :
+        '<span class="rarity-badge-common">⚪ ОБЫЧНАЯ</span>';
+
+      const complexityStars = '★'.repeat(book.complexity || 3) + '☆'.repeat(5 - (book.complexity || 3));
+
       const card = document.createElement('div');
-      card.className = 'cyber-card tilt-card book-card';
+      card.className = `cyber-card tilt-card book-card book-rarity-${rarity}`;
 
       card.innerHTML = `
         <div class="book-cover-banner" style="background: ${book.coverStyle || 'var(--bg-card)'};">
           <div class="book-cover-icon">${book.coverIcon || '📖'}</div>
-          <span class="book-genre-badge">${book.genre}</span>
+          <div class="book-badges-overlay">
+            ${rarityBadgeHTML}
+            ${book.featuredBadge ? `<span class="steam-featured-tag">${book.featuredBadge}</span>` : ''}
+          </div>
         </div>
         <div class="book-card-body">
+          <div class="steam-meta-header">
+            <span class="steam-genre-name">${book.genre}</span>
+            <span class="steam-xp-badge">${book.xpMultiplier || 'x1.0 XP'}</span>
+          </div>
           <h3 class="book-title">${book.title}</h3>
           <div class="book-author">✍ ${book.author} (${book.year})</div>
+          
+          <div class="steam-complexity-row">
+            <span>Сложность: <strong style="color: var(--text-main);">${complexityStars}</strong></span>
+            <span>~${book.estimatedReadTime || '10 мин'}</span>
+          </div>
+
           <p class="book-description">${book.description}</p>
+          
           <div class="book-tags-row">
             ${(book.tags || []).slice(0, 3).map((t) => `<span class="tag-pill">#${t}</span>`).join('')}
           </div>
+
           <div class="book-progress-wrapper">
             <div class="book-progress-info">
-              <span>Прогресс чтения</span>
+              <span>Прогресс изучения</span>
               <span style="color: var(--accent-cyan); font-weight: 700;">${userProgress}%</span>
             </div>
             <div class="book-progress-bar">
@@ -196,7 +242,7 @@ class AppController {
           </div>
         </div>
         <div class="book-card-footer">
-          <div class="book-rating">★ ${book.rating || '4.9'} <span style="font-size: 0.75rem; color: var(--text-dim);">(~${book.estimatedReadTime || '10 мин'})</span></div>
+          <div class="book-rating">★ ${book.rating || '4.9'}</div>
           <button class="btn btn-primary btn-sm btn-read-book magnetic-btn" data-id="${book.id}">
             ${userProgress > 0 ? 'Продолжить' : 'Читать'} →
           </button>
@@ -213,76 +259,109 @@ class AppController {
     this.bindTiltEffect();
   }
 
-  // --- LEADERBOARD / HALL OF FAME ---
+  renderSteamSpotlight(books, user) {
+    const banner = document.getElementById('steam-spotlight-banner');
+    if (!banner || books.length === 0) return;
+
+    // Pick recommended book based on level:
+    // Low level -> Common/Rare; High level -> Epic/Legendary
+    const userLevel = user?.level || 1;
+    let recommended = books.find((b) => userLevel >= 10 ? b.rarity === 'legendary' : b.rarity === 'epic') || books[0];
+
+    banner.innerHTML = `
+      <div class="spotlight-content">
+        <div class="spotlight-badge-row">
+          <span class="steam-spotlight-tag">🌟 РЕКОМЕНДАЦИЯ АЛГОРИТМА</span>
+          ${recommended.rarity === 'legendary' ? '<span class="rarity-badge-legendary">🟠 ЛЕГЕНДАРНАЯ КНИГА</span>' : '<span class="rarity-badge-epic">🟣 ЭПИЧЕСКАЯ</span>'}
+          <span class="steam-xp-badge" style="font-size: 0.8rem;">${recommended.xpMultiplier || 'x3.0 XP'}</span>
+        </div>
+        <h2 class="spotlight-title">${recommended.title}</h2>
+        <div class="spotlight-author">Автор: <strong>${recommended.author}</strong> • Жанр: ${recommended.genre} • Рейтинг: ★ ${recommended.rating}</div>
+        <p class="spotlight-desc">${recommended.description}</p>
+        <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem;">
+          <button class="btn btn-primary magnetic-btn" id="btn-spotlight-read" style="padding: 0.8rem 2rem; font-size: 1rem;">
+            ▶ Начать Чтение (+Бонус XP)
+          </button>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Сложность: ${'★'.repeat(recommended.complexity || 5)} (${recommended.complexity || 5}/5)</span>
+        </div>
+      </div>
+      <div class="spotlight-cover-visual" style="background: ${recommended.coverStyle};">
+        <span style="font-size: 6rem; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6));">${recommended.coverIcon || '💻'}</span>
+      </div>
+    `;
+
+    document.getElementById('btn-spotlight-read')?.addEventListener('click', () => {
+      window.readerEngine.openBook(recommended.id, 0);
+    });
+  }
+
+  // --- LEADERBOARD ---
 
   renderLeaderboard() {
     const users = [...window.dbEngine.getUsers()];
-    // Sort by level descending, then read minutes
     users.sort((a, b) => (b.level * 1000 + (b.stats?.readTimeMinutes || 0)) - (a.level * 1000 + (a.stats?.readTimeMinutes || 0)));
 
-    // Render podium top 3
     const podiumContainer = document.getElementById('leaderboard-podium');
     if (podiumContainer) {
       podiumContainer.innerHTML = '';
       const top3 = users.slice(0, 3);
-      const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean); // 2nd, 1st, 3rd
+      const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
 
-      podiumOrder.forEach((user) => {
-        const rank = user === top3[0] ? 1 : user === top3[1] ? 2 : 3;
+      podiumOrder.forEach((u) => {
+        const rank = u === top3[0] ? 1 : u === top3[1] ? 2 : 3;
         const col = document.createElement('div');
         col.className = `podium-column rank-${rank} tilt-card`;
 
+        const badgeHtml = window.auth.getRoleBadgeHTML(u.role, u.level);
+
         col.innerHTML = `
           <div class="podium-rank-badge">${rank === 1 ? '👑 #1' : rank === 2 ? '🥈 #2' : '🥉 #3'}</div>
-          <div class="avatar-frame-wrap ${user.avatarFrame || 'frame-default'}" style="width: 70px; height: 70px; font-size: 2.2rem; margin: 0.8rem 0;">
-            <div class="avatar-inner">${user.avatar || '⚡'}</div>
+          <div class="avatar-frame-wrap ${u.avatarFrame || 'frame-default'}" style="width: 70px; height: 70px; font-size: 2.2rem; margin: 0.8rem 0;">
+            <div class="avatar-inner">${u.avatar || '📖'}</div>
           </div>
-          <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.2rem;">${user.displayName || user.username}</h4>
-          <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 0.5rem;">${user.title || 'Исследователь'}</div>
+          <h4 style="font-size: 1.1rem; color: #fff; margin-bottom: 0.2rem;">${u.displayName || u.username}</h4>
+          <div style="margin-bottom: 0.6rem;">${badgeHtml}</div>
           <div class="podium-stats-box">
-            <div>Уровень: <strong>${user.level}</strong></div>
-            <div>Время: <strong>${user.stats?.readTimeMinutes || 0} мин</strong></div>
-            <div>Счёт WPM: <strong>${user.stats?.speedRecordWPM || 0}</strong></div>
+            <div>Уровень: <strong>${u.level}</strong></div>
+            <div>Время: <strong>${u.stats?.readTimeMinutes || 0} мин</strong></div>
+            <div>Рекорд WPM: <strong>${u.stats?.speedRecordWPM || 0}</strong></div>
           </div>
         `;
 
-        col.addEventListener('click', () => this.openUserDossier(user));
+        col.addEventListener('click', () => this.openUserDossier(u));
         podiumContainer.appendChild(col);
       });
     }
 
-    // Render Table for rest
     const tbody = document.getElementById('leaderboard-tbody');
     if (tbody) {
       tbody.innerHTML = '';
-      users.forEach((user, idx) => {
+      users.forEach((u, idx) => {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
+        const badgeHtml = window.auth.getRoleBadgeHTML(u.role, u.level);
+
         tr.innerHTML = `
           <td><strong style="color: ${idx < 3 ? 'var(--accent-gold)' : 'var(--text-muted)'};">#${idx + 1}</strong></td>
           <td>
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="avatar-frame-wrap ${user.avatarFrame || 'frame-default'}" style="width: 36px; height: 36px; font-size: 1.1rem;">
-                <div class="avatar-inner">${user.avatar || '⚡'}</div>
+              <div class="avatar-frame-wrap ${u.avatarFrame || 'frame-default'}" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                <div class="avatar-inner">${u.avatar || '📖'}</div>
               </div>
               <div>
-                <strong style="color: #fff;">${user.displayName || user.username}</strong>
-                <div style="font-size: 0.75rem; color: var(--accent-cyan);">${user.title || 'Новичок'}</div>
+                <strong style="color: #fff;">${u.displayName || u.username}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">@${u.username}</div>
               </div>
             </div>
           </td>
-          <td><span class="logo-badge">Ур. ${user.level}</span></td>
-          <td>${user.stats?.readTimeMinutes || 0} мин</td>
-          <td>⚡ ${user.stats?.speedRecordWPM || 0} WPM</td>
-          <td>${user.stats?.gamesWon || 0} побед</td>
-          <td>
-            <div style="display: flex; gap: 0.25rem;">
-              ${(user.badges || []).slice(0, 4).map((b) => `<span title="${b}">🏅</span>`).join('')}
-            </div>
-          </td>
+          <td>${badgeHtml}</td>
+          <td>Ур. ${u.level}</td>
+          <td>${u.stats?.readTimeMinutes || 0} мин</td>
+          <td>⚡ ${u.stats?.speedRecordWPM || 0} WPM</td>
+          <td>${u.stats?.gamesWon || 0} побед</td>
         `;
 
-        tr.addEventListener('click', () => this.openUserDossier(user));
+        tr.addEventListener('click', () => this.openUserDossier(u));
         tbody.appendChild(tr);
       });
     }
@@ -294,11 +373,11 @@ class AppController {
     const modal = document.getElementById('modal-user-dossier');
     if (!modal) return;
 
-    document.getElementById('dossier-avatar-wrap').className = `avatar-frame-wrap ${user.avatarFrame || 'frame-default'}`;
-    document.getElementById('dossier-avatar').textContent = user.avatar || '⚡';
+    document.getElementById('dossier-avatar-wrap').className = `avatar-frame-wrap preview-avatar-large ${user.avatarFrame || 'frame-default'}`;
+    document.getElementById('dossier-avatar').textContent = user.avatar || '📖';
     document.getElementById('dossier-name').textContent = user.displayName || user.username;
-    document.getElementById('dossier-handle').textContent = `@${user.username} • Роль: ${user.role.toUpperCase()}`;
-    document.getElementById('dossier-title').textContent = user.title || 'Читатель';
+    document.getElementById('dossier-handle').textContent = `@${user.username}`;
+    document.getElementById('dossier-title').innerHTML = window.auth.getRoleBadgeHTML(user.role, user.level);
     document.getElementById('dossier-level').textContent = user.level;
     document.getElementById('dossier-readtime').textContent = `${user.stats?.readTimeMinutes || 0} мин`;
     document.getElementById('dossier-wpm').textContent = `${user.stats?.speedRecordWPM || 0} WPM`;
@@ -332,15 +411,15 @@ class AppController {
     const wrap = document.getElementById('profile-avatar-wrap');
     if (wrap) {
       wrap.className = `avatar-frame-wrap preview-avatar-large ${user.avatarFrame || 'frame-default'}`;
-      wrap.innerHTML = `<div class="avatar-inner">${user.avatar || '⚡'}</div>`;
+      wrap.innerHTML = `<div class="avatar-inner">${user.avatar || '📖'}</div>`;
     }
 
     document.getElementById('profile-display-name').textContent = user.displayName || user.username;
-    document.getElementById('profile-username-tag').textContent = `@${user.username} • ${user.role.toUpperCase()}`;
-    document.getElementById('profile-title-tag').textContent = user.title || 'Новичок';
+    document.getElementById('profile-username-tag').textContent = `@${user.username}`;
+    document.getElementById('profile-title-tag').innerHTML = window.auth.getRoleBadgeHTML(user.role, user.level);
     document.getElementById('profile-level-num').textContent = user.level;
 
-    const neededXp = user.level * 450;
+    const neededXp = user.level * 400;
     const currentXp = user.xp || 0;
     const percent = Math.min(100, Math.round((currentXp / neededXp) * 100));
 
@@ -373,31 +452,14 @@ class AppController {
       });
     }
 
-    // Bookmarks List
-    const bmList = document.getElementById('profile-bookmarks-list');
-    if (bmList) {
-      bmList.innerHTML = '';
-      const bookmarks = user.bookmarks || [];
-      if (bookmarks.length === 0) {
-        bmList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Закладок пока нет. Вы можете сохранять интересные цитаты прямо во время чтения!</p>';
-      } else {
-        bookmarks.forEach((bm) => {
-          const item = document.createElement('div');
-          item.className = 'bookmark-item-card';
-          item.innerHTML = `
-            <div style="font-weight: 700; color: #fff; margin-bottom: 0.3rem;">${bm.textSnippet}</div>
-            <div style="color: var(--accent-cyan); font-size: 0.8rem; margin-bottom: 0.4rem;">💡 Заметка: ${bm.note}</div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted);">
-              <span>${new Date(bm.createdAt).toLocaleDateString()}</span>
-              <button class="btn btn-primary btn-sm btn-jump-bm" data-book="${bm.bookId}" data-chap="${bm.chapterId}">Перейти к книге</button>
-            </div>
-          `;
-          item.querySelector('.btn-jump-bm').addEventListener('click', () => {
-            window.readerEngine.openBook(bm.bookId, bm.chapterId);
-          });
-          bmList.appendChild(item);
-        });
-      }
+    // Emergency creator recovery button (visible if user had creator role in DB)
+    const creatorRecoveryBtn = document.getElementById('btn-profile-recover-creator');
+    if (creatorRecoveryBtn) {
+      creatorRecoveryBtn.style.display = 'inline-flex';
+      creatorRecoveryBtn.onclick = () => {
+        window.auth.recoverCreatorRights();
+        this.renderProfile();
+      };
     }
 
     this.bindTiltEffect();
@@ -406,7 +468,6 @@ class AppController {
   // --- MODALS & FORMS ---
 
   bindModals() {
-    // Universal close buttons
     document.querySelectorAll('.modal-close-btn, .modal-overlay').forEach((el) => {
       el.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) {
@@ -415,7 +476,7 @@ class AppController {
       });
     });
 
-    // Auth Form Tabs
+    // Auth Tabs
     document.getElementById('tab-btn-login')?.addEventListener('click', () => {
       document.getElementById('tab-btn-login').classList.add('active');
       document.getElementById('tab-btn-register').classList.remove('active');
@@ -430,7 +491,7 @@ class AppController {
       document.getElementById('form-register').style.display = 'block';
     });
 
-    // Login Form Submit
+    // Login Submit
     document.getElementById('form-login')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const u = document.getElementById('login-username').value;
@@ -447,37 +508,44 @@ class AppController {
     });
 
     // Fast Login Buttons
-    document.getElementById('btn-fast-admin')?.addEventListener('click', () => {
+    document.getElementById('btn-fast-creator')?.addEventListener('click', () => {
       window.auth.login('admin', 'admin123');
       this.closeModal('modal-auth');
-      this.showToast('Вход выполнен под учетной записью Главного Администратора!', 'reward');
+      this.showToast('Вход выполнен: Верховный Создатель (Полный доступ к GitHub и Системе)', 'reward');
     });
 
     document.getElementById('btn-fast-user')?.addEventListener('click', () => {
       window.auth.login('cyber_scholar', 'scholar123');
       this.closeModal('modal-auth');
-      this.showToast('Вход выполнен как Читатель (Нео-Схоласт)!', 'success');
+      this.showToast('Вход выполнен: Читатель (@cyber_scholar)', 'success');
     });
 
-    // Register Form Submit
+    // Register Submit
     document.getElementById('form-register')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const u = document.getElementById('reg-username').value;
       const p = document.getElementById('reg-password').value;
       const d = document.getElementById('reg-display-name').value;
-      const a = document.querySelector('input[name="reg-avatar"]:checked')?.value || '🚀';
+      const a = document.querySelector('input[name="reg-avatar"]:checked')?.value || '📖';
 
       const res = window.auth.register(u, p, d, a);
       if (res.success) {
         this.closeModal('modal-auth');
-        this.showToast(`Регистрация успешна! Добро пожаловать в CyberLibris, ${res.user.displayName}!`, 'reward');
+        this.showToast(`Регистрация успешна! Добро пожаловать, ${res.user.displayName}!`, 'reward');
         if (window.soundEngine) window.soundEngine.playLevelUp();
       } else {
         this.showToast(res.message, 'error');
       }
     });
 
-    // Edit Profile Modal Form
+    // Profile Logout
+    document.getElementById('btn-profile-logout')?.addEventListener('click', () => {
+      window.auth.logout();
+      this.switchView('library');
+      this.showToast('Вы вышли из учетной записи.', 'info');
+    });
+
+    // Edit Profile Modal
     document.getElementById('btn-open-edit-profile')?.addEventListener('click', () => {
       const user = window.auth.currentUser;
       document.getElementById('edit-display-name').value = user.displayName || '';
@@ -500,13 +568,6 @@ class AppController {
       this.showToast('Профиль успешно обновлен!', 'success');
     });
 
-    // Logout Button
-    document.getElementById('btn-profile-logout')?.addEventListener('click', () => {
-      window.auth.logout();
-      this.switchView('library');
-      this.showToast('Вы вышли из учетной записи.', 'info');
-    });
-
     // Level-Up Modal Close
     document.getElementById('btn-close-levelup')?.addEventListener('click', () => {
       document.getElementById('level-up-modal').classList.remove('active');
@@ -514,6 +575,11 @@ class AppController {
   }
 
   openGitHubModal() {
+    if (!window.auth.isCreator()) {
+      this.showToast('Настройки GitHub доступны только Создателю системы!', 'error');
+      return;
+    }
+
     const config = window.githubSync.config;
     document.getElementById('gh-owner').value = config.owner;
     document.getElementById('gh-repo').value = config.repo;
@@ -525,7 +591,6 @@ class AppController {
     const modal = document.getElementById('modal-github');
     if (modal) modal.classList.add('active');
 
-    // Bind modal actions
     document.getElementById('btn-test-gh-connection').onclick = async () => {
       const res = await window.githubSync.testConnection();
       this.showToast(res.message, res.success ? 'success' : 'error');
@@ -541,13 +606,13 @@ class AppController {
         mode: document.getElementById('gh-mode').value
       });
       this.closeModal('modal-github');
-      this.showToast('Настройки GitHub сохранены! Синхронизация активна.', 'success');
+      this.showToast('Настройки GitHub сохранены Создателем!', 'success');
       window.auth.awardBadge('github_sync');
     };
 
     document.getElementById('btn-sync-gh-now').onclick = async () => {
-      this.showToast('Синхронизация данных с GitHub...', 'info');
-      const res = await window.githubSync.pushToGitHub(window.dbEngine.data, 'Manual sync trigger');
+      this.showToast('Синхронизация с GitHub...', 'info');
+      const res = await window.githubSync.pushToGitHub(window.dbEngine.data, 'Manual sync trigger by Creator');
       if (res.success) {
         this.showToast(`Успешно отправлено на GitHub! SHA: ${res.sha}`, 'reward');
       } else {
@@ -604,14 +669,12 @@ class AppController {
   }
 
   bindAudioTriggers() {
-    // Add click sounds to all buttons
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('button, .nav-btn, .shop-item-card, .speed-word-card');
       if (btn && window.soundEngine) {
         window.soundEngine.playClick();
       }
 
-      // Ripple effect
       if (btn && btn.classList.contains('btn')) {
         const circle = document.createElement('span');
         const diameter = Math.max(btn.clientWidth, btn.clientHeight);
@@ -630,7 +693,6 @@ class AppController {
       }
     });
 
-    // Hover sounds for primary controls
     document.querySelectorAll('.btn, .nav-btn, .game-tab-btn').forEach((el) => {
       el.addEventListener('mouseenter', () => {
         if (window.soundEngine) window.soundEngine.playHover();
@@ -651,8 +713,6 @@ class AppController {
       btn.classList.add('active');
     }
   }
-
-  // --- TOASTS & CELEBRATIONS ---
 
   showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');

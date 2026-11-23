@@ -1,5 +1,6 @@
 /**
  * CyberLibris Mini-Games Suite & Customization Wardrobe
+ * Fixed: Robust word generation (no infinite loops), full shop fallbacks, Yandex Browser compatibility.
  */
 class MiniGamesSuite {
   constructor() {
@@ -12,6 +13,17 @@ class MiniGamesSuite {
     this.speedTimer = null;
     this.speedCurrentTarget = '';
     this.speedIsActive = false;
+
+    // Default rich dictionary to prevent any infinite loops
+    this.defaultWords = [
+      'АРХИТЕКТУРА', 'РЕФАКТОРИНГ', 'СИНХРОНИЗАЦИЯ', 'ИНТЕРФЕЙС',
+      'КИБЕРПАНК', 'РЕПОЗИТОРИЙ', 'МАТРИЦА', 'АЛГОРИТМ',
+      'ИНКАПСУЛЯЦИЯ', 'ПОЛИМОРФИЗМ', 'МИКРОСЕРВИС', 'НЕЙРОСЕТЬ',
+      'КВАНТУМ', 'БАЙТКОД', 'ШИФРОВАНИЕ', 'ДЕКОДЕР',
+      'ДЕБАГГИНГ', 'КОМПИЛЯТОР', 'КОНТРОЛЛЕР', 'ФРЕЙМВОРК',
+      'ХЭШИРОВАНИЕ', 'АСИНХРОННОСТЬ', 'ПАТТЕРН', 'СИНГЛТОН',
+      'ИММУТАБЕЛЬНОСТЬ', 'СЕРВЕРЛЕСС', 'СТЕК', 'ПРОТОКОЛ'
+    ];
 
     // Cryptor State
     this.cryptorQuote = null;
@@ -58,8 +70,13 @@ class MiniGamesSuite {
     const view = document.getElementById(`game-view-${gameId}`);
     if (view) view.style.display = 'block';
 
-    if (gameId === 'speed' && !this.speedIsActive) {
-      // Ready state
+    if (gameId === 'speed') {
+      // Ready state for speed rush
+      if (!this.speedIsActive) {
+        document.getElementById('speed-target-word').textContent = 'НАЖМИТЕ СТАРТ';
+        document.getElementById('speed-options-grid').innerHTML = '';
+        document.getElementById('btn-start-speed-rush').style.display = 'inline-flex';
+      }
     } else if (gameId === 'cryptor') {
       this.loadCryptorQuote();
     } else if (gameId === 'memory') {
@@ -97,21 +114,28 @@ class MiniGamesSuite {
   }
 
   nextSpeedWord() {
-    const list = window.dbEngine.getMiniGamesData().speedRushWords || ['КИБЕРПАНК', 'МАТРИЦА', 'АЛГОРИТМ'];
-    this.speedCurrentTarget = list[Math.floor(Math.random() * list.length)];
-    document.getElementById('speed-target-word').textContent = this.speedCurrentTarget;
+    const rawList = window.dbEngine.getMiniGamesData()?.speedRushWords;
+    const list = (rawList && rawList.length >= 4) ? rawList : this.defaultWords;
 
-    // Pick 3 random distractors
+    this.speedCurrentTarget = list[Math.floor(Math.random() * list.length)];
+    const targetEl = document.getElementById('speed-target-word');
+    if (targetEl) targetEl.textContent = this.speedCurrentTarget;
+
+    // Pick 3 distinct distractors safely without infinite loop
     const options = [this.speedCurrentTarget];
-    while (options.length < 4) {
-      const cand = list[Math.floor(Math.random() * list.length)];
-      if (!options.includes(cand)) options.push(cand);
+    const pool = list.filter((w) => w !== this.speedCurrentTarget).sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < Math.min(3, pool.length); i++) {
+      options.push(pool[i]);
     }
-    // Shuffle
+
+    // Shuffle options
     options.sort(() => Math.random() - 0.5);
 
     const grid = document.getElementById('speed-options-grid');
+    if (!grid) return;
     grid.innerHTML = '';
+
     options.forEach((word) => {
       const card = document.createElement('div');
       card.className = 'speed-word-card tilt-card';
@@ -132,7 +156,9 @@ class MiniGamesSuite {
       document.getElementById('speed-score-display').textContent = this.speedScore;
       document.getElementById('speed-combo-display').textContent = `x${this.speedCombo}`;
 
-      setTimeout(() => this.nextSpeedWord(), 200);
+      setTimeout(() => {
+        if (this.speedIsActive) this.nextSpeedWord();
+      }, 180);
     } else {
       cardEl.classList.add('wrong');
       if (window.soundEngine) window.soundEngine.playWrong();
@@ -144,15 +170,21 @@ class MiniGamesSuite {
   endSpeedRush() {
     this.speedIsActive = false;
     clearInterval(this.speedTimer);
-    document.getElementById('btn-start-speed-rush').style.display = 'inline-flex';
-    document.getElementById('btn-start-speed-rush').textContent = 'Сыграть снова';
 
-    const lumensEarned = Math.round(this.speedScore / 15);
-    const xpEarned = Math.round(this.speedScore / 5);
+    const btn = document.getElementById('btn-start-speed-rush');
+    if (btn) {
+      btn.style.display = 'inline-flex';
+      btn.textContent = 'Сыграть снова';
+    }
 
-    window.auth.addLumens(lumensEarned);
-    window.auth.addXp(xpEarned);
-    window.auth.updateStat('gamesWon', 1);
+    const lumensEarned = Math.round(this.speedScore / 12);
+    const xpEarned = Math.round(this.speedScore / 4);
+
+    if (window.auth) {
+      window.auth.addLumens(lumensEarned);
+      window.auth.addXp(xpEarned);
+      window.auth.updateStat('gamesWon', 1);
+    }
 
     window.app.showToast(`⚡ Раунд завершен! Счёт: ${this.speedScore}. Награда: +${lumensEarned} ⬡, +${xpEarned} XP!`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
@@ -163,13 +195,47 @@ class MiniGamesSuite {
   // =========================================================================
 
   loadCryptorQuote() {
-    const quotes = window.dbEngine.getMiniGamesData().cryptorQuotes || [];
+    const defaultQuotes = [
+      {
+        quote: "РУКОПИСИ НЕ ГОРЯТ",
+        hint: "Михаил Булгаков, роман 'Мастер и Маргарита'",
+        author: "Воланд",
+        rewardLumens: 50,
+        rewardXp: 150
+      },
+      {
+        quote: "ЛЮБОЙ ДУРАК МОЖЕТ НАПИСАТЬ КОД ПОНЯТНЫЙ КОМПЬЮТЕРУ",
+        hint: "Мартин Фаулер о рефакторинге и чистом коде",
+        author: "Мартин Фаулер",
+        rewardLumens: 70,
+        rewardXp: 200
+      },
+      {
+        quote: "КИБЕРПРОСТРАНСТВО ЭТО КОНСЕНСУАЛЬНАЯ ГАЛЛЮЦИНАЦИЯ",
+        hint: "Уильям Гибсон в романе 'Нейромант'",
+        author: "Уильям Гибсон",
+        rewardLumens: 60,
+        rewardXp: 180
+      },
+      {
+        quote: "ПРОСТОТА ЯВЛЯЕТСЯ ПРЕДПОСЫЛКОЙ НАДЕЖНОСТИ",
+        hint: "Эдсгер Дейкстра об архитектуре программ",
+        author: "Эдсгер Дейкстра",
+        rewardLumens: 55,
+        rewardXp: 160
+      }
+    ];
+
+    const quotes = window.dbEngine.getMiniGamesData()?.cryptorQuotes || defaultQuotes;
     this.cryptorQuote = quotes[Math.floor(Math.random() * quotes.length)];
     this.cryptorGuessed.clear();
     this.cryptorMistakes = 0;
 
-    document.getElementById('cryptor-author').textContent = this.cryptorQuote.author || 'Неизвестный автор';
-    document.getElementById('cryptor-hint').textContent = this.cryptorQuote.hint || 'Литературный артефакт';
+    const authorEl = document.getElementById('cryptor-author');
+    if (authorEl) authorEl.textContent = this.cryptorQuote.author || 'Неизвестный автор';
+    const hintEl = document.getElementById('cryptor-hint');
+    if (hintEl) hintEl.textContent = this.cryptorQuote.hint || 'Литературный артефакт';
+
     this.renderCryptorPhrase();
     this.renderCryptorKeyboard();
     this.updateCryptorShields();
@@ -177,6 +243,7 @@ class MiniGamesSuite {
 
   renderCryptorPhrase() {
     const container = document.getElementById('cryptor-phrase-display');
+    if (!container || !this.cryptorQuote) return;
     container.innerHTML = '';
 
     const words = this.cryptorQuote.quote.split(' ');
@@ -201,6 +268,7 @@ class MiniGamesSuite {
 
   renderCryptorKeyboard() {
     const kb = document.getElementById('cryptor-keyboard');
+    if (!kb) return;
     kb.innerHTML = '';
     const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
 
@@ -227,17 +295,18 @@ class MiniGamesSuite {
       if (window.soundEngine) window.soundEngine.playWrong();
       this.updateCryptorShields();
       if (this.cryptorMistakes >= this.cryptorMaxMistakes) {
-        window.app.showToast('⚠️ Щиты истощены! Шифр не поддался. Попробуйте еще раз.', 'error');
-        this.loadCryptorQuote();
+        window.app.showToast('⚠️ Щиты истощены! Шифр перезагружен.', 'error');
+        setTimeout(() => this.loadCryptorQuote(), 1200);
       }
     }
   }
 
   updateCryptorShields() {
-    const count = this.cryptorMaxMistakes - this.cryptorMistakes;
+    const count = Math.max(0, this.cryptorMaxMistakes - this.cryptorMistakes);
     let shieldsStr = '';
     for (let i = 0; i < count; i++) shieldsStr += '🛡️ ';
-    document.getElementById('cryptor-shields').textContent = shieldsStr || '⚠️ Щиты сняты';
+    const el = document.getElementById('cryptor-shields');
+    if (el) el.textContent = shieldsStr || '⚠️ Щиты сняты';
   }
 
   checkCryptorWin() {
@@ -251,8 +320,8 @@ class MiniGamesSuite {
     }
 
     if (allFound) {
-      const lumens = this.cryptorQuote.rewardLumens || 50;
-      const xp = this.cryptorQuote.rewardXp || 150;
+      const lumens = this.cryptorQuote.rewardLumens || 60;
+      const xp = this.cryptorQuote.rewardXp || 180;
       window.auth.addLumens(lumens);
       window.auth.addXp(xp);
       window.auth.updateStat('cryptorSolved', 1);
@@ -269,8 +338,19 @@ class MiniGamesSuite {
   // =========================================================================
 
   initMemoryGame() {
-    const baseCards = window.dbEngine.getMiniGamesData().memoryCards || [];
-    // Duplicate for pairs
+    const defaultCards = [
+      { id: "m1", label: "Git Commit", icon: "📦", match: "commit" },
+      { id: "m2", label: "Git Push", icon: "🚀", match: "push" },
+      { id: "m3", label: "Octocat", icon: "🐙", match: "github" },
+      { id: "m4", label: "Чистый Код", icon: "💎", match: "clean" },
+      { id: "m5", label: "Нейросеть", icon: "🧠", match: "ai" },
+      { id: "m6", label: "Киберпанк", icon: "🕶️", match: "cyber" },
+      { id: "m7", label: "Квантовый Чип", icon: "⚛️", match: "quantum" },
+      { id: "m8", label: "База Данных", icon: "🗄️", match: "db" }
+    ];
+
+    const baseCards = window.dbEngine.getMiniGamesData()?.memoryCards || defaultCards;
+    // Duplicate for 8 pairs = 16 cards
     const deck = [...baseCards, ...baseCards].map((c, idx) => ({
       ...c,
       instanceId: `card_${idx}_${c.match}`
@@ -287,6 +367,7 @@ class MiniGamesSuite {
     document.getElementById('memory-pairs-left').textContent = `${baseCards.length}`;
 
     const grid = document.getElementById('memory-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     deck.forEach((card) => {
@@ -357,8 +438,8 @@ class MiniGamesSuite {
   }
 
   endMemoryGame() {
-    const lumens = Math.max(30, 100 - this.memoryMoves * 2);
-    const xp = 160;
+    const lumens = Math.max(35, 120 - this.memoryMoves * 2);
+    const xp = 180;
     window.auth.addLumens(lumens);
     window.auth.addXp(xp);
     window.auth.updateStat('memoryFlips', 1);
@@ -385,11 +466,12 @@ class MiniGamesSuite {
 
   renderShop() {
     this.updateShopUserPreview();
-    this.renderShopCategory('frames');
+    const activeTab = document.querySelector('.shop-tab-btn.active')?.dataset.shopTab || 'frames';
+    this.renderShopCategory(activeTab);
   }
 
   updateShopUserPreview() {
-    const user = window.auth.currentUser;
+    const user = window.auth?.currentUser;
     if (!user) return;
 
     const wrap = document.getElementById('shop-preview-avatar-wrap');
@@ -400,22 +482,29 @@ class MiniGamesSuite {
     const nameEl = document.getElementById('shop-preview-name');
     if (nameEl) nameEl.textContent = user.displayName || user.username;
     const titleEl = document.getElementById('shop-preview-title');
-    if (titleEl) titleEl.textContent = user.title || 'Читатель';
+    if (titleEl) titleEl.textContent = user.title || window.auth.getUserRankTag(user.level);
     const lumensEl = document.getElementById('shop-user-lumens');
     if (lumensEl) lumensEl.textContent = `${user.lumens || 0} ⬡`;
   }
 
   renderShopCategory(category) {
-    const user = window.auth.currentUser;
-    const items = window.dbEngine.getShopItems()[category] || [];
+    const user = window.auth?.currentUser;
+    const allShopItems = window.dbEngine.getShopItems();
+    const items = allShopItems[category] || [];
     const grid = document.getElementById('shop-items-grid');
+    if (!grid) return;
     grid.innerHTML = '';
 
+    if (items.length === 0) {
+      grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1;">Товары этой категории загружаются...</p>';
+      return;
+    }
+
     items.forEach((item) => {
-      const isUnlocked = user.unlockedCosmetics?.[category]?.includes(item.id) || item.price === 0;
-      const isEquipped = (category === 'frames' && user.avatarFrame === item.id) ||
-                         (category === 'backgrounds' && user.customBg === item.id) ||
-                         (category === 'titles' && user.title === item.name);
+      const isUnlocked = user?.unlockedCosmetics?.[category]?.includes(item.id) || item.price === 0;
+      const isEquipped = (category === 'frames' && user?.avatarFrame === item.id) ||
+                         (category === 'backgrounds' && user?.customBg === item.id) ||
+                         (category === 'titles' && user?.title === item.name);
 
       const card = document.createElement('div');
       card.className = 'shop-item-card tilt-card';
@@ -452,12 +541,16 @@ class MiniGamesSuite {
 
       grid.appendChild(card);
     });
+
+    if (window.app?.bindTiltEffect) window.app.bindTiltEffect();
   }
 
   buyItem(category, itemId, price, itemName) {
     const user = window.auth.currentUser;
+    if (!user) return;
+
     if ((user.lumens || 0) < price) {
-      window.app.showToast('Недостаточно люменов (⬡)! Сыграйте в мини-игры или почитайте книги.', 'error');
+      window.app.showToast('Недостаточно люменов (⬡)! Читайте книги или играйте в игры.', 'error');
       if (window.soundEngine) window.soundEngine.playWrong();
       return;
     }
@@ -475,6 +568,8 @@ class MiniGamesSuite {
 
   equipItem(category, itemId, itemName) {
     const user = window.auth.currentUser;
+    if (!user) return;
+
     if (category === 'frames') user.avatarFrame = itemId;
     else if (category === 'backgrounds') user.customBg = itemId;
     else if (category === 'titles') user.title = itemName;
