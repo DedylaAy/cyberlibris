@@ -1,0 +1,421 @@
+/* ==========================================================================
+   MINI-GAMES SUITE & SHOP (АРЕНА МИНИ-ИГР И МАГАЗИН КАСТОМИЗАЦИИ)
+   ========================================================================== */
+
+/* Game Hub Navigation */
+.games-nav {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.game-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.game-tab-btn:hover {
+  color: #fff;
+  border-color: rgba(0, 240, 255, 0.4);
+}
+
+.game-tab-btn.active {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(157, 78, 221, 0.15));
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+/* Game Arena Wrapper */
+.game-arena-container {
+  min-height: 520px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-arena-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-glass);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.hud-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-glass);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* GAME 1: SPEED RUSH (СЛОВЕСНЫЙ ШТОРМ) */
+.speed-rush-box {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.speed-target-banner {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.speed-target-word {
+  font-size: 3rem;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+  min-height: 60px;
+}
+
+.speed-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  max-width: 700px;
+  margin: 0 auto 2.5rem;
+}
+
+.speed-word-card {
+  padding: 1.25rem 1rem;
+  background: rgba(10, 16, 28, 0.8);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+}
+
+.speed-word-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.speed-word-card.correct {
+  background: rgba(0, 255, 136, 0.2);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  animation: pulse-dot 0.4s ease;
+}
+
+.speed-word-card.wrong {
+  background: rgba(255, 0, 127, 0.2);
+  border-color: var(--accent-magenta);
+  color: var(--accent-magenta);
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+/* GAME 2: CYBER CRYPTOR (КИБЕР-КРИПТОР) */
+.cryptor-box {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cryptor-hint-banner {
+  background: rgba(157, 78, 221, 0.1);
+  border: 1px solid rgba(157, 78, 221, 0.3);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.4rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: #d8b4fe;
+  font-size: 0.95rem;
+}
+
+.cryptor-phrase-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
+.cryptor-word-group {
+  display: flex;
+  gap: 0.35rem;
+  margin-right: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.cryptor-slot {
+  width: 44px;
+  height: 52px;
+  border-bottom: 3px solid var(--accent-cyan);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  transition: all 0.2s;
+}
+
+.cryptor-slot.revealed {
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.cryptor-keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.crypto-key {
+  width: 42px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  border-radius: 6px;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.crypto-key:hover:not(:disabled) {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+.crypto-key:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* GAME 3: MEMORY MATRIX (МАТРИЦА ПАМЯТИ) */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  max-width: 600px;
+  margin: 0 auto;
+  perspective: 1000px;
+}
+
+.memory-card {
+  aspect-ratio: 1;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+}
+
+.memory-card.flipped, .memory-card.matched {
+  transform: rotateY(180deg);
+}
+
+.memory-card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.memory-card-front {
+  background: linear-gradient(135deg, rgba(20, 28, 45, 0.9), rgba(10, 15, 25, 0.9));
+  border-color: rgba(0, 240, 255, 0.2);
+}
+
+.memory-card-front .card-cyber-pattern {
+  font-size: 2rem;
+  color: rgba(0, 240, 255, 0.4);
+}
+
+.memory-card-back {
+  background: linear-gradient(135deg, rgba(30, 42, 68, 0.95), rgba(15, 23, 40, 0.95));
+  border-color: var(--accent-cyan);
+  transform: rotateY(180deg);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+
+.memory-card-back .card-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.3rem;
+}
+
+.memory-card-back .card-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-align: center;
+}
+
+.memory-card.matched .memory-card-back {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+}
+
+/* WARDROBE & CUSTOMIZATION SHOP (МАГАЗИН КАСТОМИЗАЦИИ) */
+.shop-hero {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.user-preview-stage {
+  text-align: center;
+  background: rgba(12, 17, 28, 0.8);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-card);
+}
+
+.preview-avatar-large {
+  width: 110px;
+  height: 110px;
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.shop-catalog-tabs {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.4rem;
+}
+
+.shop-item-card {
+  background: rgba(15, 22, 36, 0.8);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all var(--transition-normal);
+}
+
+.shop-item-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.shop-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.shop-item-icon {
+  font-size: 1.8rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+}
+
+.shop-item-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.shop-item-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.shop-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-glass);
+  padding-top: 1rem;
+}
+
+.shop-price-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--accent-gold);
+}
+
+@media (max-width: 900px) {
+  .shop-hero {
+    grid-template-columns: 1fr;
+  }
+  .memory-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+  }
+}
