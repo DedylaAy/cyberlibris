@@ -277,7 +277,7 @@ class AuthManager {
 
   triggerLevelUpCelebration(newLevel) {
     if (window.soundEngine) window.soundEngine.playLevelUp();
-    if (window.app) {
+    if (window.app?.showLevelUpModal) {
       window.app.showLevelUpModal(newLevel);
     }
   }

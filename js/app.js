@@ -1226,8 +1226,25 @@ class AppController {
     if (modal) modal.classList.add('active');
   }
 
+  showLevelUpModal(level) {
+    const modal = document.getElementById('level-up-modal');
+    const numEl = document.getElementById('level-up-number');
+    if (!modal) return;
+    if (numEl) numEl.textContent = level;
+    modal.classList.add('active');
+
+    const closeBtn = document.getElementById('btn-close-levelup');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        modal.classList.remove('active');
+        if (window.soundEngine) window.soundEngine.playClick();
+      };
+    }
+  }
+
   closeAllModals() {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    document.getElementById('level-up-modal')?.classList.remove('active');
   }
 
   bindTiltEffect() {
