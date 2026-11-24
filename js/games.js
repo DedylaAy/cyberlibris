@@ -654,7 +654,7 @@ class MiniGamesSuite {
       btn.style.borderColor = 'var(--accent-magenta)';
       this.speedCombo = 1;
       document.getElementById('speed-combo-display').textContent = 'x1';
-      if (window.soundEngine) window.soundEngine.playError();
+      if (window.soundEngine) (window.soundEngine.playWrong || window.soundEngine.playError).call(window.soundEngine);
     }
   }
 
@@ -693,6 +693,12 @@ class MiniGamesSuite {
   bindQuizBookSelector() {
     document.getElementById('btn-back-to-quiz-books')?.addEventListener('click', () => {
       this.renderQuizBookSelector();
+    });
+    document.getElementById('btn-restart-quiz')?.addEventListener('click', () => {
+      if (this.selectedQuizBookId) {
+        this.startQuizForBook(this.selectedQuizBookId);
+        window.app?.showToast('Квиз начат заново с 1-го вопроса', 'info');
+      }
     });
   }
 
@@ -791,32 +797,39 @@ class MiniGamesSuite {
         const allBtns = answersGrid.querySelectorAll('.btn-quiz-answer');
         allBtns.forEach(b => b.disabled = true);
 
-        if (idx === q.correct) {
-          btn.style.background = 'rgba(0, 255, 136, 0.25)';
-          btn.style.borderColor = 'var(--accent-green)';
-          this.quizStreak += 1;
-          const reward = 30 * Math.min(3, this.quizStreak);
-          this.quizScore += reward;
+        try {
+          if (idx === q.correct) {
+            btn.style.background = 'rgba(0, 255, 136, 0.25)';
+            btn.style.borderColor = 'var(--accent-green)';
+            this.quizStreak += 1;
+            const reward = 30 * Math.min(3, this.quizStreak);
+            this.quizScore += reward;
 
-          if (window.auth) {
-            window.auth.addLumens(reward);
-            window.auth.addXp(reward * 2);
+            if (window.auth) {
+              window.auth.addLumens(reward);
+              window.auth.addXp(reward * 2);
+            }
+
+            if (window.dbEngine) {
+              window.dbEngine.updateQuestProgress('quest_cryptor', 1);
+              if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+            }
+
+            window.app.showToast(`Верно! +${reward} ⬡, +${reward * 2} XP`, 'reward');
+            if (window.soundEngine) window.soundEngine.playCorrect?.();
+          } else {
+            btn.style.background = 'rgba(255, 0, 127, 0.25)';
+            btn.style.borderColor = 'var(--accent-magenta)';
+            if (allBtns[q.correct]) {
+              allBtns[q.correct].style.background = 'rgba(0, 255, 136, 0.25)';
+              allBtns[q.correct].style.borderColor = 'var(--accent-green)';
+            }
+            this.quizStreak = 0;
+            window.app.showToast('Неверно! Правильный ответ подсвечен зелёным', 'error');
+            if (window.soundEngine) (window.soundEngine.playWrong || window.soundEngine.playError).call(window.soundEngine);
           }
-
-          if (window.dbEngine) {
-            window.dbEngine.updateQuestProgress('quest_cryptor', 1);
-            if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
-          }
-
-          window.app.showToast(`Верно! +${reward} ⬡, +${reward * 2} XP`, 'reward');
-          if (window.soundEngine) window.soundEngine.playCorrect();
-        } else {
-          btn.style.background = 'rgba(255, 0, 127, 0.25)';
-          btn.style.borderColor = 'var(--accent-magenta)';
-          allBtns[q.correct].style.background = 'rgba(0, 255, 136, 0.25)';
-          allBtns[q.correct].style.borderColor = 'var(--accent-green)';
-          this.quizStreak = 0;
-          if (window.soundEngine) window.soundEngine.playError();
+        } catch (err) {
+          console.error('Quiz evaluation error:', err);
         }
 
         setTimeout(() => {
@@ -841,12 +854,18 @@ class MiniGamesSuite {
     }
     if (answersGrid) {
       answersGrid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; margin-top: 1rem;">
-          <button class="btn btn-primary" id="btn-quiz-pick-another" style="padding:0.8rem 2rem;">
+        <div style="grid-column: 1/-1; display:flex; justify-content:center; gap:1rem; flex-wrap:wrap; margin-top: 1rem;">
+          <button class="btn btn-outline" id="btn-quiz-retry" style="padding:0.8rem 1.8rem;">
+            ↻ Пройти ещё раз
+          </button>
+          <button class="btn btn-primary" id="btn-quiz-pick-another" style="padding:0.8rem 1.8rem;">
             ← Выбрать другое произведение
           </button>
         </div>
       `;
+      answersGrid.querySelector('#btn-quiz-retry')?.addEventListener('click', () => {
+        if (this.selectedQuizBookId) this.startQuizForBook(this.selectedQuizBookId);
+      });
       answersGrid.querySelector('#btn-quiz-pick-another')?.addEventListener('click', () => {
         this.renderQuizBookSelector();
       });
@@ -1626,7 +1645,7 @@ class MiniGamesSuite {
 
     if ((user.lumens || 0) < price) {
       window.app.showToast('Недостаточно Люменов (⬡)! Читайте книги и проходите квизы.', 'error');
-      if (window.soundEngine) window.soundEngine.playError();
+      if (window.soundEngine) (window.soundEngine.playWrong || window.soundEngine.playError).call(window.soundEngine);
       return;
     }
 

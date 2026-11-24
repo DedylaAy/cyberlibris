@@ -168,6 +168,10 @@ class AudioEngine {
     osc.stop(now + 0.22);
   }
 
+  playError() {
+    return this.playWrong();
+  }
+
   playLevelUp() {
     if (this.isMuted) return;
     this.init();
