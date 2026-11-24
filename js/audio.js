@@ -172,6 +172,32 @@ class AudioEngine {
     return this.playWrong();
   }
 
+  playCoin() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    // Dual-tone celebratory coin chime (B5 -> E6)
+    const tones = [987.77, 1318.51];
+    tones.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const now = this.ctx.currentTime + idx * 0.08;
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.2 * this.volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.4);
+    });
+  }
+
   playLevelUp() {
     if (this.isMuted) return;
     this.init();
@@ -197,7 +223,7 @@ class AudioEngine {
     });
   }
 
-  // --- PROCEDURAL AMBIENT GENERATOR ---
+  // --- PROCEDURAL ACOUSTIC AMBIENT ENGINE (HIGH FIDELITY) ---
   playAmbient(type) {
     if (this.isMuted) return;
     this.init();
@@ -212,85 +238,101 @@ class AudioEngine {
     this.currentAmbient = type;
 
     const now = this.ctx.currentTime;
+    const sampleRate = this.ctx.sampleRate;
 
     if (type === 'rain') {
-      // Pink/White noise through bandpass
-      const bufferSize = this.ctx.sampleRate * 2;
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      let lastOut = 0.0;
+      // 1. STEREO NEON RAIN: Decorrelated pink noise with slow wind sweeps and glass droplet patter
+      const bufferSize = sampleRate * 3;
+      const buffer = this.ctx.createBuffer(2, bufferSize, sampleRate);
+      const chL = buffer.getChannelData(0);
+      const chR = buffer.getChannelData(1);
+
+      let b0L = 0, b1L = 0, b2L = 0;
+      let b0R = 0, b1R = 0, b2R = 0;
+
       for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        data[i] = (lastOut + 0.02 * white) / 1.02;
-        lastOut = data[i];
-        data[i] *= 3.5;
+        // Pink noise filter (Paul Kellet's algorithm)
+        const whiteL = Math.random() * 2 - 1;
+        b0L = 0.99886 * b0L + whiteL * 0.0555179;
+        b1L = 0.99332 * b1L + whiteL * 0.0750759;
+        b2L = 0.96900 * b2L + whiteL * 0.1538520;
+        chL[i] = (b0L + b1L + b2L + whiteL * 0.5362) * 0.12;
+
+        const whiteR = Math.random() * 2 - 1;
+        b0R = 0.99886 * b0R + whiteR * 0.0555179;
+        b1R = 0.99332 * b1R + whiteR * 0.0750759;
+        b2R = 0.96900 * b2R + whiteR * 0.1538520;
+        chR[i] = (b0R + b1R + b2R + whiteR * 0.5362) * 0.12;
+
+        // Occasional soft glass droplet tap
+        if (Math.random() < 0.00035) {
+          const drop = (Math.random() - 0.5) * 0.45;
+          chL[i] += drop;
+          chR[i] += drop * 0.8;
+        }
       }
 
       const noise = this.ctx.createBufferSource();
       noise.buffer = buffer;
       noise.loop = true;
 
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 800;
+      // Lowpass + Highpass for cozy window soundscape
+      const lowpass = this.ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.setValueAtTime(680, now);
+
+      const highpass = this.ctx.createBiquadFilter();
+      highpass.type = 'highpass';
+      highpass.frequency.setValueAtTime(140, now);
+
+      // Subtle LFO modulation for rain surge
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.frequency.setValueAtTime(0.12, now); // Slow 8-second wave
+      lfoGain.gain.setValueAtTime(120, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(lowpass.frequency);
 
       const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(0.08 * this.volume, now);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.08 * this.volume, now + 0.5);
 
-      noise.connect(filter);
-      filter.connect(gain);
+      noise.connect(highpass);
+      highpass.connect(lowpass);
+      lowpass.connect(gain);
       gain.connect(this.ctx.destination);
 
-      noise.start();
-      this.ambientNodes = { noise, gain };
+      lfo.start(now);
+      noise.start(now);
+
+      this.ambientNodes = { noise, lfo, gain };
       return true;
-    } else if (type === 'cyber') {
-      // Low drone (55Hz) with subtle LFO
-      const osc = this.ctx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(55, now);
 
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(220, now);
-
-      const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(0.06 * this.volume, now);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start();
-      this.ambientNodes = { osc, gain };
-      return true;
-    } else if (type === 'binaural') {
-      // 432Hz focus tone
-      const osc = this.ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(432, now);
-
-      const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(0.05 * this.volume, now);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start();
-      this.ambientNodes = { osc, gain };
-      return true;
     } else if (type === 'fire') {
-      // Warm crackling fireplace & cozy library hearth
-      const bufferSize = this.ctx.sampleRate * 2;
-      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      let last = 0;
+      // 2. LIBRARY FIREPLACE: Warm low-end ember bed + natural crackling wood pops
+      const bufferSize = sampleRate * 3;
+      const buffer = this.ctx.createBuffer(2, bufferSize, sampleRate);
+      const chL = buffer.getChannelData(0);
+      const chR = buffer.getChannelData(1);
+
+      let lastL = 0;
+      let lastR = 0;
+
       for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        last = (last + 0.03 * white) / 1.03;
-        data[i] = last * 2.5;
-        if (Math.random() < 0.0015) {
-          data[i] += (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.5);
+        // Warm brown noise for steady hearth flame
+        const whiteL = Math.random() * 2 - 1;
+        lastL = (lastL + 0.02 * whiteL) / 1.02;
+        chL[i] = lastL * 2.2;
+
+        const whiteR = Math.random() * 2 - 1;
+        lastR = (lastR + 0.02 * whiteR) / 1.02;
+        chR[i] = lastR * 2.2;
+
+        // Natural birch wood crackles & ember snaps
+        if (Math.random() < 0.00045) {
+          const pop = (Math.random() > 0.5 ? 1 : -1) * (0.35 + Math.random() * 0.45);
+          chL[i] += pop;
+          chR[i] += pop * (0.6 + Math.random() * 0.6);
         }
       }
 
@@ -300,17 +342,170 @@ class AudioEngine {
 
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(700, now);
+      filter.frequency.setValueAtTime(550, now);
 
       const gain = this.ctx.createGain();
-      gain.gain.setValueAtTime(0.08 * this.volume, now);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.085 * this.volume, now + 0.4);
 
       noise.connect(filter);
       filter.connect(gain);
       gain.connect(this.ctx.destination);
 
-      noise.start();
+      noise.start(now);
       this.ambientNodes = { noise, gain };
+      return true;
+
+    } else if (type === 'cyber') {
+      // 3. COSMIC MEDITATION PAD: Lush, rich multi-oscillator chord (A1, E2, A2) with soft chorus
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.06 * this.volume, now + 0.6);
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(260, now);
+
+      // Deep root 55Hz (A1)
+      const osc1 = this.ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(55.0, now);
+
+      // Warm 5th 82.4Hz (E2)
+      const osc2 = this.ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(82.4, now);
+
+      // Shimmering octave 110Hz (A2) with gentle detune
+      const osc3 = this.ctx.createOscillator();
+      osc3.type = 'triangle';
+      osc3.frequency.setValueAtTime(110.3, now);
+
+      // Ambient 0.08Hz chorus sweep
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.frequency.setValueAtTime(0.08, now);
+      lfoGain.gain.setValueAtTime(70, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      osc3.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      lfo.start(now);
+      osc1.start(now);
+      osc2.start(now);
+      osc3.start(now);
+
+      this.ambientNodes = { osc: osc1, osc2, osc3, lfo, gain };
+      return true;
+
+    } else if (type === 'library') {
+      // 4. ACADEMY HALL: Soft room air breath + delicate whisper of parchment pages
+      const bufferSize = sampleRate * 3;
+      const buffer = this.ctx.createBuffer(2, bufferSize, sampleRate);
+      const chL = buffer.getChannelData(0);
+      const chR = buffer.getChannelData(1);
+
+      let prevL = 0;
+      let prevR = 0;
+
+      for (let i = 0; i < bufferSize; i++) {
+        const wL = Math.random() * 2 - 1;
+        prevL = (prevL + 0.015 * wL) / 1.015;
+        chL[i] = prevL * 1.5;
+
+        const wR = Math.random() * 2 - 1;
+        prevR = (prevR + 0.015 * wR) / 1.015;
+        chR[i] = prevR * 1.5;
+
+        // Occasional delicate whisper of antique page rustle
+        if (Math.random() < 0.00015) {
+          const rustle = (Math.random() - 0.5) * 0.28;
+          chL[i] += rustle;
+          chR[i] += rustle * 0.7;
+        }
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(450, now);
+      bandpass.Q.setValueAtTime(0.7, now);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.065 * this.volume, now + 0.4);
+
+      noise.connect(bandpass);
+      bandpass.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      noise.start(now);
+      this.ambientNodes = { noise, gain };
+      return true;
+
+    } else if (type === 'binaural') {
+      // 5. BINAURAL 432 HZ FLOW: Left 432 Hz, Right 438 Hz (6Hz Theta Flow) + 108Hz Sub Pad
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.055 * this.volume, now + 0.5);
+
+      // Stereo Panner for true binaural separation
+      let panL, panR;
+      try {
+        panL = this.ctx.createStereoPanner();
+        panL.pan.setValueAtTime(-1, now);
+        panR = this.ctx.createStereoPanner();
+        panR.pan.setValueAtTime(1, now);
+      } catch (e) {
+        panL = null;
+        panR = null;
+      }
+
+      // Left ear 432 Hz
+      const oscL = this.ctx.createOscillator();
+      oscL.type = 'sine';
+      oscL.frequency.setValueAtTime(432.0, now);
+
+      // Right ear 438 Hz (creates soothing 6Hz Theta beat)
+      const oscR = this.ctx.createOscillator();
+      oscR.type = 'sine';
+      oscR.frequency.setValueAtTime(438.0, now);
+
+      // Sub-bass 108 Hz warm floor
+      const sub = this.ctx.createOscillator();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(108.0, now);
+
+      const subGain = this.ctx.createGain();
+      subGain.gain.setValueAtTime(0.35, now);
+      sub.connect(subGain);
+      subGain.connect(gain);
+
+      if (panL && panR) {
+        oscL.connect(panL);
+        panL.connect(gain);
+        oscR.connect(panR);
+        panR.connect(gain);
+      } else {
+        oscL.connect(gain);
+        oscR.connect(gain);
+      }
+
+      gain.connect(this.ctx.destination);
+
+      oscL.start(now);
+      oscR.start(now);
+      sub.start(now);
+
+      this.ambientNodes = { osc: oscL, oscR, sub, gain };
       return true;
     }
     return false;
@@ -319,11 +514,28 @@ class AudioEngine {
   stopAmbient() {
     if (this.ambientNodes) {
       try {
-        if (this.ambientNodes.noise) this.ambientNodes.noise.stop();
-        if (this.ambientNodes.osc) this.ambientNodes.osc.stop();
-        if (this.ambientNodes.gain) this.ambientNodes.gain.disconnect();
-      } catch (e) {}
-      this.ambientNodes = null;
+        const now = this.ctx ? this.ctx.currentTime : 0;
+        if (this.ambientNodes.gain && this.ctx) {
+          this.ambientNodes.gain.gain.linearRampToValueAtTime(0.0001, now + 0.15);
+        }
+        setTimeout(() => {
+          try {
+            if (this.ambientNodes) {
+              if (this.ambientNodes.noise) this.ambientNodes.noise.stop();
+              if (this.ambientNodes.osc) this.ambientNodes.osc.stop();
+              if (this.ambientNodes.osc2) this.ambientNodes.osc2.stop();
+              if (this.ambientNodes.osc3) this.ambientNodes.osc3.stop();
+              if (this.ambientNodes.oscR) this.ambientNodes.oscR.stop();
+              if (this.ambientNodes.sub) this.ambientNodes.sub.stop();
+              if (this.ambientNodes.lfo) this.ambientNodes.lfo.stop();
+              if (this.ambientNodes.gain) this.ambientNodes.gain.disconnect();
+            }
+          } catch (e) {}
+          this.ambientNodes = null;
+        }, 160);
+      } catch (e) {
+        this.ambientNodes = null;
+      }
     }
     this.currentAmbient = null;
   }

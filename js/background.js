@@ -249,7 +249,39 @@ class ReactiveBackground {
     const validShapes = ['auto', 'stars', 'hearts', 'pixels', 'embers', 'petals', 'bubbles'];
     this.particleShape = validShapes.includes(shape) ? shape : 'auto';
     localStorage.setItem('cyberlibris_particle_shape', this.particleShape);
+    this.resume();
     this.setupTheme(this.currentTheme);
+    this.triggerShapeShower(this.particleShape);
+  }
+
+  triggerShapeShower(shape) {
+    if (this.isLowPower) return;
+    const activeShape = shape === 'auto' ? this.getActiveShape() : shape;
+    const cfg = THEME_CONFIG[this.currentTheme] || THEME_CONFIG['theme-cyberpunk'];
+    const burstCount = 28;
+
+    for (let i = 0; i < burstCount; i++) {
+      const angle = (Math.PI * 2 / burstCount) * i + (Math.random() - 0.5) * 0.5;
+      const speed = Math.random() * 5 + 2.5;
+      const color = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
+      const startX = this.width * 0.5 + (Math.random() - 0.5) * (this.width * 0.4);
+      const startY = this.height * 0.4 + (Math.random() - 0.5) * (this.height * 0.3);
+
+      this.bursts.push({
+        x: startX,
+        y: startY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: Math.random() * 8 + 6,
+        color: color,
+        alpha: 1,
+        life: 1,
+        decay: Math.random() * 0.025 + 0.015,
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.08,
+        shape: activeShape
+      });
+    }
   }
 
   setTheme(themeId) {
@@ -263,6 +295,7 @@ class ReactiveBackground {
 
     this.currentTheme = themeId;
     localStorage.setItem('cyberlibris_theme', themeId);
+    this.resume();
     this.setupTheme(themeId);
 
     // Sync body class for ambient lighting and page style shift
@@ -282,9 +315,9 @@ class ReactiveBackground {
     const cfg = THEME_CONFIG[themeId] || THEME_CONFIG['theme-cyberpunk'];
     const activeShape = this.getActiveShape();
 
-    // In Low-Power mode: only 16 particles; in Standard mode: 24 to max 38 particles
-    const maxTarget = this.isLowPower ? 16 : cfg.maxParticles;
-    const count = Math.min(maxTarget, Math.max(14, Math.floor((this.width * this.height) / 45000)));
+    // Vibrant, prominent particle counts and sizes
+    const maxTarget = this.isLowPower ? 24 : 58;
+    const count = Math.min(maxTarget, Math.max(22, Math.floor((this.width * this.height) / 28000)));
 
     const chars = ['0', '1', '✦', '✧', '◈', 'λ', '§', '⚡', '★', '♦'];
 
@@ -293,28 +326,28 @@ class ReactiveBackground {
       let size, vx, vy;
 
       if (activeShape === 'hearts') {
-        size = Math.random() * 8 + 8;
+        size = Math.random() * 10 + 12;
         vx = (Math.random() - 0.5) * 0.8 * cfg.speedMult;
         vy = -(Math.random() * 1.0 + 0.3) * cfg.speedMult;
       } else if (activeShape === 'stars') {
-        size = Math.random() * 6 + 4;
-        vx = (Math.random() - 0.5) * 0.5 * cfg.speedMult;
-        vy = (Math.random() - 0.5) * 0.5 * cfg.speedMult;
+        size = Math.random() * 8 + 9;
+        vx = (Math.random() - 0.5) * 0.6 * cfg.speedMult;
+        vy = (Math.random() - 0.5) * 0.6 * cfg.speedMult;
       } else if (activeShape === 'pixels') {
-        size = Math.random() * 5 + 4;
+        size = Math.random() * 7 + 8;
         vx = (Math.random() - 0.5) * 1.1 * cfg.speedMult;
         vy = (Math.random() - 0.5) * 1.1 * cfg.speedMult;
       } else if (activeShape === 'embers') {
-        size = Math.random() * 4 + 2;
+        size = Math.random() * 6 + 6;
         vx = (Math.random() - 0.5) * 0.9 * cfg.speedMult;
         vy = -(Math.random() * 1.4 + 0.5) * cfg.speedMult;
       } else if (activeShape === 'petals') {
-        size = Math.random() * 7 + 5;
+        size = Math.random() * 9 + 10;
         vx = (Math.random() - 0.5) * 0.7 * cfg.speedMult;
         vy = (Math.random() * 0.8 + 0.3) * cfg.speedMult;
       } else {
         // bubbles
-        size = Math.random() * 6 + 4;
+        size = Math.random() * 8 + 8;
         vx = (Math.random() - 0.5) * 0.6 * cfg.speedMult;
         vy = -(Math.random() * 0.8 + 0.2) * cfg.speedMult;
       }
@@ -328,7 +361,7 @@ class ReactiveBackground {
         baseVy: vy,
         size: size,
         color: color,
-        alpha: Math.random() * 0.55 + 0.35,
+        alpha: Math.random() * 0.4 + 0.55,
         rot: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.03,
         pulse: Math.random() * Math.PI * 2,

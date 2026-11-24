@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap">
   </noscript>
 
-  <!-- Core & Custom Stylesheets (with cache-busting v5.0.4) -->
-  <link rel="stylesheet" href="css/main.css?v=5.0.4">
-  <link rel="stylesheet" href="css/animations.css?v=5.0.4">
-  <link rel="stylesheet" href="css/reader.css?v=5.0.4">
-  <link rel="stylesheet" href="css/games.css?v=5.0.4">
+  <!-- Core & Custom Stylesheets (with cache-busting v5.1.0) -->
+  <link rel="stylesheet" href="css/main.css?v=5.1.0">
+  <link rel="stylesheet" href="css/animations.css?v=5.1.0">
+  <link rel="stylesheet" href="css/reader.css?v=5.1.0">
+  <link rel="stylesheet" href="css/games.css?v=5.1.0">
 
   <style>
     .books-grid {
@@ -464,7 +464,7 @@
           <span class="logo-symbol">CL</span>
         </div>
         <div class="logo-text">
-          <h1>CyberLibris <span class="logo-badge">V3.0 STEAM</span></h1>
+          <h1>CyberLibris <span class="logo-badge">V3.0</span></h1>
           <div class="logo-sub">Нео-Библиотека & Геймифицированный Хаб</div>
         </div>
       </div>
@@ -474,7 +474,7 @@
         <ul class="nav-menu">
           <li class="nav-item">
             <button class="nav-btn active magnetic-btn" data-view="library">
-              Магазин
+              Каталог
             </button>
           </li>
           <li class="nav-item">
@@ -494,7 +494,7 @@
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="shop">
-              Предметы
+              Магазин
             </button>
           </li>
           <li class="nav-item">
@@ -1192,6 +1192,13 @@
                     <input type="checkbox" id="toggle-focus-guide" style="accent-color: var(--accent-cyan); width: 18px; height: 18px;">
                   </label>
                 </div>
+
+                <!-- Reset Progress Action -->
+                <div class="popover-section" style="border-top: 1px solid var(--border-glass); padding-top: 0.8rem;">
+                  <button class="btn btn-secondary btn-sm" id="btn-reader-reset-progress" style="width: 100%; color: #ff7788; border-color: rgba(255, 119, 136, 0.4);" onclick="window.readerEngine.resetBookProgress()">
+                    🔄 Сбросить прогресс книги
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1363,6 +1370,32 @@
           </div>
         </div>
 
+        <!-- Daily Game Energy & Currency Replay Banner -->
+        <div class="games-energy-banner">
+          <div class="energy-banner-left">
+            <div class="energy-badge-icon">⚡</div>
+            <div>
+              <div class="energy-title">Дневная Энергия Аркады</div>
+              <div class="energy-sub">3 бесплатные попытки на каждую мини-игру в день. Сброс в 00:00. Повторный раунд: 25 ⬡</div>
+            </div>
+          </div>
+          <div class="energy-banner-center">
+            <div class="energy-reward-pill" title="Читайте книги в Нео-Библиотеке, чтобы зарабатывать Люмены!">
+              <span class="energy-reward-icon">📖</span>
+              <span class="energy-reward-text">Очки за книги: <strong>+150 ⬡</strong> за прочитанную книгу · <strong>+15 ⬡</strong>/мин · <strong>+10 ⬡</strong>/глава</span>
+            </div>
+          </div>
+          <div class="energy-banner-right">
+            <div class="user-lumens-pill" id="games-user-lumens-pill" title="Ваш баланс Люменов">
+              <span style="color:var(--accent-cyan); font-weight:800; font-size:0.85rem;">Баланс:</span>
+              <span id="games-user-lumens-val" style="color:var(--accent-gold); font-weight:900; font-size:1.05rem;">0 ⬡</span>
+            </div>
+            <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-energy-go-library" onclick="window.app.switchView('steam-library')">
+              📚 Читать книги
+            </button>
+          </div>
+        </div>
+
         <!-- Games Tab Selector -->
         <div class="games-nav">
           <button class="game-tab-btn active magnetic-btn" data-game="speed">
@@ -1387,6 +1420,10 @@
           <!-- GAME 1: SPEED RUSH -->
           <div class="game-arena-view" id="game-view-speed">
             <div class="game-arena-hud">
+              <div class="hud-stat-pill energy-stat-pill" id="energy-pill-speed" title="Доступно 3 бесплатных попытки в день">
+                <span>⚡ Попытки:</span>
+                <span class="energy-val" style="color: var(--accent-green); font-weight:800;">3 / 3</span>
+              </div>
               <div class="hud-stat-pill">
                 <span>Таймер:</span>
                 <span id="speed-timer-display" style="color: var(--accent-magenta);">30с</span>
@@ -1446,6 +1483,10 @@
               </div>
 
               <div class="game-arena-hud">
+                <div class="hud-stat-pill energy-stat-pill" id="energy-pill-quiz" title="Доступно 3 бесплатных попытки в день">
+                  <span>⚡ Попытки:</span>
+                  <span class="energy-val" style="color: var(--accent-green); font-weight:800;">3 / 3</span>
+                </div>
                 <div class="hud-stat-pill">
                   <span id="quiz-number-display">Вопрос 1 из 8</span>
                 </div>
@@ -1476,6 +1517,10 @@
           <!-- GAME 3: LITERARY MEMORY MATRIX (МЕМОРИ-КАРТЫ) -->
           <div class="game-arena-view" id="game-view-memory" style="display: none;">
             <div class="game-arena-hud">
+              <div class="hud-stat-pill energy-stat-pill" id="energy-pill-memory" title="Доступно 3 бесплатных попытки в день">
+                <span>⚡ Попытки:</span>
+                <span class="energy-val" style="color: var(--accent-green); font-weight:800;">3 / 3</span>
+              </div>
               <div class="hud-stat-pill">
                 <span>Время:</span>
                 <span id="memory-timer-display" style="color: var(--accent-magenta);">00:00</span>
@@ -1518,6 +1563,10 @@
           <!-- GAME 4: SPEED READING & FLASH MEMORY (СКОРОЧТЕНИЕ) -->
           <div class="game-arena-view" id="game-view-speedread" style="display: none;">
             <div class="game-arena-hud">
+              <div class="hud-stat-pill energy-stat-pill" id="energy-pill-speedread" title="Доступно 3 бесплатных попытки в день">
+                <span>⚡ Попытки:</span>
+                <span class="energy-val" style="color: var(--accent-green); font-weight:800;">3 / 3</span>
+              </div>
               <div class="hud-stat-pill">
                 <span>📖 Фрагмент:</span>
                 <span id="speedread-book-title" style="color: var(--accent-gold);">«Мастер и Маргарита»</span>
@@ -1587,6 +1636,10 @@
           <!-- GAME 5: QUOTE MEMORY RECONSTRUCTOR (МНЕМО-ЦИТАТЫ) -->
           <div class="game-arena-view" id="game-view-reconstruct" style="display: none;">
             <div class="game-arena-hud">
+              <div class="hud-stat-pill energy-stat-pill" id="energy-pill-reconstruct" title="Доступно 3 бесплатных попытки в день">
+                <span>⚡ Попытки:</span>
+                <span class="energy-val" style="color: var(--accent-green); font-weight:800;">3 / 3</span>
+              </div>
               <div class="hud-stat-pill">
                 <span id="reconstruct-quote-num">Цитата 1 из 8</span>
               </div>
@@ -1661,8 +1714,8 @@
       <section id="view-shop" class="view-section">
         <div class="section-header">
           <div class="section-title-wrap">
-            <h2>Нео-Гардероб & Предметы Steam</h2>
-            <p>Преображайте облик своего аватара, разблокируйте живые анимированные обводки и меняйте интерактивный фон приложения.</p>
+            <h2>Магазин Наград & Кастомизации</h2>
+            <p>Преображайте облик своего аватара, разблокируйте живые анимированные обводки и меняйте интерактивные фоны за Люмены (⬡).</p>
           </div>
           <div style="font-size: 1.2rem; font-weight: 800; color: var(--accent-gold);">
             Баланс: <span id="shop-user-lumens">0 ⬡</span>
@@ -1871,7 +1924,7 @@
                   <strong class="metric-val" id="featured-stat-time">45 мин</strong>
                 </div>
                 <div class="featured-metric-item">
-                  <span class="metric-label">Оценка Steam</span>
+                  <span class="metric-label">Рейтинг читателей</span>
                   <strong class="metric-val" style="color: #66c0f4;">98% (Шедевр)</strong>
                 </div>
               </div>
@@ -1965,34 +2018,46 @@
           </div>
         </div>
 
-        <!-- Literary Competence & Taste Matrix -->
-        <div class="cyber-card tilt-card" style="margin-bottom: 2rem; padding: 1.6rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.4rem; flex-wrap:wrap; gap:0.5rem;">
-            <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-              Литературная Матрица Компетенций Читателя
-            </h3>
+        <!-- Literary Competence & Taste Matrix (Rank + Fanning Card Deck) -->
+        <div class="competence-matrix-card tilt-card" style="margin-bottom: 2rem;">
+          <div class="competence-matrix-header">
+            <div class="competence-title-row">
+              <span style="font-size: 1.4rem;">🏛️</span>
+              <div>
+                <h3>Литературная Матрица Компетенций Читателя</h3>
+                <div style="font-size: 0.78rem; color: #8e9bb0;">Звание и персональная колода прочитанных произведений</div>
+              </div>
+            </div>
             <span class="rarity-pill rarity-pill-masterpiece" id="profile-competence-badge">ЭРУДИЦИЯ: РАНГ S+</span>
           </div>
-          <div class="radar-bars-grid" id="profile-radar-grid">
-            <div class="radar-bar-row">
-              <div class="radar-bar-label"><span>Военная Стратегия & Мужество</span><strong style="color: #ffaa00;">94%</strong></div>
-              <div class="radar-track"><div class="radar-fill" style="width: 94%; background: linear-gradient(90deg, #ff5500, #ffaa00);"></div></div>
+
+          <div class="competence-layout">
+            <!-- Left: Badge, Insignia and Rank Title -->
+            <div class="competence-rank-identity">
+              <div class="rank-insignia-seal" id="profile-rank-seal">
+                <span class="rank-insignia-icon" id="profile-rank-icon">👑</span>
+                <span class="rank-insignia-level-pill" id="profile-rank-level-pill">LVL 35</span>
+              </div>
+              <div class="rank-text-info">
+                <div class="rank-current-title" id="profile-rank-title">Создатель Системы [CREATOR]</div>
+                <div class="rank-qualification-desc" id="profile-rank-desc">
+                  Высшее литературное звание присуждено на основе шедевров, прочитанных в библиотеке.
+                </div>
+                <div class="rank-stats-pills-row" id="profile-rank-pills">
+                  <span class="rank-mini-pill" id="profile-rank-books-count">📚 Прочитано: 0 книг</span>
+                  <span class="rank-mini-pill" id="profile-rank-speed-pill">⚡ Скорость: 620 WPM</span>
+                </div>
+              </div>
             </div>
-            <div class="radar-bar-row">
-              <div class="radar-bar-label"><span>Научная Фантастика & Киберпанк</span><strong style="color: #00f0ff;">88%</strong></div>
-              <div class="radar-track"><div class="radar-fill" style="width: 88%; background: linear-gradient(90deg, #9d4edd, #00f0ff);"></div></div>
-            </div>
-            <div class="radar-bar-row">
-              <div class="radar-bar-label"><span>Готическая Мистика & Детектив</span><strong style="color: #00ff88;">82%</strong></div>
-              <div class="radar-track"><div class="radar-fill" style="width: 82%; background: linear-gradient(90deg, #00f0ff, #00ff88);"></div></div>
-            </div>
-            <div class="radar-bar-row">
-              <div class="radar-bar-label"><span>Философия & Монументальные Фолианты</span><strong style="color: #ffd700;">96%</strong></div>
-              <div class="radar-track"><div class="radar-fill" style="width: 96%; background: linear-gradient(90deg, #ffd700, #ff007f);"></div></div>
-            </div>
-            <div class="radar-bar-row">
-              <div class="radar-bar-label"><span>Психологическая Глубина & Драма</span><strong style="color: #c084fc;">91%</strong></div>
-              <div class="radar-track"><div class="radar-fill" style="width: 91%; background: linear-gradient(90deg, #00ff88, #c084fc);"></div></div>
+
+            <!-- Right: Interactive Fanning Card Deck of Actually Read Books -->
+            <div class="competence-deck-stage">
+              <div class="deck-hint-label">
+                <span>🎴 Колода прочитанных книг (наведите курсор):</span>
+              </div>
+              <div class="fanning-card-deck" id="profile-fanning-deck" title="Нажмите, чтобы развернуть колоду книг">
+                <!-- Dynamically populated by app.js based on user's actual read/completed books -->
+              </div>
             </div>
           </div>
         </div>
@@ -2219,6 +2284,62 @@
         <button class="btn btn-secondary btn-sm" id="btn-rsvp-prev">⏮ -15 слов</button>
         <button class="btn btn-primary" id="btn-rsvp-play" style="min-width: 140px;">⏸ Пауза</button>
         <button class="btn btn-secondary btn-sm" id="btn-rsvp-next">+15 слов ⏭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arcade Energy Replay & Currency Modal -->
+  <div class="modal-overlay" id="modal-game-energy-refill">
+    <div class="modal-box" style="max-width: 540px; text-align: center;">
+      <div class="modal-header">
+        <h3 style="color: var(--accent-magenta); display: flex; align-items: center; justify-content: center; gap: 0.6rem;">
+          ⚡ Дневные Попытки Исчерпаны
+        </h3>
+        <button class="modal-close-btn" id="btn-close-energy-modal">✕</button>
+      </div>
+      <div class="energy-modal-body" style="padding: 1rem 0.5rem;">
+        <div style="font-size: 2.8rem; margin-bottom: 0.8rem; animation: float 2.5s ease-in-out infinite;">🎮</div>
+        <h4 id="energy-modal-game-title" style="color: #fff; font-size: 1.3rem; margin-bottom: 0.5rem; font-weight:800;">
+          Словесный Шторм
+        </h4>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+          Вы использовали все <strong>3 бесплатные попытки</strong> на сегодня для этой игры.<br>
+          Желаете сыграть дополнительный раунд за Люмены (очки чтения)?
+        </p>
+
+        <div class="energy-modal-cost-box" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.2rem; margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+            <span style="color: var(--text-dim); font-size: 0.95rem;">Стоимость доп. раунда:</span>
+            <span style="color: var(--accent-magenta); font-weight: 900; font-size: 1.25rem;" id="energy-modal-cost-val">25 ⬡</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.08);">
+            <span style="color: var(--text-dim); font-size: 0.95rem;">Ваш текущий баланс:</span>
+            <span style="color: var(--accent-gold); font-weight: 800; font-size: 1.15rem;" id="energy-modal-balance-val">0 ⬡</span>
+          </div>
+        </div>
+
+        <div class="energy-modal-earn-tips" style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: var(--radius-md); padding: 1rem; text-align: left; margin-bottom: 1.5rem; font-size: 0.88rem;">
+          <div style="color: var(--accent-cyan); font-weight: 800; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+            💡 Как заработать очки (Люмены) за чтение книг:
+          </div>
+          <div style="color: var(--text-muted); line-height: 1.6;">
+            • <strong>+150 ⬡</strong> — за завершение чтения книги целиком<br>
+            • <strong>+15 ⬡</strong> — за каждую минуту активного чтения в читалке<br>
+            • <strong>+10 ⬡</strong> — за каждую прочитанную главу
+          </div>
+        </div>
+
+        <div class="energy-modal-actions" style="display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-primary magnetic-btn" id="btn-energy-buy-play" style="padding: 0.8rem 1.6rem;">
+            ⚡ Сыграть за 25 ⬡
+          </button>
+          <button class="btn btn-secondary magnetic-btn" id="btn-energy-read-books" style="padding: 0.8rem 1.4rem;">
+            📖 Читать книги (+150 ⬡)
+          </button>
+          <button class="btn btn-outline btn-sm magnetic-btn" id="btn-energy-cancel" style="padding: 0.8rem 1.2rem;">
+            Отмена
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2987,18 +3108,18 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- Scripts (with cache-busting v5.0.4) -->
-  <script src="js/audio.js?v=5.0.4"></script>
-  <script src="js/background.js?v=5.0.4"></script>
-  <script src="js/github.js?v=5.0.4"></script>
-  <script src="js/db.js?v=5.0.4"></script>
-  <script src="js/auth.js?v=5.0.4"></script>
-  <script src="js/bookRelay.js?v=5.0.4"></script>
-  <script src="js/recommendations.js?v=5.0.4"></script>
-  <script src="js/openlibrary.js?v=5.0.4"></script>
-  <script src="js/reader.js?v=5.0.4"></script>
-  <script src="js/games.js?v=5.0.4"></script>
-  <script src="js/admin.js?v=5.0.4"></script>
-  <script src="js/app.js?v=5.0.4"></script>
+  <!-- Scripts (with cache-busting v5.1.0) -->
+  <script src="js/audio.js?v=5.1.0"></script>
+  <script src="js/background.js?v=5.1.0"></script>
+  <script src="js/github.js?v=5.1.0"></script>
+  <script src="js/db.js?v=5.1.0"></script>
+  <script src="js/auth.js?v=5.1.0"></script>
+  <script src="js/bookRelay.js?v=5.1.0"></script>
+  <script src="js/recommendations.js?v=5.1.0"></script>
+  <script src="js/openlibrary.js?v=5.1.0"></script>
+  <script src="js/reader.js?v=5.1.0"></script>
+  <script src="js/games.js?v=5.1.0"></script>
+  <script src="js/admin.js?v=5.1.0"></script>
+  <script src="js/app.js?v=5.1.0"></script>
 </body>
 </html>

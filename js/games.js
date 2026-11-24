@@ -523,15 +523,259 @@ class MiniGamesSuite {
     this.reconstructAvailableWords = [];
     this.reconstructCountdown = 5;
     this.reconstructTimer = null;
+
+    // Arcade Daily Energy & Currency Replay System
+    this.maxFreePlaysPerGame = 3;
+    this.extraPlayCost = 25;
+    this.pendingPlayCallback = null;
+    this.pendingPlayGameId = null;
+    this.memoryRoundActive = false;
+    this.gameNames = {
+      speed: 'Словесный Шторм',
+      quiz: 'Квиз Эрудита',
+      memory: 'Мемори-Карты',
+      speedread: 'Скорочтение & Фокус',
+      reconstruct: 'Мнемо-Цитаты'
+    };
   }
 
   init() {
+    this.initEnergySystem();
     this.bindNav();
     this.bindShopTabs();
     this.bindQuizBookSelector();
     this.bindMemoryControls();
     this.bindSpeedReadControls();
     this.bindReconstructControls();
+  }
+
+  // =========================================================================
+  // ARCADE ENERGY & DAILY ATTEMPTS SYSTEM
+  // =========================================================================
+
+  initEnergySystem() {
+    this.bindEnergyModal();
+    this.updateEnergyUI();
+  }
+
+  getTodayDateString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  getEnergyStorageKey() {
+    const u = window.auth?.currentUser;
+    const username = u?.username || 'guest';
+    return `cyberlibris_game_energy_${username}`;
+  }
+
+  getEnergyData() {
+    const today = this.getTodayDateString();
+    const key = this.getEnergyStorageKey();
+    let data = null;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) data = JSON.parse(raw);
+    } catch {}
+
+    if (!data || data.date !== today) {
+      data = {
+        date: today,
+        plays: { speed: 0, quiz: 0, memory: 0, speedread: 0, reconstruct: 0 },
+        extraPurchased: { speed: 0, quiz: 0, memory: 0, speedread: 0, reconstruct: 0 }
+      };
+      this.saveEnergyData(data);
+    }
+    return data;
+  }
+
+  saveEnergyData(data) {
+    try {
+      localStorage.setItem(this.getEnergyStorageKey(), JSON.stringify(data));
+    } catch {}
+  }
+
+  getGameEnergyStats(gameId) {
+    const data = this.getEnergyData();
+    const used = data.plays[gameId] || 0;
+    const freeLeft = Math.max(0, this.maxFreePlaysPerGame - used);
+    const extraBought = data.extraPurchased[gameId] || 0;
+    const userLumens = window.auth?.currentUser?.lumens || 0;
+    const canAfford = userLumens >= this.extraPlayCost;
+
+    return {
+      gameId,
+      name: this.gameNames[gameId] || gameId,
+      used,
+      maxFree: this.maxFreePlaysPerGame,
+      freeLeft,
+      extraCost: this.extraPlayCost,
+      extraBought,
+      userLumens,
+      canAfford
+    };
+  }
+
+  /**
+   * Main gatekeeper for starting any mini-game round.
+   * If free daily attempts remain: consumes 1 free attempt and calls onGranted().
+   * If free daily attempts exhausted: displays modal to buy extra round for 25 Lumens.
+   */
+  requestGamePlay(gameId, onGranted) {
+    const stats = this.getGameEnergyStats(gameId);
+
+    if (stats.freeLeft > 0) {
+      // Consume 1 free daily attempt
+      const data = this.getEnergyData();
+      data.plays[gameId] = (data.plays[gameId] || 0) + 1;
+      this.saveEnergyData(data);
+      this.updateEnergyUI();
+
+      const rem = stats.freeLeft - 1;
+      if (window.app) {
+        window.app.showToast(`⚡ Использована бесплатная попытка (осталось: ${rem} на сегодня)`, 'info');
+      }
+      if (window.soundEngine?.playClick) window.soundEngine.playClick();
+
+      if (typeof onGranted === 'function') onGranted();
+    } else {
+      // Free attempts exhausted: open replay purchase modal
+      this.openReplayModal(gameId, onGranted);
+    }
+  }
+
+  openReplayModal(gameId, onGranted) {
+    this.pendingPlayCallback = onGranted;
+    this.pendingPlayGameId = gameId;
+
+    const stats = this.getGameEnergyStats(gameId);
+    const modal = document.getElementById('modal-game-energy-refill');
+    if (!modal) {
+      if (stats.canAfford) {
+        if (confirm(`Бесплатные попытки на сегодня исчерпаны! Сыграть доп. раунд в «${stats.name}» за ${stats.extraCost} ⬡ Люменов?`)) {
+          this.executeBuyExtraPlay(gameId, onGranted);
+        }
+      } else {
+        alert(`Бесплатные попытки исчерпаны, и недостаточно Люменов (${stats.userLumens} из ${stats.extraCost}). Читайте книги в Библиотеке, чтобы зарабатывать валюту!`);
+      }
+      return;
+    }
+
+    const titleEl = document.getElementById('energy-modal-game-title');
+    const costEl = document.getElementById('energy-modal-cost-val');
+    const balEl = document.getElementById('energy-modal-balance-val');
+    const buyBtn = document.getElementById('btn-energy-buy-play');
+
+    if (titleEl) titleEl.textContent = `«${stats.name}»`;
+    if (costEl) costEl.textContent = `${stats.extraCost} ⬡`;
+    if (balEl) balEl.textContent = `${stats.userLumens} ⬡`;
+
+    if (buyBtn) {
+      if (stats.canAfford) {
+        buyBtn.disabled = false;
+        buyBtn.style.opacity = '1';
+        buyBtn.style.cursor = 'pointer';
+        buyBtn.innerHTML = `⚡ Сыграть за ${stats.extraCost} ⬡`;
+      } else {
+        buyBtn.disabled = true;
+        buyBtn.style.opacity = '0.5';
+        buyBtn.style.cursor = 'not-allowed';
+        buyBtn.innerHTML = `❌ Недостаточно Люменов (нужно ${stats.extraCost} ⬡)`;
+      }
+    }
+
+    if (window.app?.openModal) {
+      window.app.openModal('modal-game-energy-refill');
+    } else {
+      modal.classList.add('active');
+    }
+  }
+
+  executeBuyExtraPlay(gameId, onGranted) {
+    const stats = this.getGameEnergyStats(gameId);
+    if (!stats.canAfford) {
+      window.app?.showToast(`Недостаточно Люменов! Читайте книги, чтобы получить валюту.`, 'error');
+      return;
+    }
+
+    // Deduct lumens
+    if (window.auth?.addLumens) {
+      window.auth.addLumens(-stats.extraCost);
+    }
+
+    // Record extra purchase
+    const data = this.getEnergyData();
+    data.extraPurchased[gameId] = (data.extraPurchased[gameId] || 0) + 1;
+    this.saveEnergyData(data);
+    this.updateEnergyUI();
+
+    if (window.soundEngine) {
+      if (window.soundEngine.playCoin) window.soundEngine.playCoin();
+      if (window.soundEngine.playClick) window.soundEngine.playClick();
+    }
+
+    if (window.app?.closeAllModals) {
+      window.app.closeAllModals();
+    } else {
+      document.getElementById('modal-game-energy-refill')?.classList.remove('active');
+    }
+
+    window.app?.showToast(`Приобретена доп. попытка (-${stats.extraCost} ⬡). Удачи в игре!`, 'reward');
+
+    if (typeof onGranted === 'function') {
+      onGranted();
+    }
+  }
+
+  bindEnergyModal() {
+    document.getElementById('btn-energy-buy-play')?.addEventListener('click', () => {
+      if (this.pendingPlayGameId && this.pendingPlayCallback) {
+        this.executeBuyExtraPlay(this.pendingPlayGameId, this.pendingPlayCallback);
+      }
+    });
+
+    document.getElementById('btn-energy-read-books')?.addEventListener('click', () => {
+      window.app?.closeAllModals?.();
+      window.app?.switchView?.('steam-library');
+      window.app?.showToast?.('Читайте книги в Библиотеке (+150 ⬡ за книгу, +15 ⬡ за мин), чтобы получать Люмены!', 'info');
+    });
+
+    document.getElementById('btn-energy-cancel')?.addEventListener('click', () => {
+      window.app?.closeAllModals?.();
+    });
+
+    document.getElementById('btn-close-energy-modal')?.addEventListener('click', () => {
+      window.app?.closeAllModals?.();
+    });
+  }
+
+  updateEnergyUI() {
+    const u = window.auth?.currentUser;
+    const lumens = u?.lumens || 0;
+
+    // 1. Top energy banner balance
+    const balEl = document.getElementById('games-user-lumens-val');
+    if (balEl) balEl.textContent = `${lumens} ⬡`;
+
+    // 2. Update pills in each arena
+    ['speed', 'quiz', 'memory', 'speedread', 'reconstruct'].forEach((gId) => {
+      const stats = this.getGameEnergyStats(gId);
+      const pill = document.getElementById(`energy-pill-${gId}`);
+      if (pill) {
+        const countSpan = pill.querySelector('.energy-val');
+        if (countSpan) {
+          if (stats.freeLeft > 0) {
+            countSpan.style.color = 'var(--accent-green)';
+            countSpan.textContent = `${stats.freeLeft} / ${stats.maxFree}`;
+            pill.title = `Доступно ${stats.freeLeft} бесплатных попыток на сегодня`;
+          } else {
+            countSpan.style.color = 'var(--accent-magenta)';
+            countSpan.textContent = `0 / ${stats.maxFree} (Доп: 25 ⬡)`;
+            pill.title = `Бесплатные попытки исчерпаны. Повторный запуск: 25 ⬡`;
+          }
+        }
+      }
+    });
   }
 
   bindNav() {
@@ -578,26 +822,28 @@ class MiniGamesSuite {
   // =========================================================================
 
   startSpeedRush() {
-    this.speedScore = 0;
-    this.speedCombo = 1;
-    this.speedTimeLeft = 30;
-    this.speedIsActive = true;
+    this.requestGamePlay('speed', () => {
+      this.speedScore = 0;
+      this.speedCombo = 1;
+      this.speedTimeLeft = 30;
+      this.speedIsActive = true;
 
-    document.getElementById('speed-score-display').textContent = '0';
-    document.getElementById('speed-combo-display').textContent = 'x1';
-    document.getElementById('speed-timer-display').textContent = '30с';
-    document.getElementById('btn-start-speed-rush').style.display = 'none';
+      document.getElementById('speed-score-display').textContent = '0';
+      document.getElementById('speed-combo-display').textContent = 'x1';
+      document.getElementById('speed-timer-display').textContent = '30с';
+      document.getElementById('btn-start-speed-rush').style.display = 'none';
 
-    this.nextSpeedWord();
+      this.nextSpeedWord();
 
-    clearInterval(this.speedTimer);
-    this.speedTimer = setInterval(() => {
-      this.speedTimeLeft--;
-      document.getElementById('speed-timer-display').textContent = `${this.speedTimeLeft}с`;
-      if (this.speedTimeLeft <= 0) {
-        this.endSpeedRush();
-      }
-    }, 1000);
+      clearInterval(this.speedTimer);
+      this.speedTimer = setInterval(() => {
+        this.speedTimeLeft--;
+        document.getElementById('speed-timer-display').textContent = `${this.speedTimeLeft}с`;
+        if (this.speedTimeLeft <= 0) {
+          this.endSpeedRush();
+        }
+      }, 1000);
+    });
   }
 
   nextSpeedWord() {
@@ -749,21 +995,23 @@ class MiniGamesSuite {
     const bookData = this.bookQuizzes[bookId];
     if (!bookData) return;
 
-    this.selectedQuizBookId = bookId;
-    this.currentQuizQuestions = bookData.questions;
-    this.quizIdx = 0;
-    this.quizScore = 0;
-    this.quizStreak = 0;
+    this.requestGamePlay('quiz', () => {
+      this.selectedQuizBookId = bookId;
+      this.currentQuizQuestions = bookData.questions;
+      this.quizIdx = 0;
+      this.quizScore = 0;
+      this.quizStreak = 0;
 
-    const selectorStage = document.getElementById('quiz-book-selector-stage');
-    const questionStage = document.getElementById('quiz-active-question-stage');
-    const bookBadge = document.getElementById('quiz-current-book-badge');
+      const selectorStage = document.getElementById('quiz-book-selector-stage');
+      const questionStage = document.getElementById('quiz-active-question-stage');
+      const bookBadge = document.getElementById('quiz-current-book-badge');
 
-    if (selectorStage) selectorStage.style.display = 'none';
-    if (questionStage) questionStage.style.display = 'block';
-    if (bookBadge) bookBadge.textContent = `«${bookData.title}» (${bookData.author})`;
+      if (selectorStage) selectorStage.style.display = 'none';
+      if (questionStage) questionStage.style.display = 'block';
+      if (bookBadge) bookBadge.textContent = `«${bookData.title}» (${bookData.author})`;
 
-    this.renderCurrentQuizQuestion();
+      this.renderCurrentQuizQuestion();
+    });
   }
 
   shuffleQuestionOptions(options, correctIdx = 0) {
@@ -895,7 +1143,10 @@ class MiniGamesSuite {
 
   bindMemoryControls() {
     document.getElementById('btn-memory-restart')?.addEventListener('click', () => {
-      this.initMemoryGame(this.memoryDifficulty);
+      this.requestGamePlay('memory', () => {
+        this.memoryRoundActive = true;
+        this.initMemoryGame(this.memoryDifficulty);
+      });
     });
 
     document.getElementById('btn-memory-peek')?.addEventListener('click', () => {
@@ -908,7 +1159,10 @@ class MiniGamesSuite {
         e.currentTarget.classList.add('active');
         const pairs = parseInt(e.currentTarget.dataset.pairs, 10) || 8;
         this.memoryDifficulty = pairs;
-        this.initMemoryGame(pairs);
+        this.requestGamePlay('memory', () => {
+          this.memoryRoundActive = true;
+          this.initMemoryGame(pairs);
+        });
       });
     });
   }
@@ -923,6 +1177,7 @@ class MiniGamesSuite {
     this.memoryFlippedCards = [];
     this.memoryIsBusy = false;
     this.memoryGameActive = true;
+    this.memoryRoundActive = false;
 
     // Reset HUD
     const movesEl = document.getElementById('memory-moves-display');
@@ -1016,6 +1271,18 @@ class MiniGamesSuite {
     if (card.matched) return;
     if (cardEl.classList.contains('flipped')) return;
 
+    if (!this.memoryRoundActive) {
+      this.requestGamePlay('memory', () => {
+        this.memoryRoundActive = true;
+        this.proceedMemoryCardFlip(card, cardEl);
+      });
+      return;
+    }
+
+    this.proceedMemoryCardFlip(card, cardEl);
+  }
+
+  proceedMemoryCardFlip(card, cardEl) {
     // Flip card
     cardEl.classList.add('flipped');
     this.memoryFlippedCards.push({ card, el: cardEl });
@@ -1121,7 +1388,9 @@ class MiniGamesSuite {
 
   bindSpeedReadControls() {
     document.getElementById('btn-speedread-start')?.addEventListener('click', () => {
-      this.startSpeedReading();
+      this.requestGamePlay('speedread', () => {
+        this.startSpeedReading();
+      });
     });
 
     document.getElementById('btn-speedread-next-text')?.addEventListener('click', () => {
@@ -1347,7 +1616,9 @@ class MiniGamesSuite {
 
   bindReconstructControls() {
     document.getElementById('btn-reconstruct-skip-preview')?.addEventListener('click', () => {
-      this.startReconstructAssembly();
+      this.requestGamePlay('reconstruct', () => {
+        this.startReconstructAssembly();
+      });
     });
 
     document.getElementById('btn-reconstruct-check')?.addEventListener('click', () => {
@@ -1397,7 +1668,9 @@ class MiniGamesSuite {
 
       if (elapsed >= totalMs) {
         clearInterval(this.reconstructTimer);
-        this.startReconstructAssembly();
+        this.requestGamePlay('reconstruct', () => {
+          this.startReconstructAssembly();
+        });
       }
     }, stepMs);
   }
@@ -1606,10 +1879,14 @@ class MiniGamesSuite {
     const user = window.auth.currentUser;
 
     items.forEach((item) => {
-      const isOwned = user?.inventory?.[category]?.includes(item.id) || item.price === 0;
-      const isEquipped = (category === 'frames' && user?.avatarFrame === item.id) ||
-                         (category === 'backgrounds' && user?.customBg === item.id) ||
-                         (category === 'titles' && user?.title === item.name);
+      // Check both inventory and unlockedCosmetics, plus currently applied items, plus default/free items
+      const inInventory = user?.inventory?.[category]?.includes(item.id);
+      const inUnlocked = user?.unlockedCosmetics?.[category]?.includes(item.id);
+      const isCurrentlyEquipped = (category === 'frames' && user?.avatarFrame === item.id) ||
+                                  (category === 'backgrounds' && user?.customBg === item.id) ||
+                                  (category === 'titles' && (user?.title === item.name || user?.title === item.id));
+      const isOwned = inInventory || inUnlocked || isCurrentlyEquipped || item.price === 0;
+      const isEquipped = isCurrentlyEquipped;
 
       const card = document.createElement('div');
       card.className = `shop-item-card ${isEquipped ? 'equipped' : isOwned ? 'owned' : ''}`;
@@ -1633,11 +1910,13 @@ class MiniGamesSuite {
         <div class="shop-item-info">
           <div class="shop-item-name">${item.name}</div>
           <div class="shop-item-desc">${item.description || ''}</div>
-          <div class="shop-item-price">${isOwned ? 'КУПЛЕНО' : `${item.price} ⬡`}</div>
+          <div class="shop-item-price" style="font-weight: 800; color: ${isEquipped ? '#00ff88' : isOwned ? '#66c0f4' : 'var(--accent-gold)'};">
+            ${isEquipped ? '✓ АКТИВНО' : isOwned ? 'КУПЛЕНО' : `${item.price} ⬡`}
+          </div>
         </div>
         <div class="shop-item-actions">
           ${isEquipped ? `
-            <button class="btn btn-secondary btn-sm" disabled>Активно</button>
+            <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.85; font-weight: 700; color: #00ff88;">✓ Активно</button>
           ` : isOwned ? `
             <button class="btn btn-primary btn-sm btn-equip" data-cat="${category}" data-id="${item.id}">Применить</button>
           ` : `
@@ -1671,7 +1950,15 @@ class MiniGamesSuite {
     user.lumens -= price;
     if (!user.inventory) user.inventory = { frames: [], backgrounds: [], titles: [] };
     if (!user.inventory[category]) user.inventory[category] = [];
-    user.inventory[category].push(itemId);
+    if (!user.inventory[category].includes(itemId)) {
+      user.inventory[category].push(itemId);
+    }
+
+    if (!user.unlockedCosmetics) user.unlockedCosmetics = { frames: [], backgrounds: [], titles: [] };
+    if (!user.unlockedCosmetics[category]) user.unlockedCosmetics[category] = [];
+    if (!user.unlockedCosmetics[category].includes(itemId)) {
+      user.unlockedCosmetics[category].push(itemId);
+    }
 
     window.auth.saveUser();
     window.auth.syncUserToUI();
@@ -1709,3 +1996,4 @@ class MiniGamesSuite {
 }
 
 window.miniGames = new MiniGamesSuite();
+window.miniGamesSuite = window.miniGames;

@@ -18,7 +18,7 @@ class AppController {
     this.selectedFormat = 'all';
     this.selectedDifficulty = 'all';
     this.searchQuery = '';
-    this.activeSteamBookId = 'war_and_peace';
+    this.activeSteamBookId = 'relay_war_and_peace';
     this.steamLibFilter = 'all';
     this.steamLibSearchQuery = '';
     this.steamLibSortMode = 'default';
@@ -792,7 +792,7 @@ class AppController {
             <span class="book-genre-pill">${b.genre}</span>
             <span class="book-format-pill">${b.format || 'Роман'}</span>
             <span class="book-pages-pill">${b.lengthPages || 200} стр.</span>
-            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem; margin-left: auto;">98% (Steam)</span>
+            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem; margin-left: auto;">★ 98% Читателей</span>
           </div>
           <div style="margin-top: 0.8rem; display: flex; gap: 0.4rem;">
             <button class="btn btn-steam-play btn-sm btn-to-steam-lib" style="padding: 0.55rem 0.9rem; font-size: 0.82rem;" data-book-id="${b.id}">
@@ -977,6 +977,8 @@ class AppController {
 
     const user = window.auth.currentUser;
     const isFav = user?.shelves?.favorites?.includes(book.id);
+    const shelves = window.bookRelay.getUserShelves(user ? user.username : 'guest');
+    const isCompleted = shelves.completed.some(c => c.id === book.id) || progressPercent >= 100;
     const hoursRead = hasProgress ? ((saved.currentChapter + 1) * 0.45).toFixed(1) : (book.lengthPages > 500 ? '4.8' : '2.1');
 
     contentEl.innerHTML = `
@@ -1004,12 +1006,20 @@ class AppController {
               <button class="btn-steam-play" id="btn-steam-launch-game">
                 ${hasProgress ? `ПРОДОЛЖИТЬ (ГЛ. ${currentChapter + 1})` : 'ЧИТАТЬ СЕЙЧАС'}
               </button>
+              <button class="btn-steam-secondary" id="btn-steam-mark-completed" title="Завершить чтение и получить +150 Люменов" style="${isCompleted ? 'border-color:rgba(0,255,136,0.5); color:var(--accent-green);' : 'border-color:rgba(255,215,0,0.5); color:var(--accent-gold);'}">
+                ${isCompleted ? '✓ ПРОЧИТАНО (+150 ⬡)' : '🏆 ОТМЕТИТЬ ПРОЧИТАННОЙ (+150 ⬡)'}
+              </button>
               <button class="btn-steam-secondary" id="btn-steam-toggle-favorite">
                 ${isFav ? 'В ИЗБРАННОМ' : 'В ИЗБРАННОЕ'}
               </button>
               <button class="btn-steam-secondary" id="btn-steam-view-dossier">
                 ДОСЬЕ ИЗДАНИЯ
               </button>
+              ${hasProgress ? `
+              <button class="btn-steam-secondary" id="btn-steam-reset-progress" style="color: #ff7788; border-color: rgba(255, 119, 136, 0.4);" title="Сбросить прогресс чтения книги к началу">
+                🔄 СБРОСИТЬ
+              </button>
+              ` : ''}
             </div>
           </div>
         </div>
@@ -1055,7 +1065,7 @@ class AppController {
         <!-- Steam Achievements in Book -->
         <div>
           <div class="steam-section-heading">
-            <span>🏆 ДОСТИЖЕНИЯ STEAM</span>
+            <span>🏆 ДОСТИЖЕНИЯ ЧИТАТЕЛЯ</span>
             <span style="font-size: 0.85rem; color: #66c0f4;">4 из 6 разблокировано</span>
           </div>
           <div class="steam-achievements-row">
@@ -1124,6 +1134,33 @@ class AppController {
       this.switchView('reader');
     });
 
+    contentEl.querySelector('#btn-steam-mark-completed')?.addEventListener('click', () => {
+      const u = window.auth.currentUser;
+      if (!u) { this.openModal('modal-auth'); return; }
+      const username = u.username || 'guest';
+      const userShelves = window.bookRelay.getUserShelves(username);
+      const alreadyDone = userShelves.completed.some(c => c.id === book.id);
+      if (alreadyDone) {
+        this.showToast(`«${book.title}» уже завершена! Награда за эту книгу получена.`, 'info');
+        return;
+      }
+
+      window.bookRelay.updateProgress(username, book.id, 100, (book.chapters?.length || 1) - 1);
+      window.auth.addLumens(150);
+      window.auth.addXp(300);
+      window.auth.updateStat('booksRead', 1);
+
+      if (window.soundEngine) {
+        if (window.soundEngine.playCoin) window.soundEngine.playCoin();
+        window.soundEngine.playLevelUp();
+      }
+      this.showToast(`🎉 Произведение «${book.title}» завершено! Начислено: +150 ⬡ Люменов для игр в Аркаде и +300 XP!`, 'reward');
+
+      this.renderSteamLibrary(book.id);
+      this.renderProfile();
+      if (window.miniGamesSuite) window.miniGamesSuite.updateEnergyUI();
+    });
+
     contentEl.querySelector('#btn-steam-toggle-favorite')?.addEventListener('click', () => {
       const u = window.auth.currentUser;
       if (!u) { this.openModal('modal-auth'); return; }
@@ -1144,6 +1181,12 @@ class AppController {
 
     contentEl.querySelector('#btn-steam-view-dossier')?.addEventListener('click', () => {
       this.openBookDetails(book.id);
+    });
+
+    contentEl.querySelector('#btn-steam-reset-progress')?.addEventListener('click', () => {
+      window.readerEngine.resetBookProgress(book.id);
+      this.selectSteamBook(book.id);
+      this.renderSteamLibrary(book.id);
     });
 
     contentEl.querySelectorAll('.steam-chapter-btn').forEach(btn => {
@@ -1185,6 +1228,7 @@ class AppController {
           <div class="steam-rev-text">${r.text || 'Великолепное произведение, трогающее за душу.'}</div>
           <div class="steam-rev-footer">
             <span>Опубликовано: ${r.date || 'Недавно'}</span>
+            ${r.source ? `<span style="margin-left: auto; color: #00f0ff; font-size: 0.75rem; font-weight: 600;">🌐 ${r.source}</span>` : ''}
             <div class="steam-rev-helpful-btns">
               <button class="steam-rev-help-btn">Да (14)</button>
               <button class="steam-rev-help-btn">Нет (1)</button>
@@ -1421,14 +1465,15 @@ class AppController {
       card.className = 'review-card';
       card.innerHTML = `
         <div class="review-author-row">
-          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:700; color:#fff;">
+          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:700; color:#fff; flex-wrap:wrap;">
             <span>${r.avatar || '📖'}</span>
             <span>${r.author}</span>
             <span style="font-size:0.75rem; color:var(--text-dim); font-weight:normal;">• ${r.date}</span>
+            ${r.source ? `<span style="font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; background:rgba(0, 240, 255, 0.12); color:#00f0ff; border:1px solid rgba(0, 240, 255, 0.25);">🌐 ${r.source}</span>` : ''}
           </div>
           <div class="review-stars">${'⭐'.repeat(r.rating || 5)}</div>
         </div>
-        <div style="font-size:0.9rem; color:#ddd; line-height:1.5;">${r.text}</div>
+        <div style="font-size:0.9rem; color:#ddd; line-height:1.5; margin-top:0.35rem;">${r.text}</div>
       `;
       list.appendChild(card);
     });
@@ -1803,7 +1848,7 @@ class AppController {
       const rareBadges = [
         { id: 'creator', name: '👑 Создатель Реальности', desc: 'Обладатель высшего статуса системы CyberLibris', pct: '1.2%', xp: '+500 XP' },
         { id: 'master', name: '⚡ Пожиратель Фолиантов', desc: 'Прочтите более 1000 страниц классических текстов', pct: '3.8%', xp: '+250 XP' },
-        { id: 'sage', name: '🔮 Пророк Мудрости', desc: 'Получите 5 глубоких предсказаний Кибер-Оракула', pct: '4.5%', xp: '+180 XP' },
+        { id: 'speedread', name: '⚡ Скорочтец Высшей Лиги', desc: 'Достигните скорости чтения более 500 слов в минуту', pct: '2.9%', xp: '+220 XP' },
         { id: 'critic', name: '✍️ Истинный Критик', desc: 'Напишите подробные рецензии к 3 и более книгам', pct: '5.1%', xp: '+200 XP' }
       ];
       rareContainer.innerHTML = rareBadges.map(ach => `
@@ -1839,6 +1884,9 @@ class AppController {
 
     // 12. Render Weekly Reading Activity Heatmap
     this.renderWeeklyHeatmap(user);
+
+    // 12b. Render Literary Competence Matrix (Rank + Fanning Card Deck)
+    this.renderCompetenceMatrix(user, shelves);
 
     // 13. Shelf Tab Counts
     const countReading = document.getElementById('profile-shelf-count-reading');
@@ -1885,10 +1933,7 @@ class AppController {
                 ${this.renderBookProgressCircle(pct)}
               </div>
               <div class="shelf-book-title">${b.title}</div>
-              <div class="shelf-book-progress-bar">
-                <div class="shelf-book-progress-fill" style="width: ${pct}%;"></div>
-              </div>
-              <div style="font-size:0.75rem; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:0.75rem; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center; margin-top: 0.35rem;">
                 <span>Глава: <strong>${(item.chapterIdx || 0) + 1}</strong></span>
                 <span style="color:var(--accent-cyan); font-weight:700;">${pct}%</span>
               </div>
@@ -2060,6 +2105,120 @@ class AppController {
     }
 
     this.bindTiltEffect();
+  }
+
+  // --- LITERARY COMPETENCE MATRIX: RANK INSIGNIA & FANNING CARD DECK ---
+
+  renderCompetenceMatrix(user, shelves) {
+    const rankIcon = document.getElementById('profile-rank-icon');
+    const rankLevelPill = document.getElementById('profile-rank-level-pill');
+    const rankTitle = document.getElementById('profile-rank-title');
+    const rankDesc = document.getElementById('profile-rank-desc');
+    const rankBooksCount = document.getElementById('profile-rank-books-count');
+    const rankSpeedPill = document.getElementById('profile-rank-speed-pill');
+    const badgeRarity = document.getElementById('profile-competence-badge');
+    const deckContainer = document.getElementById('profile-fanning-deck');
+
+    const completedList = (shelves && shelves.completed) ? shelves.completed : [];
+    // Collect all unique books actually completed or read (>50%) by the user
+    const readBookIds = new Set(completedList.map(item => item.id));
+
+    if (user && user.readingProgress) {
+      Object.keys(user.readingProgress).forEach(bid => {
+        if ((user.readingProgress[bid]?.progressPercent || 0) >= 40) {
+          readBookIds.add(bid);
+        }
+      });
+    }
+
+    const books = Array.from(readBookIds)
+      .map(id => window.bookRelay?.getBookById?.(id))
+      .filter(Boolean);
+
+    const count = books.length;
+    let rankName = user?.title || 'Новичок Слова';
+    let icon = '📖';
+    let badgeText = 'РАНГ: C';
+    let desc = 'Начало литературного пути. Читайте классику в каталоге, чтобы открыть высшие ранги.';
+
+    if (count >= 10 || (user && user.level >= 30)) {
+      rankName = user?.title || 'Создатель Системы [CREATOR]';
+      icon = '👑';
+      badgeText = 'ЭРУДИЦИЯ: РАНГ S+';
+      desc = `Высшее литературное звание присуждено за освоение шедевров из раскрывающейся колоды справа.`;
+    } else if (count >= 5) {
+      rankName = 'Верховный Архивариус';
+      icon = '⚜️';
+      badgeText = 'ЭРУДИЦИЯ: РАНГ S';
+      desc = `Присуждено за глубокое изучение ${count} фундаментальных книг мировой литературы.`;
+    } else if (count >= 3) {
+      rankName = 'Магистр Мысли';
+      icon = '📜';
+      badgeText = 'ЭРУДИЦИЯ: РАНГ A';
+      desc = `Звание заслужено внимательным прочтением ${count} ключевых классических произведений.`;
+    } else if (count >= 1) {
+      rankName = 'Хранитель Знаний';
+      icon = '🕯️';
+      badgeText = 'ЭРУДИЦИЯ: РАНГ B';
+      desc = `Первая ступень мастерства открыта прочтением ${count} шедевра из личной библиотеки.`;
+    }
+
+    if (rankIcon) rankIcon.textContent = icon;
+    if (rankLevelPill) rankLevelPill.textContent = `LVL ${user?.level || 1}`;
+    if (rankTitle) rankTitle.textContent = rankName;
+    if (rankDesc) rankDesc.textContent = desc;
+    if (rankBooksCount) rankBooksCount.textContent = `📚 В колоде звания: ${count} ${count === 1 ? 'книга' : (count >= 2 && count <= 4) ? 'книги' : 'книг'}`;
+    if (rankSpeedPill) rankSpeedPill.textContent = `⚡ Скорость: ${user?.stats?.speedRecordWPM || 480} WPM`;
+    if (badgeRarity) badgeRarity.textContent = badgeText;
+
+    // Render the interactive Fanning Card Deck
+    if (deckContainer) {
+      deckContainer.innerHTML = '';
+      if (books.length === 0) {
+        deckContainer.innerHTML = `
+          <div class="deck-empty-placeholder">
+            <span style="font-size: 1.8rem; margin-bottom: 0.3rem;">📭</span>
+            <span style="font-weight: 700; color: #fff;">Колода пока пуста</span>
+            <span style="font-size: 0.72rem; color: #8e9bb0; margin-top: 0.2rem;">Прочтите книгу в Каталоге, чтобы запечатать ее в колоду звания!</span>
+          </div>
+        `;
+      } else {
+        const displayBooks = books.slice(0, 5);
+        displayBooks.forEach((b, idx) => {
+          const card = document.createElement('div');
+          card.className = 'deck-book-card';
+          const total = displayBooks.length;
+          const center = (total - 1) / 2;
+          const baseOffset = (idx - center) * 16;
+          const baseRotate = (idx - center) * 5;
+          card.style.transform = `translateX(${baseOffset}px) rotate(${baseRotate}deg)`;
+          card.style.zIndex = idx + 10;
+          card.title = `«${b.title}» (${b.author}) — Нажмите, чтобы открыть досье`;
+
+          card.innerHTML = `
+            <img src="${b.coverImage}" alt="${b.title}" loading="lazy" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
+            <div class="deck-card-overlay">
+              <span class="deck-card-stamp">✓ ИЗУЧЕНО</span>
+              <div class="deck-card-title">${b.title}</div>
+              <div class="deck-card-author">${b.author}</div>
+            </div>
+          `;
+
+          card.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openBookDetails(b.id);
+            if (window.soundEngine) window.soundEngine.playCardFlip();
+          });
+
+          deckContainer.appendChild(card);
+        });
+
+        deckContainer.onclick = () => {
+          deckContainer.classList.toggle('fanned');
+          if (window.soundEngine) window.soundEngine.playCardFlip();
+        };
+      }
+    }
   }
 
   // --- EDIT PROFILE MODAL ENGINE ---

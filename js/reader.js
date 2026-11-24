@@ -578,12 +578,21 @@ class ReaderEngine {
     const chapters = this.currentBook.chapters || [];
     const chTitle = chapters[chIdx]?.title || `Глава ${chIdx + 1}`;
     const totalChapters = chapters.length || 1;
-    const percent = Math.min(100, Math.max(1, Math.round(((chIdx + 1) / totalChapters) * 100)));
+
+    // Retrieve previous saved state to ensure monotonic progress (scrolling back up never demotes reading progress!)
+    const saved = this.getSavedProgress(bookId);
+    const prevMaxChapter = saved ? (typeof saved.maxChapterReached === 'number' ? saved.maxChapterReached : (saved.currentChapter || 0)) : 0;
+    const maxChapterReached = Math.max(prevMaxChapter, chIdx);
+
+    const calculatedPercent = Math.min(100, Math.max(1, Math.round(((maxChapterReached + 1) / totalChapters) * 100)));
+    const prevPercent = saved ? (saved.progressPercent || 0) : 0;
+    const percent = Math.max(prevPercent, calculatedPercent);
 
     const progress = {
       bookId,
       bookTitle: this.currentBook.title,
       currentChapter: chIdx,
+      maxChapterReached: maxChapterReached,
       chapterTitle: chTitle,
       progressPercent: percent,
       readingMode: this.readingMode,
@@ -605,13 +614,49 @@ class ReaderEngine {
       window.auth.saveUser();
     }
 
-    // 3. Update bookRelay shelves
+    // 3. Update bookRelay shelves with highest chapter reached
     if (user && window.bookRelay) {
-      window.bookRelay.updateProgress(user.username, bookId, percent, chIdx);
+      window.bookRelay.updateProgress(user.username, bookId, percent, maxChapterReached);
     }
 
     // 4. Update Header Quick Resume Pill
     window.app?.updateHeaderResumePill?.();
+  }
+
+  resetBookProgress(bookId = null) {
+    const targetId = bookId || this.currentBook?.id;
+    if (!targetId) return;
+
+    if (!confirm('Вы действительно хотите сбросить прогресс чтения этой книги?')) {
+      return;
+    }
+
+    try {
+      localStorage.removeItem(`cyberlibris_progress_${targetId}`);
+    } catch (e) {}
+
+    const user = window.auth?.currentUser;
+    if (user) {
+      if (user.readingProgress && user.readingProgress[targetId]) {
+        delete user.readingProgress[targetId];
+      }
+      window.auth.saveUser();
+    }
+
+    if (user && window.bookRelay) {
+      window.bookRelay.resetProgress(user.username, targetId);
+    }
+
+    if (this.currentBook && this.currentBook.id === targetId) {
+      this.currentChapterIdx = 0;
+      this.jumpToChapter(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.app?.updateHeaderResumePill?.();
+    window.app?.renderSteamLibrary?.();
+    window.app?.renderProfile?.();
+    window.app?.showToast?.('Прогресс чтения книги сброшен к началу!', 'info');
   }
 
   getSavedProgress(bookId) {
@@ -995,6 +1040,50 @@ class ReaderEngine {
       const nextBtn = document.getElementById('btn-next-chapter');
       if (prevBtn) prevBtn.disabled = this.currentChapterIdx <= 0;
       if (nextBtn) nextBtn.disabled = this.currentChapterIdx >= chapters.length - 1;
+
+      // Append completed celebration card if at the final chapter
+      if (this.currentChapterIdx === chapters.length - 1) {
+        bodyEl.innerHTML += `
+          <div class="reader-book-completed-card">
+            <div class="reader-completed-trophy">🏆</div>
+            <h3 class="reader-completed-title">Произведение полностью прочитано!</h3>
+            <p class="reader-completed-desc">Вы завершили чтение «${this.currentBook.title}». Награда за книгу: <strong>+150 ⬡ Люменов</strong> и <strong>+300 XP</strong>!</p>
+            <div class="reader-completed-actions">
+              <button class="btn btn-primary magnetic-btn" onclick="window.app.switchView('games')">🎮 Сыграть в Аркаде на Люмены</button>
+              <button class="btn btn-secondary magnetic-btn" onclick="window.app.switchView('steam-library')">📚 В Библиотеку</button>
+            </div>
+          </div>
+        `;
+        this.awardBookCompletionReward(this.currentBook);
+      }
+    }
+  }
+
+  awardBookCompletionReward(book) {
+    if (!book || !window.auth) return;
+    const user = window.auth.currentUser;
+    const username = user ? user.username : 'guest';
+
+    if (window.bookRelay) {
+      window.bookRelay.updateProgress(username, book.id, 100, (book.chapters?.length || 1) - 1);
+    }
+
+    const rewardKey = `cyberlibris_book_reward_${username}_${book.id}`;
+    const alreadyRewarded = localStorage.getItem(rewardKey);
+    if (!alreadyRewarded) {
+      localStorage.setItem(rewardKey, 'true');
+      window.auth.updateStat('booksRead', 1);
+      window.auth.addXp(300);
+      window.auth.addLumens(150);
+
+      if (window.app) {
+        window.app.showToast(`🎉 Произведение «${book.title}» прочитано! Награда: +150 ⬡ Люменов для игр в Аркаде и +300 XP!`, 'reward');
+        if (window.miniGamesSuite) window.miniGamesSuite.updateEnergyUI();
+      }
+      if (window.soundEngine) {
+        if (window.soundEngine.playCoin) window.soundEngine.playCoin();
+        window.soundEngine.playLevelUp();
+      }
     }
   }
 
@@ -1023,11 +1112,7 @@ class ReaderEngine {
 
         // Check if finished final chapter
         if (this.currentChapterIdx === (this.currentBook.chapters?.length || 0) - 1) {
-          window.auth.updateStat('booksRead', 1);
-          window.auth.addXp(200);
-          window.auth.addLumens(100);
-          window.app.showToast('Поздравляем! Произведение полностью прочитано: +200 XP, +100 Люменов', 'reward');
-          if (window.soundEngine) window.soundEngine.playLevelUp();
+          this.awardBookCompletionReward(this.currentBook);
         }
       }
 

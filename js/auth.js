@@ -270,7 +270,7 @@ class AuthManager {
     if ((s.classicChaptersRead || 0) >= 3) this.awardBadge('classic_connoisseur');
     if ((s.scifiChaptersRead || 0) >= 3) this.awardBadge('scifi_explorer');
     if ((s.militaryChaptersRead || 0) >= 3) this.awardBadge('military_veteran');
-    if ((s.philosophyChaptersRead || 0) >= 3) this.awardBadge('philosophy_sage');
+    // philosophy sage removed per feedback
     
     // Check night reading (between 22:00 and 06:00)
     const currentHour = new Date().getHours();

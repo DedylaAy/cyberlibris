@@ -39,7 +39,7 @@ const DEFAULT_DATABASE = {
       xp: 14200,
       lumens: 5200,
       stats: { booksRead: 18, readTimeMinutes: 520, gamesWon: 64, speedRecordWPM: 620, cryptorSolved: 30, memoryFlips: 85, currentStreak: 21 },
-      badges: ["book_first_page", "foliant_master", "military_veteran", "classic_connoisseur", "philosophy_sage", "quiz_erudite", "book_worm"],
+      badges: ["book_first_page", "foliant_master", "military_veteran", "classic_connoisseur", "quiz_erudite", "book_worm"],
       unlockedCosmetics: {
         frames: ["frame-default", "frame-neon", "frame-dragon", "frame-gold", "frame-void", "frame-flame"],
         backgrounds: ["theme-cyberpunk", "theme-cosmic", "theme-amber", "theme-matrix", "theme-royal"],
@@ -88,7 +88,7 @@ const DEFAULT_DATABASE = {
       xp: 5100,
       lumens: 1250,
       stats: { booksRead: 9, readTimeMinutes: 210, gamesWon: 28, speedRecordWPM: 440, cryptorSolved: 12, memoryFlips: 32, currentStreak: 9 },
-      badges: ["book_first_page", "classic_connoisseur", "philosophy_sage"],
+      badges: ["book_first_page", "classic_connoisseur"],
       unlockedCosmetics: {
         frames: ["frame-default", "frame-neon"],
         backgrounds: ["theme-cyberpunk", "theme-cosmic"],
@@ -387,7 +387,6 @@ const DEFAULT_DATABASE = {
     { id: "military_veteran", name: "Воевода Полей", icon: "⚔️", color: "#ff5500", description: "Глубокое освоение военной прозы и трактатов стратегии." },
     { id: "scifi_explorer", name: "Первопроходец Космоса", icon: "🚀", color: "#9d4edd", description: "Погружение в миры научной фантастики и киберпанка." },
     { id: "classic_connoisseur", name: "Хранитель Классики", icon: "🕯️", color: "#ffaa00", description: "Прикосновение к золотому фонду мировой литературы." },
-    { id: "philosophy_sage", name: "Старейшина Мысли", icon: "📜", color: "#00ff88", description: "Познание мудрости философских манускриптов и притчей." },
     { id: "literary_critic", name: "Острый Критик", icon: "💬", color: "#00bbf9", description: "Написаны содержательные рецензии к произведениям." },
     { id: "quiz_erudite", name: "Магистр Эрудиции", icon: "🎓", color: "#ff007f", description: "Блестящие ответы на каверзные вопросы книжного квиза." },
     { id: "night_reader", name: "Ночной Мыслитель", icon: "🦉", color: "#7209b7", description: "Чтение в полночные часы в режиме непрерывной ленты." },

@@ -806,3 +806,159 @@
     font-size: 2rem;
   }
 }
+
+/* =========================================================================
+   DAILY ARCADE ENERGY & REPLAY CURRENCY STYLES
+   ========================================================================= */
+
+.games-energy-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  background: linear-gradient(135deg, rgba(13, 21, 38, 0.9) 0%, rgba(20, 32, 56, 0.9) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.4rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 0 15px rgba(0, 240, 255, 0.05);
+  backdrop-filter: blur(12px);
+  flex-wrap: wrap;
+}
+
+.energy-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.energy-badge-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 128, 0, 0.3));
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  animation: pulse 2.5s infinite ease-in-out;
+}
+
+.energy-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.energy-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.energy-banner-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 280px;
+}
+
+.energy-reward-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 30px;
+  padding: 0.45rem 1rem;
+  font-size: 0.84rem;
+  color: #d8e5f2;
+}
+
+.energy-reward-pill strong {
+  color: var(--accent-gold);
+}
+
+.energy-banner-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-lumens-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 30px;
+  padding: 0.45rem 1rem;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.15);
+}
+
+.energy-stat-pill {
+  border-color: rgba(0, 255, 136, 0.35) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.15);
+  transition: all 0.25s ease;
+}
+
+/* Reader Book Completion Card */
+.reader-book-completed-card {
+  margin: 3.5rem auto 1.5rem;
+  max-width: 700px;
+  background: linear-gradient(135deg, rgba(16, 28, 48, 0.95), rgba(28, 18, 42, 0.95));
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: var(--radius-lg);
+  padding: 2.2rem 2rem;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+.reader-completed-trophy {
+  font-size: 3.2rem;
+  margin-bottom: 0.6rem;
+  animation: float 2.5s ease-in-out infinite;
+}
+
+.reader-completed-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.5px;
+}
+
+.reader-completed-desc {
+  font-size: 1.05rem;
+  color: #c7d5e0;
+  line-height: 1.6;
+  margin-bottom: 1.6rem;
+}
+
+.reader-completed-desc strong {
+  color: var(--accent-gold);
+}
+
+.reader-completed-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .games-energy-banner {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .energy-banner-left {
+    justify-content: center;
+  }
+  .energy-banner-right {
+    justify-content: center;
+  }
+}
+
