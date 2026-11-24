@@ -975,7 +975,7 @@ class MiniGamesSuite {
 
     this.memoryCards.forEach((c) => {
       const cardEl = document.createElement('div');
-      cardEl.className = 'literary-memory-card tilt-card';
+      cardEl.className = 'literary-memory-card';
       cardEl.dataset.id = c.id;
 
       cardEl.innerHTML = `
@@ -993,8 +993,6 @@ class MiniGamesSuite {
       cardEl.addEventListener('click', () => this.handleMemoryCardClick(c, cardEl));
       grid.appendChild(cardEl);
     });
-
-    if (window.app?.bindTiltEffect) window.app.bindTiltEffect();
   }
 
   handleMemoryCardClick(card, cardEl) {

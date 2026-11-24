@@ -5349,6 +5349,11 @@ body.eco-mode .tilt-card {
   will-change: auto !important;
 }
 
+body.eco-mode .literary-memory-card.flipped,
+body.eco-mode .literary-memory-card.matched {
+  transform: rotateY(180deg) !important;
+}
+
 body.eco-mode .magnetic-btn {
   transform: none !important;
 }
