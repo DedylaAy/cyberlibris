@@ -1352,6 +1352,26 @@ class AppController {
 
   // --- REBUILT GAMER & SCHOLAR PROFILE ---
 
+  renderBookProgressCircle(pct) {
+    const p = Math.max(0, Math.min(100, Math.round(pct || 0)));
+    const radius = 19;
+    const circ = 2 * Math.PI * radius; // ~119.38
+    const offset = circ - (circ * p) / 100;
+    const isDone = p >= 100;
+    const statusClass = isDone ? 'completed' : (p > 0 ? 'in-progress' : 'unstarted');
+
+    return `
+      <div class="book-progress-circle-badge ${statusClass}" title="Прочитано: ${p}%">
+        <svg class="progress-ring-svg" width="46" height="46" viewBox="0 0 46 46">
+          <circle class="progress-ring-bg" cx="23" cy="23" r="${radius}" />
+          <circle class="progress-ring-bar" cx="23" cy="23" r="${radius}"
+            style="stroke-dasharray: ${circ.toFixed(2)}; stroke-dashoffset: ${offset.toFixed(2)};" />
+        </svg>
+        <span class="progress-ring-text">${isDone ? '✓' : `${p}%`}</span>
+      </div>
+    `;
+  }
+
   renderProfile() {
     const user = window.auth.currentUser;
     if (!user) {
@@ -1511,6 +1531,27 @@ class AppController {
       const coverImg = document.getElementById('featured-book-cover-img');
       if (coverImg) coverImg.src = featuredBook.coverImage;
 
+      const coverWrap = document.getElementById('featured-book-cover-wrap');
+      if (coverWrap) {
+        coverWrap.querySelector('.featured-circle-badge')?.remove();
+        const p = Math.max(0, Math.min(100, Math.round(curPct || 0)));
+        const radius = 23;
+        const circ = 2 * Math.PI * radius;
+        const offset = circ - (circ * p) / 100;
+        const circleDiv = document.createElement('div');
+        circleDiv.className = `featured-circle-badge ${p >= 100 ? 'completed' : ''}`;
+        circleDiv.title = `Освоение книги: ${p}%`;
+        circleDiv.innerHTML = `
+          <svg class="progress-ring-svg" width="54" height="54" viewBox="0 0 54 54">
+            <circle class="progress-ring-bg" cx="27" cy="27" r="${radius}" />
+            <circle class="progress-ring-bar" cx="27" cy="27" r="${radius}"
+              style="stroke-dasharray: ${circ.toFixed(2)}; stroke-dashoffset: ${offset.toFixed(2)};" />
+          </svg>
+          <span class="progress-ring-text">${p >= 100 ? '✓' : `${p}%`}</span>
+        `;
+        coverWrap.appendChild(circleDiv);
+      }
+
       const titleEl = document.getElementById('featured-book-title');
       if (titleEl) titleEl.textContent = featuredBook.title;
 
@@ -1614,17 +1655,21 @@ class AppController {
         shelves.readingNow.forEach(item => {
           const b = window.bookRelay.getBookById(item.id);
           if (b) {
+            const pct = item.progressPercent || 0;
             const card = document.createElement('div');
             card.className = 'shelf-book-card';
             card.innerHTML = `
-              <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+              <div class="shelf-book-cover-wrap">
+                <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+                ${this.renderBookProgressCircle(pct)}
+              </div>
               <div class="shelf-book-title">${b.title}</div>
               <div class="shelf-book-progress-bar">
-                <div class="shelf-book-progress-fill" style="width: ${item.progressPercent}%;"></div>
+                <div class="shelf-book-progress-fill" style="width: ${pct}%;"></div>
               </div>
-              <div style="font-size:0.75rem; color:var(--text-dim); display:flex; justify-content:space-between;">
+              <div style="font-size:0.75rem; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center;">
                 <span>Глава: <strong>${(item.chapterIdx || 0) + 1}</strong></span>
-                <span>${item.progressPercent}%</span>
+                <span style="color:var(--accent-cyan); font-weight:700;">${pct}%</span>
               </div>
               <button class="btn btn-primary btn-sm btn-continue-reading" data-book-id="${b.id}" style="margin-top:0.4rem;">
                 Продолжить →
@@ -1650,12 +1695,20 @@ class AppController {
         shelves.favorites.forEach(bookId => {
           const b = window.bookRelay.getBookById(bookId);
           if (b) {
+            const saved = window.readerEngine?.getSavedProgress?.(bookId);
+            const pct = saved ? (saved.progressPercent || 0) : 0;
             const card = document.createElement('div');
             card.className = 'shelf-book-card';
             card.innerHTML = `
-              <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+              <div class="shelf-book-cover-wrap">
+                <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+                ${this.renderBookProgressCircle(pct)}
+              </div>
               <div class="shelf-book-title">${b.title}</div>
-              <div style="font-size:0.75rem; color:var(--accent-cyan);">${b.author}</div>
+              <div style="font-size:0.75rem; color:var(--accent-cyan); display:flex; justify-content:space-between; align-items:center;">
+                <span>${b.author}</span>
+                <span style="color: ${pct > 0 ? '#00f0ff' : '#8e9bb0'}; font-weight: 700;">${pct > 0 ? `${pct}%` : '0%'}</span>
+              </div>
               <button class="btn btn-secondary btn-sm" onclick="window.app.openBookDetails('${b.id}')" style="margin-top:0.4rem;">
                 Карточка
               </button>
@@ -1679,9 +1732,12 @@ class AppController {
             const card = document.createElement('div');
             card.className = 'shelf-book-card';
             card.innerHTML = `
-              <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+              <div class="shelf-book-cover-wrap">
+                <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+                ${this.renderBookProgressCircle(100)}
+              </div>
               <div class="shelf-book-title">${b.title}</div>
-              <div style="font-size:0.75rem; color:var(--accent-green);">✓ Завершено (${item.completedDate})</div>
+              <div style="font-size:0.75rem; color:var(--accent-green); font-weight: 700;">✓ Завершено (${item.completedDate})</div>
             `;
             compGrid.appendChild(card);
           }
