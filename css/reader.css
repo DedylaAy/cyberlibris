@@ -547,11 +547,19 @@
 }
 
 /* Floating Quote Button */
-.floating-quote-btn {
+/* Floating Selection Actions */
+.floating-selection-actions {
   position: fixed;
   z-index: 999;
-  display: none;
-  background: rgba(13, 18, 30, 0.92);
+  display: flex;
+  gap: 0.4rem;
+  transform: translate(-50%, -100%);
+  transition: transform 0.15s, opacity 0.2s;
+  pointer-events: auto;
+}
+
+.floating-action-pill {
+  background: rgba(13, 18, 30, 0.94);
   border: 1px solid var(--accent-cyan);
   color: var(--accent-cyan);
   border-radius: 20px;
@@ -561,14 +569,52 @@
   cursor: pointer;
   box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4);
   backdrop-filter: blur(10px);
-  transform: translate(-50%, -100%);
-  transition: transform 0.15s, background 0.2s;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.floating-quote-btn:hover {
+.floating-action-pill:hover {
   background: var(--accent-cyan);
   color: #0b0f19;
-  transform: translate(-50%, -110%) scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+}
+
+#floating-define-btn {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+#floating-define-btn:hover {
+  background: var(--accent-gold);
+  color: #0b0f19;
+}
+
+/* Web Speech TTS Narrator Bar */
+.reader-tts-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 1.2rem;
+  background: linear-gradient(90deg, rgba(0, 255, 136, 0.12), rgba(0, 240, 255, 0.08));
+  border: 1px solid rgba(0, 255, 136, 0.35);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.2rem;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.15);
+  animation: fadeIn 0.3s ease;
+}
+
+.tts-pulse-icon {
+  font-size: 1.4rem;
+  animation: pulse 1.5s infinite;
+}
+
+.tts-speaking-highlight {
+  background: rgba(0, 255, 136, 0.15) !important;
+  border-left: 3px solid #00ff88 !important;
+  padding-left: 0.6rem !important;
+  border-radius: 4px;
+  transition: all 0.3s ease;
 }
 
 /* Bookmarks Drawer Items */

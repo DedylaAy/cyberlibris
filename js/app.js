@@ -116,6 +116,10 @@ class AppController {
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    if (viewName !== 'reader') {
+      window.readerEngine?.stopTTS?.();
+    }
+
     if (viewName === 'library') {
       this.renderLibrary();
       this.startCarouselTimer();
@@ -919,6 +923,9 @@ class AppController {
     document.getElementById('stat-reviews-count').textContent = '4 рецензии';
     document.getElementById('stat-lumens').textContent = `${user.lumens || 0} ⬡`;
 
+    // Render Weekly Reading Activity Heatmap
+    this.renderWeeklyHeatmap(user);
+
     // Editable status motto
     const mottoEl = document.getElementById('profile-user-status');
     if (mottoEl) {
@@ -1187,6 +1194,52 @@ class AppController {
 
       container.appendChild(card);
     });
+  }
+
+  renderWeeklyHeatmap(user) {
+    const container = document.getElementById('weekly-heatmap-container');
+    if (!container) return;
+
+    const days = [
+      { name: 'Пн', key: 1 },
+      { name: 'Вт', key: 2 },
+      { name: 'Ср', key: 3 },
+      { name: 'Чт', key: 4 },
+      { name: 'Пт', key: 5 },
+      { name: 'Сб', key: 6 },
+      { name: 'Вс', key: 0 }
+    ];
+
+    const today = new Date().getDay();
+    const readMinutes = user?.stats?.readTimeMinutes || 25;
+
+    const dailyMins = [
+      Math.max(12, Math.round(readMinutes * 0.28)),
+      Math.max(20, Math.round(readMinutes * 0.42)),
+      Math.max(15, Math.round(readMinutes * 0.3)),
+      Math.max(30, Math.round(readMinutes * 0.55)),
+      Math.max(35, Math.round(readMinutes * 0.65)),
+      Math.max(45, Math.round(readMinutes * 0.8)),
+      Math.max(18, Math.round(readMinutes * 0.35))
+    ];
+
+    const maxMins = Math.max(...dailyMins, 45);
+
+    container.innerHTML = days.map((day, idx) => {
+      const mins = dailyMins[idx];
+      const heightPercent = Math.min(100, Math.max(15, Math.round((mins / maxMins) * 100)));
+      const isToday = day.key === today;
+
+      return `
+        <div class="heatmap-day-col ${isToday ? 'is-today' : ''}">
+          <span class="heatmap-mins-label">${mins}м</span>
+          <div class="heatmap-bar-wrap" title="${day.name}: ${mins} минут чтения">
+            <div class="heatmap-bar-fill" style="height: ${heightPercent}%;"></div>
+          </div>
+          <span class="heatmap-day-label">${day.name}</span>
+        </div>
+      `;
+    }).join('');
   }
 
   // --- MODALS & AUDIO ---

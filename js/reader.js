@@ -1,12 +1,241 @@
 /**
  * CyberLibris Reader & RSVP Speed Reading Suite
  */
+
+const CLASSIC_LEXICON = {
+  'кибитка': {
+    title: 'Кибитка',
+    meaning: 'Крытая дорожная повозка или сани на полозьях с парусиновым или войлочным верхом для дальних путешествий.',
+    example: '«Ямщик сидит на облучке... Кибитка летит по рыхлому снегу.» — А. С. Пушкин',
+    type: 'Исторический быт'
+  },
+  'верста': {
+    title: 'Верста',
+    meaning: 'Русская мера длины, равная 500 саженям (приблизительно 1,066 километра).',
+    example: '«За версту было слышно дыхание метели в степи.»',
+    type: 'Меры длины'
+  },
+  'асессор': {
+    title: 'Коллежский асессор',
+    meaning: 'Гражданский чин 8-го класса Табели о рангах в Российской империи, дававший право на потомственное дворянство.',
+    example: '«Коллежский асессор Ковалёв проснулся довольно рано...» — Н. В. Гоголь',
+    type: 'Табель о рангах'
+  },
+  'стратагема': {
+    title: 'Стратагема',
+    meaning: 'Стратегический замысел, скрытый тактический манёвр для достижения победы с минимальными потерями.',
+    example: '«Война — это путь обмана. Удар наносится там, где враг не ожидает.» — Сунь-Цзы',
+    type: 'Военная философия'
+  },
+  'яхонт': {
+    title: 'Яхонт',
+    meaning: 'Старинное название драгоценных корундов: червлёный (рубин) и лазоревый (сапфир).',
+    example: '«Кольцо сверкало крупным яхонтом в золотом обрамлении.»',
+    type: 'Драгоценности'
+  },
+  'денщик': {
+    title: 'Денщик',
+    meaning: 'Солдат, состоявший при офицере в качестве постоянного вестового и личного порученца.',
+    example: '«Денщик зажег свечу и передал генералу пакет с донесением.»',
+    type: 'Военный чин'
+  },
+  'десница': {
+    title: 'Десница',
+    meaning: 'Правая рука (высокий торжественный стиль); символ власти, правосудия или покровительства.',
+    example: '«И десница судьбы простёрлась над полем брани.»',
+    type: 'Архаизм'
+  },
+  'ланиты': {
+    title: 'Ланиты',
+    meaning: 'Щёки (поэтический архаизм XVIII—XIX веков).',
+    example: '«Румянец юности играл на её нежных ланитах.»',
+    type: 'Поэтизм'
+  },
+  'чело': {
+    title: 'Чело',
+    meaning: 'Лоб; в переносном значении — лицо или мысли («бить челом» — почтительно кланяться или просить).',
+    example: '«На челе его лежала глубокая дума о судьбах отечества.»',
+    type: 'Архаизм'
+  },
+  'фолиант': {
+    title: 'Фолиант',
+    meaning: 'Массивная книга большого формата (in-folio), старинный том в прочном кожаном переплете.',
+    example: '«На полке стояли старинные фолианты по средневековой философии.»',
+    type: 'Книговедение'
+  },
+  'симулякр': {
+    title: 'Симулякр',
+    meaning: 'Знак или образ, не имеющий оригинала в реальности; репрезентация отсутствующей сущности.',
+    example: '«Цифровые симулякры заполнили неоновые улицы киберпространства.»',
+    type: 'Киберпанк & Философия'
+  },
+  'бурбон': {
+    title: 'Бурбон',
+    meaning: 'Переносно: грубый, деспотичный, неотёсанный человек, самодур.',
+    example: '«— Эх ты, бурбон! — с досадой произнёс полковник.»',
+    type: 'Бытовой архаизм'
+  },
+  'кибернетика': {
+    title: 'Кибернетика',
+    meaning: 'Наука об общих закономерностях получения, хранения, передачи и преобразования информации в сложных системах.',
+    example: '«Норберт Винер сформулировал фундаментальные законы кибернетики.»',
+    type: 'Точные науки'
+  },
+  'морфин': {
+    title: 'Морфий (Морфин)',
+    meaning: 'Главный алкалоид опия, сильное анальгезирующее средство, порождающее зависимость.',
+    example: '«Записки юного врача открывают драму борьбы разума и морфия.» — М. Булгаков',
+    type: 'Медицина'
+  },
+  'шабаш': {
+    title: 'Шабаш',
+    meaning: 'Тайное ночное сборище нечистой силы и ведьм; шумно-разгульное пиршество.',
+    example: '«И Маргарита устремилась в ночное небо навстречу шабашу.» — М. Булгаков',
+    type: 'Мифология'
+  }
+};
+
+class SpeechNarrator {
+  constructor() {
+    this.synth = window.speechSynthesis;
+    this.utterance = null;
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.rate = 1.0;
+    this.voice = null;
+    this.sentences = [];
+    this.currentSentenceIdx = 0;
+    this.initVoices();
+  }
+
+  initVoices() {
+    if (!this.synth) return;
+    const loadVoices = () => {
+      const voices = this.synth.getVoices() || [];
+      this.voice = voices.find(v => v.lang.startsWith('ru') || v.lang.includes('RU')) || voices[0] || null;
+    };
+    loadVoices();
+    if (this.synth.onvoiceschanged !== undefined) {
+      this.synth.onvoiceschanged = loadVoices;
+    }
+  }
+
+  start(text) {
+    this.stop();
+    if (!this.synth || !text) return;
+
+    const clean = text.replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ');
+    const parts = clean.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || [clean];
+    this.sentences = parts.map(p => p.trim()).filter(p => p.length > 2);
+    this.currentSentenceIdx = 0;
+    this.isPlaying = true;
+    this.isPaused = false;
+    this.speakCurrentSentence();
+  }
+
+  speakCurrentSentence() {
+    if (!this.isPlaying || this.currentSentenceIdx >= this.sentences.length) {
+      this.stop();
+      window.app?.showToast('🎧 Чтение главы завершено', 'info');
+      return;
+    }
+
+    const sentence = this.sentences[this.currentSentenceIdx];
+    this.utterance = new SpeechSynthesisUtterance(sentence);
+    if (this.voice) this.utterance.voice = this.voice;
+    this.utterance.rate = this.rate;
+
+    this.utterance.onend = () => {
+      if (this.isPlaying && !this.isPaused) {
+        this.currentSentenceIdx++;
+        this.speakCurrentSentence();
+      }
+    };
+
+    this.utterance.onerror = (e) => {
+      console.warn('Speech error:', e);
+      if (this.isPlaying && !this.isPaused) {
+        this.currentSentenceIdx++;
+        this.speakCurrentSentence();
+      }
+    };
+
+    this.highlightSentence(sentence);
+    this.synth.speak(this.utterance);
+    this.updateUI();
+  }
+
+  highlightSentence(sentence) {
+    const bodyEl = document.getElementById('reader-body-content');
+    if (!bodyEl) return;
+    bodyEl.querySelectorAll('.tts-speaking-highlight').forEach(el => el.classList.remove('tts-speaking-highlight'));
+    const snippet = sentence.substring(0, 30).trim();
+    if (!snippet) return;
+    const paragraphs = bodyEl.querySelectorAll('p');
+    for (const p of paragraphs) {
+      if (p.textContent.includes(snippet)) {
+        p.classList.add('tts-speaking-highlight');
+        p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        break;
+      }
+    }
+  }
+
+  toggle() {
+    if (!this.synth) return;
+    if (this.isPlaying && !this.isPaused) {
+      this.synth.pause();
+      this.isPaused = true;
+    } else if (this.isPlaying && this.isPaused) {
+      this.synth.resume();
+      this.isPaused = false;
+    }
+    this.updateUI();
+  }
+
+  stop() {
+    if (this.synth) {
+      this.synth.cancel();
+    }
+    this.isPlaying = false;
+    this.isPaused = false;
+    this.currentSentenceIdx = 0;
+    const bodyEl = document.getElementById('reader-body-content');
+    bodyEl?.querySelectorAll('.tts-speaking-highlight').forEach(el => el.classList.remove('tts-speaking-highlight'));
+    this.updateUI();
+  }
+
+  setRate(rate) {
+    this.rate = rate;
+    if (this.isPlaying && !this.isPaused && this.synth) {
+      this.synth.cancel();
+      this.speakCurrentSentence();
+    }
+    this.updateUI();
+  }
+
+  updateUI() {
+    const bar = document.getElementById('reader-tts-bar');
+    const playBtn = document.getElementById('btn-tts-play-toggle');
+    const title = document.getElementById('tts-status-title');
+    const sub = document.getElementById('tts-status-sub');
+
+    if (bar) bar.style.display = this.isPlaying ? 'flex' : 'none';
+    if (playBtn) playBtn.textContent = this.isPaused ? '▶ Продолжить' : '⏸ Пауза';
+    if (title) title.textContent = this.isPaused ? 'Кибер-Чтец: Пауза' : 'Кибер-Чтец: Воспроизведение';
+    if (sub && this.sentences.length > 0) {
+      sub.textContent = `Предложение ${this.currentSentenceIdx + 1} из ${this.sentences.length} (${Math.round(((this.currentSentenceIdx + 1) / this.sentences.length) * 100)}%)`;
+    }
+  }
+}
+
 class ReaderEngine {
   constructor() {
     this.currentBook = null;
     this.currentChapterIdx = 0;
     this.readTimer = null;
     this.readSeconds = 0;
+    this.narrator = null;
 
     // RSVP Speed Reader State
     this.rsvpWords = [];
@@ -56,6 +285,20 @@ class ReaderEngine {
       });
     });
 
+    // Ambient Volume Slider
+    document.getElementById('reader-ambient-vol')?.addEventListener('input', (e) => {
+      const vol = parseFloat(e.target.value);
+      if (window.soundEngine) window.soundEngine.setVolume(vol);
+    });
+
+    // TTS Web Speech Narrator
+    document.getElementById('btn-toggle-tts')?.addEventListener('click', () => this.toggleTTS());
+    document.getElementById('btn-tts-play-toggle')?.addEventListener('click', () => this.toggleTTS());
+    document.getElementById('btn-tts-stop')?.addEventListener('click', () => this.stopTTS());
+    document.getElementById('tts-rate-select')?.addEventListener('change', (e) => {
+      this.narrator?.setRate(parseFloat(e.target.value));
+    });
+
     // RSVP Speed Reader trigger
     document.getElementById('btn-start-rsvp')?.addEventListener('click', () => this.openRsvpModal());
     document.getElementById('btn-rsvp-play')?.addEventListener('click', () => this.toggleRsvp());
@@ -83,6 +326,12 @@ class ReaderEngine {
     });
     document.getElementById('btn-copy-quote')?.addEventListener('click', () => this.copyQuoteToClipboard());
 
+    // Cyber-Lexicon Definition trigger
+    document.getElementById('floating-define-btn')?.addEventListener('click', () => {
+      const sel = window.getSelection().toString().trim();
+      this.openWordLexicon(sel);
+    });
+
     // Bookmarks Modal
     document.getElementById('btn-open-bookmarks')?.addEventListener('click', () => this.openBookmarksModal());
     document.getElementById('btn-add-bookmark')?.addEventListener('click', () => this.openBookmarksModal());
@@ -91,33 +340,131 @@ class ReaderEngine {
     // Fullscreen toggle
     document.getElementById('btn-toggle-fullscreen')?.addEventListener('click', () => this.toggleFullscreen());
 
-    // Selection listener for floating quote button
+    // Selection listener for floating actions (Quote + Lexicon)
     this.setupSelectionListener();
   }
 
   setupSelectionListener() {
     document.addEventListener('selectionchange', () => {
-      const btn = document.getElementById('floating-quote-btn');
-      if (!btn) return;
+      const bar = document.getElementById('floating-selection-actions');
+      const defBtn = document.getElementById('floating-define-btn');
+      if (!bar) return;
       if (!document.getElementById('view-reader')?.classList.contains('active')) {
-        btn.style.display = 'none';
+        bar.style.display = 'none';
         return;
       }
 
       const sel = window.getSelection();
       const text = sel ? sel.toString().trim() : '';
-      if (text.length >= 10 && sel.rangeCount > 0) {
+      if (text.length >= 2 && sel.rangeCount > 0) {
+        const words = text.split(/\s+/).filter((w) => w.length > 0);
+        if (defBtn) {
+          defBtn.style.display = words.length <= 4 ? 'inline-block' : 'none';
+        }
         const range = sel.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         if (rect && rect.top > 0) {
-          btn.style.display = 'block';
-          btn.style.left = `${Math.min(window.innerWidth - 80, Math.max(80, rect.left + rect.width / 2))}px`;
-          btn.style.top = `${Math.max(10, rect.top - 12)}px`;
+          bar.style.display = 'flex';
+          bar.style.left = `${Math.min(window.innerWidth - 120, Math.max(120, rect.left + rect.width / 2))}px`;
+          bar.style.top = `${Math.max(10, rect.top - 12)}px`;
         }
       } else {
-        btn.style.display = 'none';
+        bar.style.display = 'none';
       }
     });
+  }
+
+  toggleTTS() {
+    if (!this.narrator) {
+      this.narrator = new SpeechNarrator();
+    }
+    const bar = document.getElementById('reader-tts-bar');
+    if (!this.narrator.isPlaying) {
+      const bodyEl = document.getElementById('reader-body-content');
+      const text = bodyEl ? bodyEl.innerText : '';
+      if (!text || text.length < 10) {
+        window.app.showToast('⚠️ Текст главы ещё загружается...', 'error');
+        return;
+      }
+      if (bar) bar.style.display = 'flex';
+      this.narrator.start(text);
+      window.app.showToast('🎧 Кибер-Чтец запущен: озвучивание главы', 'info');
+    } else {
+      this.narrator.toggle();
+    }
+  }
+
+  stopTTS() {
+    if (this.narrator) {
+      this.narrator.stop();
+    }
+    const bar = document.getElementById('reader-tts-bar');
+    if (bar) bar.style.display = 'none';
+    window.app.showToast('⏹ Кибер-Чтец остановлен', 'info');
+  }
+
+  async openWordLexicon(rawWord) {
+    if (!rawWord) return;
+    const clean = rawWord.toLowerCase().replace(/[^а-яa-zё]/gi, '').trim();
+    if (!clean) return;
+
+    let entry = CLASSIC_LEXICON[clean];
+
+    if (!entry) {
+      const keys = Object.keys(CLASSIC_LEXICON);
+      const match = keys.find((k) => clean.startsWith(k.substring(0, 4)) || k.startsWith(clean.substring(0, 4)));
+      if (match) entry = CLASSIC_LEXICON[match];
+    }
+
+    const titleEl = document.getElementById('lexicon-term-title');
+    const typeEl = document.getElementById('lexicon-term-type');
+    const meaningEl = document.getElementById('lexicon-term-meaning');
+    const exampleEl = document.getElementById('lexicon-term-example');
+    const sourceEl = document.getElementById('lexicon-term-source');
+
+    if (entry) {
+      if (titleEl) titleEl.textContent = entry.title;
+      if (typeEl) typeEl.textContent = entry.type;
+      if (meaningEl) meaningEl.textContent = entry.meaning;
+      if (exampleEl) exampleEl.textContent = entry.example;
+      if (sourceEl) sourceEl.textContent = '📡 Источник: Словарь классической литературы CyberLibris';
+    } else {
+      if (titleEl) titleEl.textContent = rawWord;
+      if (typeEl) typeEl.textContent = 'Литературный термин';
+      if (meaningEl) meaningEl.textContent = `Слово «${rawWord}» встречается в тексте произведения. Поиск толкования...`;
+      if (exampleEl) exampleEl.textContent = `Контекст: «...${rawWord}...»`;
+      if (sourceEl) sourceEl.textContent = '📡 Источник: Открытый лексикон Викисловаря';
+
+      try {
+        const resp = await fetch(`https://ru.wiktionary.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&titles=${encodeURIComponent(clean)}&format=json&origin=*`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const pages = data.query?.pages;
+          if (pages) {
+            const pageId = Object.keys(pages)[0];
+            const extract = pages[pageId]?.extract;
+            if (extract && pageId !== '-1') {
+              const snippet = extract.split('\n').filter((l) => l.trim().length > 10)[0] || extract;
+              if (meaningEl) meaningEl.textContent = snippet.substring(0, 300) + '...';
+            } else {
+              if (meaningEl) meaningEl.textContent = `«${rawWord}» — выразительный литературный образ, используемый автором для создания атмосферы эпохи.`;
+            }
+          }
+        }
+      } catch (e) {
+        if (meaningEl) meaningEl.textContent = `«${rawWord}» — выразительный литературный образ, используемый автором для создания атмосферы эпохи.`;
+      }
+    }
+
+    // Award XP for erudition
+    if (window.auth) {
+      window.auth.addXp(10);
+      window.auth.addLumens(5);
+      window.app.showToast('🧠 Толкование изучено: +10 XP, +5 ⬡!', 'reward');
+      if (window.soundEngine) window.soundEngine.playCorrect();
+    }
+
+    window.app.openModal('modal-word-definition');
   }
 
   saveProgress() {
@@ -391,6 +738,7 @@ class ReaderEngine {
 
   jumpToChapter(idx) {
     if (!this.currentBook) return;
+    this.stopTTS();
     const chapters = this.currentBook.chapters || [];
     if (idx >= 0 && idx < chapters.length) {
       this.currentChapterIdx = idx;
@@ -461,6 +809,7 @@ class ReaderEngine {
 
   nextChapter() {
     if (this.currentBook && this.currentChapterIdx < (this.currentBook.chapters?.length || 0) - 1) {
+      this.stopTTS();
       this.currentChapterIdx += 1;
       this.saveProgress();
 
@@ -498,6 +847,7 @@ class ReaderEngine {
 
   prevChapter() {
     if (this.currentBook && this.currentChapterIdx > 0) {
+      this.stopTTS();
       this.currentChapterIdx -= 1;
       this.saveProgress();
       this.renderContent();

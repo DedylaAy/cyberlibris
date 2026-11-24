@@ -749,10 +749,17 @@
               <button class="ambient-chip" data-sound="fire">🔥 Камин</button>
               <button class="ambient-chip" data-sound="cyber">🏙️ Неон</button>
               <button class="ambient-chip" data-sound="binaural">🧘 432Hz</button>
+              <div style="display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.3rem;">
+                <span style="font-size: 0.7rem; color: var(--text-dim);" title="Громкость эмбиента">🔊</span>
+                <input type="range" id="reader-ambient-vol" min="0" max="1" step="0.05" value="0.7" style="width: 50px; height: 4px; accent-color: var(--accent-cyan);" title="Громкость атмосферы">
+              </div>
             </div>
 
-            <!-- Actions: RSVP, Quote Share, Bookmark, Fullscreen -->
+            <!-- Actions: RSVP, TTS Narrator, Quote Share, Bookmark, Fullscreen -->
             <div class="reader-tool-group">
+              <button class="tool-btn" id="btn-toggle-tts" title="Озвучить главу голосом (Кибер-Чтец)" style="color: var(--accent-green); font-weight: 700;">
+                🎧 Чтец
+              </button>
               <button class="tool-btn" id="btn-start-rsvp" style="color: var(--accent-magenta); font-weight: 700;">
                 ⚡ Спринт RSVP
               </button>
@@ -768,10 +775,36 @@
             </div>
           </div>
 
-          <!-- Floating selection quote button -->
-          <button class="floating-quote-btn" id="floating-quote-btn">
-            ✨ Поделиться цитатой (+25 XP)
-          </button>
+          <!-- Web Speech TTS Audio Narrator Bar -->
+          <div id="reader-tts-bar" class="reader-tts-bar" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span class="tts-pulse-icon">🎙️</span>
+              <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green);" id="tts-status-title">Кибер-Чтец активен</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);" id="tts-status-sub">Озвучивание текста в реальном времени</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm" id="btn-tts-play-toggle">⏸ Пауза</button>
+              <button class="btn btn-secondary btn-sm" id="btn-tts-stop" style="color: #ff5577;">⏹ Стоп</button>
+              <select id="tts-rate-select" class="form-select" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; width: auto; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid var(--border-glass);">
+                <option value="0.8">0.8x Скорость</option>
+                <option value="1.0" selected>1.0x Обычная</option>
+                <option value="1.25">1.25x Быстрее</option>
+                <option value="1.5">1.5x Ускоренная</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Floating selection actions container (Quote + Lexicon) -->
+          <div class="floating-selection-actions" id="floating-selection-actions" style="display: none;">
+            <button class="floating-action-pill" id="floating-define-btn" title="Пояснить выбранное слово или термин (+10 XP)">
+              📖 Толкование (+10 XP)
+            </button>
+            <button class="floating-action-pill" id="floating-quote-btn" title="Создать карточку цитаты (+25 XP)">
+              ✨ Цитата (+25 XP)
+            </button>
+          </div>
 
           <!-- Reader Article -->
           <article class="reader-article">
@@ -1089,6 +1122,22 @@
           <div class="admin-stat-card tilt-card">
             <div class="admin-stat-label">Люмены (Валюта)</div>
             <div class="admin-stat-val" id="stat-lumens" style="color: var(--accent-gold);">0 ⬡</div>
+          </div>
+        </div>
+
+        <!-- Weekly Reading Activity Heatmap -->
+        <div class="cyber-card" style="margin-bottom: 2rem; padding: 1.4rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.2rem;">📊</span>
+              <h4 style="color: #fff; font-size: 1rem; font-weight: 700; margin: 0;">Ритм Чтения & Активность Недели:</h4>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan);">
+              🔥 Серия дней: <strong id="profile-streak-count" style="color: #00ff88;">3 дня подряд</strong>
+            </div>
+          </div>
+          <div class="weekly-heatmap-grid" id="weekly-heatmap-container">
+            <!-- Populated dynamically by app.js: Mon..Sun bars with glowing intensity -->
           </div>
         </div>
 
@@ -1838,6 +1887,37 @@
       </h4>
       <div id="reader-bookmarks-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 240px; overflow-y: auto;">
         <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL: CYBER-LEXICON / WORD DEFINITION (КИБЕР-ЛЕКСИКОН)
+       =================================================================== -->
+  <div class="modal-overlay" id="modal-word-definition">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+          <span>📖</span> Кибер-Лексикон: Толкование
+        </h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.4rem; margin-top: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.6rem;">
+          <h2 id="lexicon-term-title" style="font-size: 1.5rem; color: #fff; font-weight: 800; letter-spacing: 0.5px;">Термин</h2>
+          <span id="lexicon-term-type" style="font-size: 0.75rem; color: var(--accent-gold); font-weight: 700; text-transform: uppercase;">Словарь классики</span>
+        </div>
+        <p id="lexicon-term-meaning" style="font-size: 1rem; line-height: 1.6; color: #e2e8f0; margin-bottom: 1.1rem;">
+          Определение загружается...
+        </p>
+        <div id="lexicon-term-example" style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); padding: 0.6rem 0.8rem; background: rgba(0,240,255,0.05); border-left: 2px solid var(--accent-cyan); border-radius: 4px; margin-bottom: 1rem;">
+          Пример контекста
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-dim);">
+          <span id="lexicon-term-source">📡 Источник: Фонд классической словесности</span>
+          <span style="color: var(--accent-green); font-weight: 700;">+10 XP за эрудицию</span>
+        </div>
       </div>
     </div>
   </div>

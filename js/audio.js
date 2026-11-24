@@ -32,6 +32,16 @@ class AudioEngine {
     return this.isMuted;
   }
 
+  setVolume(vol) {
+    this.volume = Math.max(0, Math.min(1, vol));
+    localStorage.setItem('cyberlibris_volume', this.volume);
+    if (this.ambientNodes && this.ambientNodes.gain && this.ctx) {
+      const baseGain = (this.currentAmbient === 'rain' ? 0.08 : this.currentAmbient === 'fire' ? 0.08 : this.currentAmbient === 'cyber' ? 0.06 : 0.05);
+      this.ambientNodes.gain.gain.setValueAtTime(baseGain * this.volume, this.ctx.currentTime);
+    }
+    return this.volume;
+  }
+
   toggleMute() {
     return this.setMuted(!this.isMuted);
   }
