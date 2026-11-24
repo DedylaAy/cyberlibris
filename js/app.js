@@ -43,6 +43,9 @@ class AppController {
     this.bindTiltEffect();
     this.bindMagneticButtons();
     this.bindAudioTriggers();
+    this.bindHoverSFX();
+    this.setupCyberOracle();
+    this.setupHeaderAmbientControl();
     this.bindThemePalette();
     this.bindSearchAndFilters();
     this.bindSteamCarouselControls();
@@ -1391,6 +1394,139 @@ class AppController {
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('button, .genre-pill, .carousel-arrow, .shop-item-card');
       if (btn && window.soundEngine) window.soundEngine.playClick();
+    });
+  }
+
+  bindHoverSFX() {
+    let lastHoverTime = 0;
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target.closest('.nav-btn, .magnetic-btn, .steam-book-card, .theme-swatch-item, .remanga-chip, .profile-badge-card, .ambient-opt-btn, .oracle-crystal-orb');
+      if (target && window.soundEngine && !window.soundEngine.isMuted) {
+        const now = Date.now();
+        if (now - lastHoverTime > 75) {
+          lastHoverTime = now;
+          window.soundEngine.playHover();
+        }
+      }
+    }, { passive: true });
+  }
+
+  setupCyberOracle() {
+    const orb = document.getElementById('oracle-crystal-orb');
+    const askBtn = document.getElementById('btn-ask-oracle');
+    const quoteDisplay = document.getElementById('oracle-quote-display');
+    const authorDisplay = document.getElementById('oracle-author-display');
+    if (!orb || !askBtn || !quoteDisplay || !authorDisplay) return;
+
+    const quotes = [
+      { quote: "«Сражение выигрывает тот, кто твердо решил его выиграть.»", author: "— Лев Толстой, «Война и мир»" },
+      { quote: "«Тот, кто победил другого — силен, но победивший себя — воистину могуществен.»", author: "— Лао-Цзы, «Дао Дэ Цзин»" },
+      { quote: "«Красота спасёт мир.»", author: "— Фёдор Достоевский, «Идиот»" },
+      { quote: "«Кто управляет прошлым — тот управляет будущим; кто управляет настоящим — управляет прошлым.»", author: "— Джордж Оруэлл, «1984»" },
+      { quote: "«Непобедимость заключена в себе самом, возможность победы заключена в противнике.»", author: "— Сунь-Цзы, «Искусство войны»" },
+      { quote: "«Рукописи не горят.»", author: "— Михаил Булгаков, «Мастер и Маргарита»" },
+      { quote: "«Никакое препятствие не может сокрушить непоколебимую решимость духа.»", author: "— Леонардо да Винчи" },
+      { quote: "«Мы учимся не для школы, а для жизни.»", author: "— Сенека, «Нравственные письма»" },
+      { quote: "«Знание само по себе есть неодолимая сила.»", author: "— Фрэнсис Бэкон" },
+      { quote: "«Зорко одно лишь сердце. Самого главного глазами не увидишь.»", author: "— Антуан де Сент-Экзюпери" },
+      { quote: "«Человек создан не для того, чтобы терпеть поражения. Человека можно уничтожить, но его нельзя победить.»", author: "— Эрнест Хемингуэй" }
+    ];
+
+    let isTyping = false;
+    let quoteIndex = 0;
+
+    const rollOracle = () => {
+      if (isTyping) return;
+      isTyping = true;
+      if (window.soundEngine) {
+        window.soundEngine.playCardFlip();
+      }
+
+      let newIdx;
+      do {
+        newIdx = Math.floor(Math.random() * quotes.length);
+      } while (newIdx === quoteIndex && quotes.length > 1);
+      quoteIndex = newIdx;
+      const targetItem = quotes[quoteIndex];
+
+      quoteDisplay.style.opacity = '0.3';
+      quoteDisplay.textContent = '⚡ Кибер-Оракул сканирует древние свитки...';
+
+      setTimeout(() => {
+        quoteDisplay.style.opacity = '1';
+        quoteDisplay.textContent = '';
+        authorDisplay.textContent = '';
+
+        let charIdx = 0;
+        const text = targetItem.quote;
+        const interval = setInterval(() => {
+          if (charIdx < text.length) {
+            quoteDisplay.textContent += text[charIdx];
+            charIdx++;
+          } else {
+            clearInterval(interval);
+            authorDisplay.textContent = targetItem.author;
+            isTyping = false;
+            if (window.auth && window.auth.currentUser) {
+              window.auth.addXp(15);
+              window.auth.addLumens(5);
+              this.showToast('🔮 Мудрость Оракула получена: +15 XP и +5 Люменов!', 'reward');
+            }
+          }
+        }, 18);
+      }, 300);
+    };
+
+    orb.addEventListener('click', rollOracle);
+    askBtn.addEventListener('click', rollOracle);
+  }
+
+  setupHeaderAmbientControl() {
+    const trigger = document.getElementById('btn-ambient-picker-trigger');
+    const dropdown = document.getElementById('ambient-dropdown');
+    const label = document.getElementById('ambient-current-label');
+    const optButtons = document.querySelectorAll('.ambient-opt-btn');
+    if (!trigger || !dropdown) return;
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('active');
+      document.getElementById('theme-palette-dropdown')?.classList.remove('active');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && e.target !== trigger) {
+        dropdown.classList.remove('active');
+      }
+    });
+
+    const labelsMap = {
+      off: '🎧 Эмбиент',
+      rain: '🌧️ Дождь',
+      fire: '🔥 Камин',
+      cyber: '🌌 Дрон',
+      library: '🕯️ Зал'
+    };
+
+    optButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const amb = btn.dataset.ambient;
+        optButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        if (window.soundEngine) {
+          if (amb === 'off') {
+            window.soundEngine.stopAmbient();
+            trigger.classList.remove('playing');
+          } else {
+            window.soundEngine.playAmbient(amb);
+            trigger.classList.add('playing');
+          }
+        }
+
+        if (label) label.textContent = labelsMap[amb] || '🎧 Эмбиент';
+        dropdown.classList.remove('active');
+      });
     });
   }
 

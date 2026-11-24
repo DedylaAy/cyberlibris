@@ -554,6 +554,45 @@
           </div>
         </div>
 
+        <!-- Procedural Ambient Soundscape Player -->
+        <div class="ambient-sound-container" id="ambient-sound-container">
+          <button class="ambient-trigger-btn magnetic-btn" id="btn-ambient-picker-trigger" title="Фоновый эмбиент для чтения">
+            <span class="ambient-anim-bars" id="ambient-anim-bars">
+              <span></span><span></span><span></span><span></span>
+            </span>
+            <span id="ambient-current-label">🎧 Эмбиент</span>
+            <span class="theme-chevron">▾</span>
+          </button>
+          <div class="ambient-dropdown" id="ambient-dropdown">
+            <div class="ambient-dropdown-header">
+              <span>Атмосферный звук</span>
+              <span class="theme-count-badge">Web Audio</span>
+            </div>
+            <div class="ambient-options-list">
+              <button class="ambient-opt-btn active" data-ambient="off">
+                <span class="opt-icon">🔇</span>
+                <div class="opt-info"><strong>Без звука</strong><small>Тишина для концентрации</small></div>
+              </button>
+              <button class="ambient-opt-btn" data-ambient="rain">
+                <span class="opt-icon">🌧️</span>
+                <div class="opt-info"><strong>Неоновый Дождь</strong><small>Уютный шум дождя по стеклу</small></div>
+              </button>
+              <button class="ambient-opt-btn" data-ambient="fire">
+                <span class="opt-icon">🔥</span>
+                <div class="opt-info"><strong>Камин в Фолиантах</strong><small>Потрескивание дров и тепло</small></div>
+              </button>
+              <button class="ambient-opt-btn" data-ambient="cyber">
+                <span class="opt-icon">🌌</span>
+                <div class="opt-info"><strong>Космический Дрон</strong><small>Глубокий медитативный дрон</small></div>
+              </button>
+              <button class="ambient-opt-btn" data-ambient="library">
+                <span class="opt-icon">🕯️</span>
+                <div class="opt-info"><strong>Зал Академии</strong><small>Шелест страниц и акустика</small></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Sound Synthesizer SFX Button -->
         <button class="sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты">
           🔊
@@ -565,6 +604,31 @@
         </div>
       </div>
     </header>
+
+    <!-- Cyber Live Marquee Ticker -->
+    <div class="cyber-live-ticker">
+      <div class="ticker-badge">
+        <span class="ticker-pulse-dot"></span>
+        <span>КИБЕР-ЭФИР</span>
+      </div>
+      <div class="ticker-content-track">
+        <div class="ticker-items-scroll">
+          <span class="ticker-item">⚡ <strong>ZERO-STORAGE RELAY:</strong> 100% текстов транслируются из Wikisource на лету без сохранения байтов на диск</span>
+          <span class="ticker-item">🎧 <strong>КИБЕР-ЧТЕЦ:</strong> Нажмите «🎧 Чтец» в книге для голосовой озвучки с караоке-подсветкой предложений</span>
+          <span class="ticker-item">🔮 <strong>КИБЕР-ОРАКУЛ:</strong> Нажмите на кристалл мудрости ниже, чтобы получить философское пророчество и +15 XP</span>
+          <span class="ticker-item">📖 <strong>КИБЕР-ЛЕКСИКОН:</strong> Выделите любое архаичное слово в тексте для получения исторического толкования</span>
+          <span class="ticker-item">🔖 <strong>ПАМЯТЬ ГЛАВ:</strong> Платформа автоматически фиксирует номер главы и точный процент чтения</span>
+          <span class="ticker-item">🏆 <strong>ТОП СХОЛАСТОВ:</strong> Повышайте уровень за чтение и мини-игры, чтобы занять верхние строчки Зала Славы</span>
+          <!-- Duplicate for seamless infinite loop -->
+          <span class="ticker-item">⚡ <strong>ZERO-STORAGE RELAY:</strong> 100% текстов транслируются из Wikisource на лету без сохранения байтов на диск</span>
+          <span class="ticker-item">🎧 <strong>КИБЕР-ЧТЕЦ:</strong> Нажмите «🎧 Чтец» в книге для голосовой озвучки с караоке-подсветкой предложений</span>
+          <span class="ticker-item">🔮 <strong>КИБЕР-ОРАКУЛ:</strong> Нажмите на кристалл мудрости ниже, чтобы получить философское пророчество и +15 XP</span>
+          <span class="ticker-item">📖 <strong>КИБЕР-ЛЕКСИКОН:</strong> Выделите любое архаичное слово в тексте для получения исторического толкования</span>
+          <span class="ticker-item">🔖 <strong>ПАМЯТЬ ГЛАВ:</strong> Платформа автоматически фиксирует номер главы и точный процент чтения</span>
+          <span class="ticker-item">🏆 <strong>ТОП СХОЛАСТОВ:</strong> Повышайте уровень за чтение и мини-игры, чтобы занять верхние строчки Зала Славы</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Viewport -->
     <main class="main-content">
@@ -584,6 +648,26 @@
             <!-- Thumbnail queue populated by app.js -->
           </div>
           <div class="carousel-progress-bar" id="carousel-timer-bar"></div>
+        </div>
+
+        <!-- Interactive Cyber-Oracle Card -->
+        <div class="cyber-oracle-banner" id="cyber-oracle-banner">
+          <div class="oracle-crystal-orb" id="oracle-crystal-orb" title="Прикоснуться к кристаллу мудрости">🔮</div>
+          <div class="oracle-content">
+            <div class="oracle-header">
+              <span class="oracle-tag">КИБЕР-ОРАКУЛ МУДРОСТИ</span>
+              <span class="oracle-subtag">Интерактивный терминал классической мысли</span>
+            </div>
+            <div class="oracle-quote-display" id="oracle-quote-display">
+              «Сражение выигрывает тот, кто твердо решил его выиграть.»
+            </div>
+            <div class="oracle-author-display" id="oracle-author-display">— Лев Толстой, «Война и мир»</div>
+          </div>
+          <div class="oracle-actions">
+            <button class="btn btn-primary magnetic-btn oracle-ask-btn" id="btn-ask-oracle">
+              ⚡ Спросить Оракула (+15 XP)
+            </button>
+          </div>
         </div>
 
         <!-- ReManga-Style Faceted Filter Panel -->
@@ -1167,6 +1251,38 @@
           </div>
           <div class="weekly-heatmap-grid" id="weekly-heatmap-container">
             <!-- Populated dynamically by app.js: Mon..Sun bars with glowing intensity -->
+          </div>
+        </div>
+
+        <!-- Literary Competence & Taste Matrix -->
+        <div class="cyber-card tilt-card" style="margin-bottom: 2rem; padding: 1.6rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.4rem; flex-wrap:wrap; gap:0.5rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+              <span>🧭</span> Литературная Матрица Компетенций Читателя
+            </h3>
+            <span class="rarity-pill rarity-pill-masterpiece" id="profile-competence-badge">ЭРУДИЦИЯ: РАНГ S+</span>
+          </div>
+          <div class="radar-bars-grid" id="profile-radar-grid">
+            <div class="radar-bar-row">
+              <div class="radar-bar-label"><span>⚔️ Военная Стратегия & Мужество</span><strong style="color: #ffaa00;">94%</strong></div>
+              <div class="radar-track"><div class="radar-fill" style="width: 94%; background: linear-gradient(90deg, #ff5500, #ffaa00);"></div></div>
+            </div>
+            <div class="radar-bar-row">
+              <div class="radar-bar-label"><span>🌌 Научная Фантастика & Киберпанк</span><strong style="color: #00f0ff;">88%</strong></div>
+              <div class="radar-track"><div class="radar-fill" style="width: 88%; background: linear-gradient(90deg, #9d4edd, #00f0ff);"></div></div>
+            </div>
+            <div class="radar-bar-row">
+              <div class="radar-bar-label"><span>🕯️ Готическая Мистика & Детектив</span><strong style="color: #00ff88;">82%</strong></div>
+              <div class="radar-track"><div class="radar-fill" style="width: 82%; background: linear-gradient(90deg, #00f0ff, #00ff88);"></div></div>
+            </div>
+            <div class="radar-bar-row">
+              <div class="radar-bar-label"><span>📜 Философия & Монументальные Фолианты</span><strong style="color: #ffd700;">96%</strong></div>
+              <div class="radar-track"><div class="radar-fill" style="width: 96%; background: linear-gradient(90deg, #ffd700, #ff007f);"></div></div>
+            </div>
+            <div class="radar-bar-row">
+              <div class="radar-bar-label"><span>🧠 Психологическая Глубина & Драма</span><strong style="color: #c084fc;">91%</strong></div>
+              <div class="radar-track"><div class="radar-fill" style="width: 91%; background: linear-gradient(90deg, #00ff88, #c084fc);"></div></div>
+            </div>
           </div>
         </div>
 

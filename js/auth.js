@@ -221,6 +221,10 @@ class AuthManager {
     this.syncUserToUI();
   }
 
+  addXP(amount) {
+    return this.addXp(amount);
+  }
+
   addLumens(amount) {
     if (!this.currentUser) return;
     this.currentUser.lumens = Math.max(0, (this.currentUser.lumens || 0) + amount);

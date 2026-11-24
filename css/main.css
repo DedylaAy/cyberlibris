@@ -2335,3 +2335,466 @@ body.is-creator .github-status-pill {
   color: #e2e8f0;
   font-weight: 700;
 }
+
+/* =========================================================================
+   CYBER LIVE MARQUEE TICKER (БЕГУЩАЯ СТРОКА ЭФИРА)
+   ========================================================================= */
+.cyber-live-ticker {
+  display: flex;
+  align-items: center;
+  background: rgba(8, 12, 22, 0.88);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.22);
+  padding: 0.4rem 1.5rem;
+  overflow: hidden;
+  font-size: 0.84rem;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 85;
+}
+
+.ticker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid var(--accent-cyan);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  color: var(--accent-cyan);
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-right: 1.25rem;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+}
+
+.ticker-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulseDot 1.4s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.65); }
+}
+
+.ticker-content-track {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+  mask-image: linear-gradient(90deg, transparent 0%, black 2%, black 98%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 2%, black 98%, transparent 100%);
+}
+
+.ticker-items-scroll {
+  display: inline-block;
+  white-space: nowrap;
+  animation: tickerSlide 50s linear infinite;
+  will-change: transform;
+}
+
+.ticker-items-scroll:hover {
+  animation-play-state: paused;
+}
+
+.ticker-item {
+  display: inline-block;
+  margin-right: 3rem;
+  color: #ccd6e0;
+}
+
+.ticker-item strong {
+  color: var(--accent-cyan);
+  letter-spacing: 0.3px;
+}
+
+@keyframes tickerSlide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* =========================================================================
+   PROCEDURAL AMBIENT SOUNDSCAPE PICKER IN HEADER
+   ========================================================================= */
+.ambient-sound-container {
+  position: relative;
+}
+
+.ambient-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.48rem 0.85rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ambient-trigger-btn:hover {
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+.ambient-trigger-btn.playing {
+  border-color: #00ff88;
+  color: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
+  background: rgba(0, 255, 136, 0.08);
+}
+
+.ambient-anim-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+
+.ambient-anim-bars span {
+  width: 3px;
+  height: 4px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: height 0.2s ease;
+}
+
+.ambient-trigger-btn.playing .ambient-anim-bars span:nth-child(1) {
+  animation: eqBounce 0.75s infinite ease-in-out alternate;
+}
+.ambient-trigger-btn.playing .ambient-anim-bars span:nth-child(2) {
+  animation: eqBounce 1.05s infinite 0.15s ease-in-out alternate;
+}
+.ambient-trigger-btn.playing .ambient-anim-bars span:nth-child(3) {
+  animation: eqBounce 0.65s infinite 0.35s ease-in-out alternate;
+}
+.ambient-trigger-btn.playing .ambient-anim-bars span:nth-child(4) {
+  animation: eqBounce 0.95s infinite 0.1s ease-in-out alternate;
+}
+
+@keyframes eqBounce {
+  0% { height: 3px; }
+  100% { height: 14px; }
+}
+
+.ambient-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 255px;
+  background: rgba(10, 16, 28, 0.96);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.15);
+  display: none;
+  z-index: 200;
+  animation: fadeIn 0.25s ease;
+}
+
+.ambient-dropdown.active {
+  display: block;
+}
+
+.ambient-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ambient-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ambient-opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: #ddd;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.ambient-opt-btn:hover {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.3);
+  color: #fff;
+}
+
+.ambient-opt-btn.active {
+  background: rgba(0, 255, 136, 0.12);
+  border-color: #00ff88;
+  color: #00ff88;
+}
+
+.ambient-opt-btn .opt-icon {
+  font-size: 1.25rem;
+}
+
+.ambient-opt-btn .opt-info strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.ambient-opt-btn .opt-info small {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+/* =========================================================================
+   CYBER-ORACLE OF WISDOM WIDGET (КИБЕР-ОРАКУЛ МУДРОСТИ)
+   ========================================================================= */
+.cyber-oracle-banner {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  background: linear-gradient(135deg, rgba(22, 14, 42, 0.9) 0%, rgba(12, 28, 50, 0.85) 100%);
+  border: 1.5px solid rgba(157, 78, 221, 0.45);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.8rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(157, 78, 221, 0.2);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.cyber-oracle-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(157, 78, 221, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  animation: oracleAura 8s infinite alternate ease-in-out;
+}
+
+@keyframes oracleAura {
+  0% { transform: scale(0.9) rotate(0deg); }
+  100% { transform: scale(1.1) rotate(15deg); }
+}
+
+.oracle-crystal-orb {
+  font-size: 3.2rem;
+  width: 74px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(157, 78, 221, 0.3) 0%, rgba(0, 240, 255, 0.12) 70%);
+  border: 1.5px solid rgba(157, 78, 221, 0.55);
+  box-shadow: 0 0 25px rgba(157, 78, 221, 0.45);
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  flex-shrink: 0;
+  animation: crystalHover 4s infinite ease-in-out alternate;
+}
+
+@keyframes crystalHover {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-6px) scale(1.06); }
+}
+
+.oracle-crystal-orb:hover {
+  transform: scale(1.18) rotate(12deg);
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.85);
+}
+
+.oracle-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.oracle-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.oracle-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  background: rgba(157, 78, 221, 0.25);
+  border: 1px solid #9d4edd;
+  color: #d8b4fe;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 10px rgba(157, 78, 221, 0.3);
+}
+
+.oracle-subtag {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.oracle-quote-display {
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #fff;
+  line-height: 1.45;
+  margin-bottom: 0.35rem;
+  min-height: 1.6rem;
+  transition: opacity 0.3s ease;
+}
+
+.oracle-author-display {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.oracle-actions {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.oracle-ask-btn {
+  background: linear-gradient(135deg, #7928ca 0%, #ff007f 100%) !important;
+  border: none !important;
+  box-shadow: 0 0 20px rgba(255, 0, 128, 0.4) !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  padding: 0.75rem 1.4rem !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+}
+
+.oracle-ask-btn:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 0 28px rgba(255, 0, 128, 0.7) !important;
+}
+
+/* =========================================================================
+   HOLOGRAPHIC CARD FOIL SHIMMER & ANIMATED GLOW
+   ========================================================================= */
+.steam-book-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.steam-book-card::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 42%,
+    rgba(0, 240, 255, 0.08) 48%,
+    rgba(255, 0, 128, 0.12) 50%,
+    rgba(255, 215, 0, 0.08) 52%,
+    transparent 58%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.steam-book-card:hover::after {
+  opacity: 1;
+  animation: holoSheen 1.8s infinite ease-in-out;
+}
+
+@keyframes holoSheen {
+  0% { transform: translate(-30%, -30%) rotate(25deg); }
+  100% { transform: translate(30%, 30%) rotate(25deg); }
+}
+
+.steam-book-card.rarity-legendary {
+  animation: legendaryCardGlow 4s infinite ease-in-out alternate;
+}
+
+@keyframes legendaryCardGlow {
+  0% {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 170, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 0, 128, 0.35);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.25);
+  }
+}
+
+/* =========================================================================
+   LITERARY COMPETENCE & TASTE MATRIX
+   ========================================================================= */
+.radar-bars-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.radar-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.radar-bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: #ddd;
+  font-weight: 600;
+}
+
+.radar-track {
+  height: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.radar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
