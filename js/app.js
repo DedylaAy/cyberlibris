@@ -697,7 +697,7 @@ class AppController {
           <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🔍</div>
           <h3 style="color:#fff; font-size:1.3rem; margin-bottom:0.5rem;">По вашим критериям произведений не найдено</h3>
           <p style="font-size:0.9rem; max-width:500px; margin:0 auto 1.2rem;">Попробуйте расширить диапазон лет, изменить возраст или сбросить фильтры.</p>
-          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('btn-reset-remanga-filters')?.click()">🔄 Сбросить все фильтры</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('btn-reset-remanga-filters')?.click()">Сбросить все фильтры</button>
         </div>
       `;
       return;
@@ -712,11 +712,11 @@ class AppController {
       const saved = window.readerEngine ? window.readerEngine.getSavedProgress(b.id) : null;
       const hasProgress = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
       const progressBadge = hasProgress 
-        ? `<span class="rarity-pill" style="background: rgba(0, 240, 255, 0.25); border: 1.5px solid var(--accent-cyan); color: #00f0ff; font-weight:800; font-size:0.88rem; padding: 6px 14px; box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);">🔖 Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>`
+        ? `<span class="rarity-pill" style="background: rgba(0, 240, 255, 0.25); border: 1.5px solid var(--accent-cyan); color: #00f0ff; font-weight:800; font-size:0.88rem; padding: 6px 14px; box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);">Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>`
         : '';
       const buttonLabel = hasProgress
-        ? `📖 Продолжить (Гл. ${saved.currentChapter + 1})`
-        : `ℹ️ Открыть карточку & Главы`;
+        ? `Продолжить (Гл. ${saved.currentChapter + 1})`
+        : `Карточка книги`;
 
       const age = b.ageRating || '12+';
       const ageClass = age === '0+' ? 'age-0' : age === '6+' ? 'age-6' : age === '12+' ? 'age-12' : age === '16+' ? 'age-16' : 'age-18';
@@ -742,12 +742,12 @@ class AppController {
           <div class="steam-book-meta" style="flex-wrap: wrap; gap: 0.4rem; justify-content: flex-start;">
             <span class="book-genre-pill">${b.genre}</span>
             <span class="book-format-pill">${b.format || 'Роман'}</span>
-            <span class="book-pages-pill">📄 ${b.lengthPages || 200} стр.</span>
-            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem; margin-left: auto;">👍 98% (Steam)</span>
+            <span class="book-pages-pill">${b.lengthPages || 200} стр.</span>
+            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem; margin-left: auto;">98% (Steam)</span>
           </div>
           <div style="margin-top: 0.8rem; display: flex; gap: 0.4rem;">
             <button class="btn btn-steam-play btn-sm btn-to-steam-lib" style="padding: 0.55rem 0.9rem; font-size: 0.82rem;" data-book-id="${b.id}">
-              ▶ В Библиотеку
+              В Библиотеку
             </button>
             <button class="btn btn-secondary btn-sm btn-open-card" style="flex:1;" data-book-id="${b.id}">
               ${buttonLabel}
@@ -953,13 +953,13 @@ class AppController {
             </div>
             <div class="steam-action-row">
               <button class="btn-steam-play" id="btn-steam-launch-game">
-                ▶ ${hasProgress ? `ПРОДОЛЖИТЬ (ГЛ. ${currentChapter + 1})` : 'ЧИТАТЬ СЕЙЧАС'}
+                ${hasProgress ? `ПРОДОЛЖИТЬ (ГЛ. ${currentChapter + 1})` : 'ЧИТАТЬ СЕЙЧАС'}
               </button>
               <button class="btn-steam-secondary" id="btn-steam-toggle-favorite">
-                ${isFav ? '★ В ИЗБРАННОМ' : '☆ В ИЗБРАННОЕ'}
+                ${isFav ? 'В ИЗБРАННОМ' : 'В ИЗБРАННОЕ'}
               </button>
               <button class="btn-steam-secondary" id="btn-steam-view-dossier">
-                ℹ️ ДОСЬЕ ИЗДАНИЯ
+                ДОСЬЕ ИЗДАНИЯ
               </button>
             </div>
           </div>
@@ -1060,8 +1060,8 @@ class AppController {
         <!-- Community Reviews Box -->
         <div>
           <div class="steam-section-heading">
-            <span>💬 ОБЗОРЫ СООБЩЕСТВА STEAM</span>
-            <button class="btn btn-secondary btn-sm" id="btn-steam-write-review">✎ Написать обзор</button>
+            <span>ОБЗОРЫ СООБЩЕСТВА STEAM</span>
+            <button class="btn btn-secondary btn-sm" id="btn-steam-write-review">Написать обзор</button>
           </div>
           <div class="community-reviews-grid" id="steam-book-reviews-list">
             <!-- Reviews injected here -->
@@ -1139,7 +1139,7 @@ class AppController {
             <div class="steam-rev-helpful-btns">
               <button class="steam-rev-help-btn">Да (14)</button>
               <button class="steam-rev-help-btn">Нет (1)</button>
-              <button class="steam-rev-help-btn">👑 Наградить</button>
+              <button class="steam-rev-help-btn">Наградить</button>
             </div>
           </div>
         `;
@@ -1179,7 +1179,7 @@ class AppController {
             </div>
           </div>
           <span class="steam-rev-badge-thumb ${r.recommended !== false ? 'steam-rev-thumb-up' : 'steam-rev-thumb-down'}">
-            ${r.recommended !== false ? '👍 РЕКОМЕНДУЮ' : '👎 НЕ РЕКОМЕНДУЮ'}
+            ${r.recommended !== false ? 'РЕКОМЕНДУЮ' : 'НЕ РЕКОМЕНДУЮ'}
           </span>
         </div>
         <div class="steam-rev-book-title">
@@ -1189,9 +1189,9 @@ class AppController {
         <div class="steam-rev-footer">
           <span>Опубликовано: ${r.date || 'Недавно'}</span>
           <div class="steam-rev-helpful-btns">
-            <button class="steam-rev-help-btn">👍 Да (18)</button>
-            <button class="steam-rev-help-btn">👎 Нет (0)</button>
-            <button class="steam-rev-help-btn">👑 Наградить</button>
+            <button class="steam-rev-help-btn">Да (18)</button>
+            <button class="steam-rev-help-btn">Нет (0)</button>
+            <button class="steam-rev-help-btn">Наградить</button>
           </div>
         </div>
       `;
@@ -1935,14 +1935,14 @@ class AppController {
           <div class="steam-rev-footer">
             <span>Опубликовано: 2026 г.</span>
             <div class="steam-rev-helpful-btns">
-              <button class="steam-rev-help-btn">👍 Полезно (24)</button>
-              <button class="steam-rev-help-btn">👑 Награда</button>
+              <button class="steam-rev-help-btn">Полезно (24)</button>
+              <button class="steam-rev-help-btn">Наградить</button>
             </div>
           </div>
         </div>
         <div class="steam-review-card">
           <div class="steam-rev-header">
-            <div class="steam-rev-badge">👍 РЕКОМЕНДУЮ (ОБЗОР ЧИТАТЕЛЯ)</div>
+            <div class="steam-rev-badge">РЕКОМЕНДУЮ (ОБЗОР ЧИТАТЕЛЯ)</div>
             <div class="steam-rev-time">В книге: 2 ч. 15 мин.</div>
           </div>
           <div class="steam-rev-book-title">
@@ -1954,8 +1954,8 @@ class AppController {
           <div class="steam-rev-footer">
             <span>Опубликовано: 2026 г.</span>
             <div class="steam-rev-helpful-btns">
-              <button class="steam-rev-help-btn">👍 Полезно (19)</button>
-              <button class="steam-rev-help-btn">👑 Награда</button>
+              <button class="steam-rev-help-btn">Полезно (19)</button>
+              <button class="steam-rev-help-btn">Наградить</button>
             </div>
           </div>
         </div>
@@ -2245,9 +2245,9 @@ class AppController {
       const rewardXp = q.rewardXp || q.rewardXP || 50;
       let btnHTML = '';
       if (q.claimed) {
-        btnHTML = '<span class="quest-btn-claimed">✓ Получено</span>';
+        btnHTML = '<span class="quest-btn-claimed">Получено</span>';
       } else if (q.completed) {
-        btnHTML = `<button class="btn btn-primary btn-sm btn-claim-quest" data-quest-id="${q.id}">🎁 Забрать +${q.rewardLumens} ⬡</button>`;
+        btnHTML = `<button class="btn btn-primary btn-sm btn-claim-quest" data-quest-id="${q.id}">Забрать +${q.rewardLumens} ⬡</button>`;
       } else {
         btnHTML = `<span class="quest-reward-preview">+${q.rewardLumens} ⬡ | +${rewardXp} XP</span>`;
       }
@@ -2617,7 +2617,8 @@ class AppController {
   updateAudioButtonState() {
     const btn = document.getElementById('btn-toggle-sfx');
     if (!btn) return;
-    btn.textContent = window.soundEngine.isMuted ? '🔇' : '🔊';
+    btn.textContent = window.soundEngine.isMuted ? 'Звук: Выкл' : 'Звук: Вкл';
+    btn.classList.toggle('active', !window.soundEngine.isMuted);
   }
 
   showToast(message, type = 'info') {

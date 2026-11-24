@@ -849,10 +849,6 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 240, 255, 0.45);
 }
-  color: #fff;
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
-}
 
 /* ==========================================================================
    FLOATING BOTTOM COMPASS HUD
@@ -871,12 +867,12 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.45rem 1rem;
-  background: rgba(12, 18, 32, 0.88);
+  background: rgba(12, 18, 32, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 240, 255, 0.25);
+  border: 1px solid rgba(0, 240, 255, 0.3);
   border-radius: var(--radius-full);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.15);
 }
 
 .compass-chapter-tag {
@@ -900,18 +896,25 @@
 }
 
 .compass-quick-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #c6d4df;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  padding: 0.2rem 0.35rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  padding: 0.22rem 0.65rem;
+  border-radius: var(--radius-full);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
 }
+
 .compass-quick-btn:hover {
-  color: var(--accent-cyan);
-  background: rgba(0, 240, 255, 0.15);
+  color: #ffffff;
+  border-color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
 }
 
 /* Chapter Navigation Footer */
@@ -936,9 +939,12 @@
     padding: 0.4rem 0.6rem;
     top: 65px;
   }
-  .reader-island-book-pill,
-  .reader-island-btn .btn-text {
+  .reader-island-book-pill {
     display: none;
+  }
+  .reader-island-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
   }
   .reader-book-hero-banner {
     flex-direction: column;

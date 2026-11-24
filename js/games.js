@@ -665,7 +665,7 @@ class MiniGamesSuite {
     const btn = document.getElementById('btn-start-speed-rush');
     if (btn) {
       btn.style.display = 'inline-flex';
-      btn.textContent = '⚡ Сыграть снова';
+      btn.textContent = 'Сыграть снова';
     }
 
     const lumensEarned = Math.round(this.speedScore / 10);
@@ -1599,7 +1599,7 @@ class MiniGamesSuite {
         </div>
         <div class="shop-item-actions">
           ${isEquipped ? `
-            <button class="btn btn-secondary btn-sm" disabled>✓ Активно</button>
+            <button class="btn btn-secondary btn-sm" disabled>Активно</button>
           ` : isOwned ? `
             <button class="btn btn-primary btn-sm btn-equip" data-cat="${category}" data-id="${item.id}">Применить</button>
           ` : `

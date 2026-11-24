@@ -765,9 +765,9 @@ class ReaderEngine {
     const modeBtn = document.getElementById('btn-toggle-manga-mode');
     const modeLabel = document.getElementById('reader-mode-label');
     if (modeLabel) {
-      modeLabel.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
+      modeLabel.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
     } else if (modeBtn) {
-      modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
+      modeBtn.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
     }
 
     // Немедленно открываем экран читателя
@@ -861,7 +861,7 @@ class ReaderEngine {
         <div style="font-size: 3.5rem; margin-bottom: 1rem;">🛰️</div>
         <h3>Не удалось завершить потоковую передачу</h3>
         <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Внешний библиотечный сервер временно недоступен или ограничил поток. Проверьте соединение и повторите попытку.</p>
-        <button class="btn btn-primary" onclick="window.readerEngine.openBook('${this.currentBook?.id}')">🔄 Повторить попытку ретрансляции</button>
+        <button class="btn btn-primary" onclick="window.readerEngine.openBook('${this.currentBook?.id}')">Повторить попытку ретрансляции</button>
       </div>
     `;
   }
@@ -945,9 +945,9 @@ class ReaderEngine {
     const modeBtn = document.getElementById('btn-toggle-manga-mode');
     const modeLabel = document.getElementById('reader-mode-label');
     if (modeLabel) {
-      modeLabel.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
+      modeLabel.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
     } else if (modeBtn) {
-      modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
+      modeBtn.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
     }
     this.saveProgress();
     this.renderContent();

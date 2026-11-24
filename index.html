@@ -458,7 +458,7 @@
     <header class="app-header">
       <div class="logo-container">
         <div class="logo-icon-wrapper">
-          <span>📖</span>
+          <span class="logo-symbol">CL</span>
         </div>
         <div class="logo-text">
           <h1>CyberLibris <span class="logo-badge">V3.0 STEAM</span></h1>
@@ -471,43 +471,43 @@
         <ul class="nav-menu">
           <li class="nav-item">
             <button class="nav-btn active magnetic-btn" data-view="library">
-              <span class="icon">🏪</span> Магазин
+              Магазин
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="steam-library">
-              <span class="icon">📚</span> Библиотека
+              Библиотека
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="community">
-              <span class="icon">👥</span> Сообщество
+              Сообщество
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="games">
-              <span class="icon">🎮</span> Игры
+              Игры
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="shop">
-              <span class="icon">🛍️</span> Предметы
+              Предметы
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="leaderboard">
-              <span class="icon">🏆</span> Зал Славы
+              Зал Славы
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="profile">
-              <span class="icon">👤</span> Профиль
+              Профиль
             </button>
           </li>
           <!-- Admin Panel Button: Strictly visible ONLY to Admin, Owner, Creator! -->
           <li class="nav-item admin-only">
-            <button class="nav-btn magnetic-btn" data-view="admin" style="color: var(--accent-gold);">
-              <span class="icon">⚡</span> Админ
+            <button class="nav-btn magnetic-btn admin-nav-btn" data-view="admin">
+              Админ
             </button>
           </li>
         </ul>
@@ -517,16 +517,15 @@
       <div class="header-actions">
         <!-- Quick Resume Book Pill -->
         <button class="header-resume-pill magnetic-btn hidden" id="header-resume-pill" title="Продолжить чтение">
-          <span class="resume-pill-play">▶</span>
           <div class="resume-pill-info">
-            <span class="resume-pill-title" id="header-resume-title">Продолжить</span>
+            <span class="resume-pill-title" id="header-resume-title">Продолжить чтение</span>
             <span class="resume-pill-meta" id="header-resume-meta">Гл. 1, 0%</span>
           </div>
         </button>
 
         <!-- Command Palette Trigger Button -->
         <button class="header-cmd-btn magnetic-btn" id="btn-open-command-palette" title="Командная строка и поиск (Ctrl+K)">
-          <span class="cmd-icon">🔍</span>
+          <span class="cmd-text">Поиск</span>
           <span class="cmd-badge-key">Ctrl+K</span>
         </button>
 
@@ -534,7 +533,7 @@
         <div class="theme-picker-container" id="theme-picker-container">
           <button class="theme-trigger-btn magnetic-btn" id="btn-theme-picker-trigger" title="Выбрать тему и цвет платформы">
             <span class="current-theme-dot" id="current-theme-dot"></span>
-            <span>🎨 Фон</span>
+            <span>Тема</span>
             <span class="theme-chevron">▾</span>
           </button>
           <div class="theme-palette-dropdown" id="theme-palette-dropdown">
@@ -626,7 +625,7 @@
             <span class="ambient-anim-bars" id="ambient-anim-bars">
               <span></span><span></span><span></span><span></span>
             </span>
-            <span id="ambient-current-label">🎧 Эмбиент</span>
+            <span id="ambient-current-label">Атмосфера</span>
             <span class="theme-chevron">▾</span>
           </button>
           <div class="ambient-dropdown" id="ambient-dropdown">
@@ -636,23 +635,18 @@
             </div>
             <div class="ambient-options-list">
               <button class="ambient-opt-btn active" data-ambient="off">
-                <span class="opt-icon">🔇</span>
                 <div class="opt-info"><strong>Без звука</strong><small>Тишина для концентрации</small></div>
               </button>
               <button class="ambient-opt-btn" data-ambient="rain">
-                <span class="opt-icon">🌧️</span>
                 <div class="opt-info"><strong>Неоновый Дождь</strong><small>Уютный шум дождя по стеклу</small></div>
               </button>
               <button class="ambient-opt-btn" data-ambient="fire">
-                <span class="opt-icon">🔥</span>
                 <div class="opt-info"><strong>Камин в Фолиантах</strong><small>Потрескивание дров и тепло</small></div>
               </button>
               <button class="ambient-opt-btn" data-ambient="cyber">
-                <span class="opt-icon">🌌</span>
                 <div class="opt-info"><strong>Космический Дрон</strong><small>Глубокий медитативный дрон</small></div>
               </button>
               <button class="ambient-opt-btn" data-ambient="library">
-                <span class="opt-icon">🕯️</span>
                 <div class="opt-info"><strong>Зал Академии</strong><small>Шелест страниц и акустика</small></div>
               </button>
             </div>
@@ -660,13 +654,13 @@
         </div>
 
         <!-- Sound Synthesizer SFX Button -->
-        <button class="sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты (M)">
-          🔊
+        <button class="header-action-btn sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты (M)">
+          <span>Звук: Вкл</span>
         </button>
 
         <!-- Keyboard Shortcuts Help Button -->
-        <button class="sfx-btn magnetic-btn" id="btn-open-shortcuts-help" title="Горячие клавиши (?)">
-          ⌨️
+        <button class="header-action-btn sfx-btn magnetic-btn" id="btn-open-shortcuts-help" title="Горячие клавиши (?)">
+          <span>Клавиши</span>
         </button>
 
         <!-- Current User Pill -->
@@ -755,31 +749,31 @@
             <div class="remanga-select-group" style="max-width: 195px;">
               <label class="remanga-label">Сортировка</label>
               <select id="remanga-sort-select" class="remanga-select">
-                <option value="popular">🌟 По популярности</option>
-                <option value="rating">⭐ По рейтингу</option>
-                <option value="year_desc">📅 Сначала новые (год)</option>
-                <option value="year_asc">🕰️ Сначала классика (год)</option>
-                <option value="pages_desc">📄 По объёму (страницам)</option>
-                <option value="pages_asc">⚡ Сначала короткие</option>
-                <option value="title">🔤 По названию (А-Я)</option>
+                <option value="popular">По популярности</option>
+                <option value="rating">По рейтингу</option>
+                <option value="year_desc">Сначала новые (год)</option>
+                <option value="year_asc">Сначала классика (год)</option>
+                <option value="pages_desc">По объёму (страницам)</option>
+                <option value="pages_asc">Сначала короткие</option>
+                <option value="title">По названию (А-Я)</option>
               </select>
             </div>
 
             <!-- Mega Filter Button (Toggle Drawer) -->
             <button class="btn btn-primary magnetic-btn mega-filter-trigger-btn" id="btn-toggle-mega-filter" title="Развернуть расширенные фильтры (год, жанр, возраст, объём, статус)">
-              <span>⚡ Большой фильтр</span>
+              <span>Большой фильтр</span>
               <span class="mega-filter-badge" id="mega-filter-badge">0</span>
               <span class="mega-filter-chevron" id="mega-filter-chevron">▾</span>
             </button>
 
             <!-- Random Book Button -->
             <button class="btn btn-secondary" id="btn-random-book" title="Выбрать случайную книгу наугад" style="display:flex; align-items:center; gap:0.4rem; padding:0.6rem 0.9rem; font-size:0.85rem; white-space:nowrap; border-color: rgba(0,240,255,0.3); color: var(--accent-cyan);">
-              🎲 Случайная
+              Случайная книга
             </button>
 
             <!-- Reset Filters Button -->
             <button class="btn btn-secondary btn-sm" id="btn-reset-remanga-filters" style="display:none; color:#ff4d4d; border-color:rgba(255,77,77,0.35);" title="Сбросить все активные фильтры">
-              🔄 Сброс
+              Сбросить фильтры
             </button>
           </div>
 
@@ -788,16 +782,16 @@
             <span class="remanga-genre-label">Жанры:</span>
             <div class="remanga-chips-list" id="remanga-genre-chips">
               <button class="remanga-chip active" data-genre="all">Все книги</button>
-              <button class="remanga-chip" data-genre="recommend">🌟 Для вас</button>
-              <button class="remanga-chip" data-genre="masterpiece">👑 Шедевры</button>
-              <button class="remanga-chip" data-genre="военная проза">⚔️ Военная проза</button>
-              <button class="remanga-chip" data-genre="классика">🏛️ Классика</button>
-              <button class="remanga-chip" data-genre="фантастика">🚀 Фантастика & Sci-Fi</button>
-              <button class="remanga-chip" data-genre="детектив">🔍 Детектив</button>
-              <button class="remanga-chip" data-genre="философия">📜 Философия</button>
-              <button class="remanga-chip" data-genre="мистика">🕯️ Мистика & Готика</button>
-              <button class="remanga-chip" data-genre="приключения">🧭 Приключения</button>
-              <button class="remanga-chip" data-genre="openlibrary" id="remanga-chip-openlibrary">🌐 Мировой каталог</button>
+              <button class="remanga-chip" data-genre="recommend">Для вас</button>
+              <button class="remanga-chip" data-genre="masterpiece">Шедевры</button>
+              <button class="remanga-chip" data-genre="военная проза">Военная проза</button>
+              <button class="remanga-chip" data-genre="классика">Классика</button>
+              <button class="remanga-chip" data-genre="фантастика">Фантастика</button>
+              <button class="remanga-chip" data-genre="детектив">Детектив</button>
+              <button class="remanga-chip" data-genre="философия">Философия</button>
+              <button class="remanga-chip" data-genre="мистика">Мистика & Готика</button>
+              <button class="remanga-chip" data-genre="приключения">Приключения</button>
+              <button class="remanga-chip" data-genre="openlibrary" id="remanga-chip-openlibrary">Мировой каталог</button>
             </div>
           </div>
 
@@ -808,7 +802,7 @@
               <!-- Block 1: Year & Era -->
               <div class="mega-filter-col">
                 <div class="mega-filter-col-title">
-                  <span>📅</span> Год издания & Эпоха
+                  Год издания & Эпоха
                 </div>
                 <div class="mega-filter-chips-wrap" id="mega-filter-era-chips">
                   <button class="mega-chip active" data-era="all">Все эпохи</button>
@@ -830,7 +824,7 @@
               <!-- Block 2: Age Rating -->
               <div class="mega-filter-col">
                 <div class="mega-filter-col-title">
-                  <span>🔞</span> Возрастной рейтинг
+                  Возрастной рейтинг
                 </div>
                 <div class="mega-filter-chips-wrap" id="mega-filter-age-chips">
                   <button class="mega-chip active" data-age="all">Все возраста</button>
@@ -845,25 +839,25 @@
               <!-- Block 3: Volume & Format -->
               <div class="mega-filter-col">
                 <div class="mega-filter-col-title">
-                  <span>📖</span> Объём & Формат
+                  Объём & Формат
                 </div>
                 <div class="mega-filter-chips-wrap" id="mega-filter-volume-chips">
                   <button class="mega-chip active" data-volume="all">Любой объём</button>
-                  <button class="mega-chip" data-volume="short">⚡ Короткие (&lt;200 стр)</button>
-                  <button class="mega-chip" data-volume="medium">📚 Средние (200–500)</button>
-                  <button class="mega-chip" data-volume="epic">🏛️ Фолианты (500+)</button>
+                  <button class="mega-chip" data-volume="short">Короткие (&lt;200 стр)</button>
+                  <button class="mega-chip" data-volume="medium">Средние (200–500)</button>
+                  <button class="mega-chip" data-volume="epic">Фолианты (500+)</button>
                 </div>
                 <div style="margin-top: 0.6rem;">
                   <label class="remanga-label">Литературный формат:</label>
                   <select id="mega-filter-format-select" class="remanga-select" style="width: 100%; margin-top: 0.2rem;">
                     <option value="all">Все форматы</option>
-                    <option value="Роман">📖 Роман</option>
-                    <option value="Повесть">📝 Повесть</option>
-                    <option value="Фолиант">📜 Фолиант / Эпопея</option>
-                    <option value="Трактат">🏛️ Трактат</option>
-                    <option value="Поэма">🎭 Поэма / Пьеса</option>
-                    <option value="Сказка">✨ Сказка / Рассказ</option>
-                    <option value="Сборник">📚 Сборник</option>
+                    <option value="Роман">Роман</option>
+                    <option value="Повесть">Повесть</option>
+                    <option value="Фолиант">Фолиант / Эпопея</option>
+                    <option value="Трактат">Трактат</option>
+                    <option value="Поэма">Поэма / Пьеса</option>
+                    <option value="Сказка">Сказка / Рассказ</option>
+                    <option value="Сборник">Сборник</option>
                   </select>
                 </div>
               </div>
@@ -932,15 +926,15 @@
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Поиск по миллионам книг в открытых глобальных репозиториях. Ретрансляция текстов и обложек в реальном времени.</p>
             <div style="display: flex; gap: 0.8rem;">
               <input type="text" id="openlibrary-search-input" class="form-input" placeholder="Поиск: 'Dune', 'Cyberpunk', 'Tolkien', 'War and Peace'..." style="flex: 1;">
-              <button class="btn btn-primary magnetic-btn" id="btn-search-openlibrary">🔍 Найти в Сети</button>
+              <button class="btn btn-primary magnetic-btn" id="btn-search-openlibrary">Найти в Сети</button>
             </div>
             <div class="openlibrary-quick-tags">
               <span style="font-size: 0.8rem; color: var(--text-muted); align-self: center;">Популярные темы:</span>
-              <button class="ol-tag-btn" data-query="Cyberpunk">🚀 Киберпанк</button>
-              <button class="ol-tag-btn" data-query="War">⚔️ Военная проза</button>
-              <button class="ol-tag-btn" data-query="Philosophy">📜 Философия</button>
-              <button class="ol-tag-btn" data-query="Detective">🔍 Детективы</button>
-              <button class="ol-tag-btn" data-query="Classics">🕯️ Классика</button>
+              <button class="ol-tag-btn" data-query="Cyberpunk">Киберпанк</button>
+              <button class="ol-tag-btn" data-query="War">Военная проза</button>
+              <button class="ol-tag-btn" data-query="Philosophy">Философия</button>
+              <button class="ol-tag-btn" data-query="Detective">Детективы</button>
+              <button class="ol-tag-btn" data-query="Classics">Классика</button>
             </div>
           </div>
           <div id="openlibrary-results-grid" class="books-grid" style="margin-bottom: 3rem;"></div>
@@ -1020,7 +1014,7 @@
             <p>Честные отзывы, рекомендации схоластов, дискуссии и эссе по классическим шедеврам мировой литературы.</p>
           </div>
           <button class="btn btn-primary magnetic-btn" id="btn-community-write-review">
-            ✎ Написать свой обзор
+            Написать свой обзор
           </button>
         </div>
 
@@ -1028,7 +1022,7 @@
         <div class="community-filters-bar">
           <div class="community-tabs">
             <button class="community-tab active" data-comm-filter="all">Все обзоры</button>
-            <button class="community-tab" data-comm-filter="recommended">Только рекомендуют 👍</button>
+            <button class="community-tab" data-comm-filter="recommended">Только рекомендуют</button>
             <button class="community-tab" data-comm-filter="recent">Свежие публикации</button>
           </div>
           <div class="community-stats-badge" id="community-reviews-count-badge">
@@ -1085,8 +1079,7 @@
           <!-- Left: Return & Book Identity -->
           <div class="reader-island-left">
             <button class="reader-island-btn reader-back-btn" id="btn-back-to-library" onclick="window.app.returnFromReader()" title="Вернуться назад (Esc)">
-              <span class="btn-icon">←</span>
-              <span class="btn-text">Библиотека</span>
+              <span class="btn-text">← В библиотеку</span>
               <span class="kbd-hint">Esc</span>
             </button>
             <div class="reader-island-book-pill" id="reader-island-book-pill">
@@ -1100,8 +1093,8 @@
 
           <!-- Center: Chapter Pill & Reading Mode -->
           <div class="reader-island-center">
-            <button class="reader-island-btn reader-chapter-pill" id="btn-open-toc" title="Открыть оглавление">
-              <span class="btn-icon">📑</span>
+            <button class="reader-island-btn reader-chapter-pill" id="btn-open-toc" title="Открыть оглавление книги">
+              <span class="btn-text">Оглавление</span>
               <span id="reader-active-chapter-name">Глава 1</span>
               <span class="caret">▾</span>
             </button>
@@ -1109,8 +1102,7 @@
               <option value="0">Глава 1</option>
             </select>
             <button class="reader-island-btn reader-mode-pill" id="btn-toggle-manga-mode" title="Переключить между постраничным чтением и непрерывной лентой">
-              <span class="btn-icon">📜</span>
-              <span id="reader-mode-label">Лента</span>
+              <span id="reader-mode-label">Режим: Лента</span>
             </button>
           </div>
 
@@ -1119,13 +1111,12 @@
             <!-- Aa Appearance Popover Anchor -->
             <div class="reader-popover-anchor">
               <button class="reader-island-btn" id="btn-reader-appearance" title="Настройки шрифта, темы и полей">
-                <span style="font-weight: 900; font-size: 0.95rem; font-family: var(--font-serif);">Aa</span>
-                <span class="btn-text">Вид</span>
+                <span class="btn-text">Шрифт и вид</span>
               </button>
               <!-- Aa Appearance Popover -->
               <div class="reader-popover" id="reader-appearance-popover" style="display: none;">
                 <div class="popover-header">
-                  <span>⚙️ Настройки чтения</span>
+                  <span>Настройки оформления</span>
                   <button class="popover-close-btn" id="btn-close-appearance">✕</button>
                 </div>
 
@@ -1207,23 +1198,22 @@
             <!-- Audio & Ambient Popover Anchor -->
             <div class="reader-popover-anchor">
               <button class="reader-island-btn" id="btn-reader-audio-panel" title="Атмосферный звук и озвучивание">
-                <span class="btn-icon">🎧</span>
-                <span class="btn-text">Звук</span>
+                <span class="btn-text">Аудио</span>
               </button>
               <!-- Audio Popover -->
               <div class="reader-popover" id="reader-audio-popover" style="display: none;">
                 <div class="popover-header">
-                  <span>🎧 Атмосфера & Чтец</span>
+                  <span>Атмосфера и чтец</span>
                   <button class="popover-close-btn" id="btn-close-audio">✕</button>
                 </div>
 
                 <div class="popover-section">
                   <div class="popover-label">Фоновые эмбиент-звуки</div>
                   <div class="ambient-chips-grid">
-                    <button class="ambient-chip" data-sound="rain">🌧️ Дождь</button>
-                    <button class="ambient-chip" data-sound="fire">🔥 Камин</button>
-                    <button class="ambient-chip" data-sound="cyber">🏙️ Неон</button>
-                    <button class="ambient-chip" data-sound="binaural">🧘 432Hz</button>
+                    <button class="ambient-chip" data-sound="rain">Дождь</button>
+                    <button class="ambient-chip" data-sound="fire">Камин</button>
+                    <button class="ambient-chip" data-sound="cyber">Неон</button>
+                    <button class="ambient-chip" data-sound="binaural">432Hz</button>
                   </div>
                   <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.8rem;">
                     <span style="font-size: 0.8rem; color: var(--text-dim);">Громкость:</span>
@@ -1235,10 +1225,10 @@
                   <div class="popover-label">Голосовой Кибер-Чтец (TTS)</div>
                   <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.6rem;">
                     <button class="btn btn-primary btn-sm" id="btn-toggle-tts" style="flex: 1;">
-                      🎙️ Запустить озвучку
+                      Запустить озвучку
                     </button>
                     <button class="btn btn-secondary btn-sm" id="btn-tts-stop" style="color: #ff5577; display: none;">
-                      ⏹ Стоп
+                      Стоп
                     </button>
                   </div>
                   <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -1256,17 +1246,16 @@
 
             <!-- Action Buttons -->
             <button class="reader-island-btn" id="btn-start-rsvp" title="Скоростной спринт RSVP">
-              <span class="btn-icon">⚡</span>
-              <span class="btn-text">RSVP</span>
+              <span class="btn-text">Скорочтение</span>
             </button>
             <button class="reader-island-btn" id="btn-open-bookmarks" title="Закладки и заметки">
-              <span class="btn-icon">🔖</span>
+              <span class="btn-text">Закладки</span>
             </button>
             <button class="reader-island-btn" id="btn-toggle-zen-mode" title="Дзен-режим (только текст)">
-              <span class="btn-icon">🧘</span>
+              <span class="btn-text">Дзен</span>
             </button>
             <button class="reader-island-btn" id="btn-toggle-fullscreen" title="На весь экран">
-              <span class="btn-icon">⛶</span>
+              <span class="btn-text">Экран</span>
             </button>
           </div>
         </div>
@@ -1356,9 +1345,9 @@
             <div class="compass-divider"></div>
             <span class="compass-progress-val" id="reading-progress-percent">0%</span>
             <div class="compass-divider"></div>
-            <button class="compass-quick-btn" id="btn-compass-toc" title="Оглавление">📑</button>
-            <button class="compass-quick-btn" id="btn-compass-appearance" title="Вид">Aa</button>
-            <button class="compass-quick-btn" id="btn-compass-zen" title="Дзен-режим">🧘</button>
+            <button class="compass-quick-btn" id="btn-compass-toc" title="Оглавление">Оглавление</button>
+            <button class="compass-quick-btn" id="btn-compass-appearance" title="Вид и шрифт">Вид</button>
+            <button class="compass-quick-btn" id="btn-compass-zen" title="Дзен-режим">Дзен</button>
           </div>
         </div>
       </section>
@@ -1377,19 +1366,19 @@
         <!-- Games Tab Selector -->
         <div class="games-nav">
           <button class="game-tab-btn active magnetic-btn" data-game="speed">
-            <span>⚡</span> Словесный Шторм
+            Словесный Шторм
           </button>
           <button class="game-tab-btn magnetic-btn" data-game="quiz">
-            <span>🎓</span> Квиз Эрудита
+            Квиз Эрудита
           </button>
           <button class="game-tab-btn magnetic-btn" data-game="memory">
-            <span>🧠</span> Мемори-Карты (Пары)
+            Мемори-Карты
           </button>
           <button class="game-tab-btn magnetic-btn" data-game="speedread">
-            <span>👁️</span> Скорочтение & Фокус
+            Скорочтение & Фокус
           </button>
           <button class="game-tab-btn magnetic-btn" data-game="reconstruct">
-            <span>🧩</span> Мнемо-Цитаты
+            Мнемо-Цитаты
           </button>
         </div>
 
@@ -1543,10 +1532,10 @@
             <div class="speedread-box">
               <div class="speedread-wpm-bar">
                 <span style="font-size:0.85rem; color:var(--text-muted); font-weight:700; margin-right:0.5rem;">Темп чтения (WPM):</span>
-                <button class="speedread-wpm-btn" data-wpm="200">🐢 200 (Осознанное)</button>
-                <button class="speedread-wpm-btn active" data-wpm="300">⚡ 300 (Стандарт)</button>
-                <button class="speedread-wpm-btn" data-wpm="450">🚀 450 (Спринт)</button>
-                <button class="speedread-wpm-btn" data-wpm="600">💥 600 (Кибер-Фокус)</button>
+                <button class="speedread-wpm-btn" data-wpm="200">200 (Осознанное)</button>
+                <button class="speedread-wpm-btn active" data-wpm="300">300 (Стандарт)</button>
+                <button class="speedread-wpm-btn" data-wpm="450">450 (Спринт)</button>
+                <button class="speedread-wpm-btn" data-wpm="600">600 (Кибер-Фокус)</button>
               </div>
 
               <!-- Stage 1: RSVP Display -->
@@ -2731,24 +2720,24 @@
       <div style="margin-bottom: 1.5rem;">
         <label class="form-label" style="font-weight: 800; color: var(--accent-green);">1. Что вам нравится читать? (Выберите любимые жанры):</label>
         <div class="filter-pills-row" id="taste-likes-pills" style="margin-top: 0.5rem;">
-          <button class="genre-pill taste-chip active" data-val="военная проза">⚔️ Военная проза</button>
-          <button class="genre-pill taste-chip active" data-val="фантастика">🚀 Фантастика</button>
-          <button class="genre-pill taste-chip active" data-val="киберпанк">🕶️ Киберпанк</button>
-          <button class="genre-pill taste-chip" data-val="классика">🕯️ Классика</button>
-          <button class="genre-pill taste-chip active" data-val="философия">📜 Философия</button>
-          <button class="genre-pill taste-chip" data-val="детектив">🔍 Детективы</button>
-          <button class="genre-pill taste-chip" data-val="история">🏛️ История</button>
-          <button class="genre-pill taste-chip" data-val="психология">🧠 Психология</button>
+          <button class="genre-pill taste-chip active" data-val="военная проза">Военная проза</button>
+          <button class="genre-pill taste-chip active" data-val="фантастика">Фантастика</button>
+          <button class="genre-pill taste-chip active" data-val="киберпанк">Киберпанк</button>
+          <button class="genre-pill taste-chip" data-val="классика">Классика</button>
+          <button class="genre-pill taste-chip active" data-val="философия">Философия</button>
+          <button class="genre-pill taste-chip" data-val="детектив">Детективы</button>
+          <button class="genre-pill taste-chip" data-val="история">История</button>
+          <button class="genre-pill taste-chip" data-val="психология">Психология</button>
         </div>
       </div>
 
       <div style="margin-bottom: 1.5rem;">
         <label class="form-label" style="font-weight: 800; color: var(--accent-magenta);">2. Что вам НЕ нравится? (Исключить из рекомендаций):</label>
         <div class="filter-pills-row" id="taste-dislikes-pills" style="margin-top: 0.5rem;">
-          <button class="genre-pill taste-chip-dislike" data-val="сентиментальное">💔 Сентиментальное</button>
-          <button class="genre-pill taste-chip-dislike" data-val="сказки">🧚 Сказки</button>
-          <button class="genre-pill taste-chip-dislike" data-val="ужасы">🩸 Хоррор</button>
-          <button class="genre-pill taste-chip-dislike" data-val="поэзия">🪶 Поэзия</button>
+          <button class="genre-pill taste-chip-dislike" data-val="сентиментальное">Сентиментальное</button>
+          <button class="genre-pill taste-chip-dislike" data-val="сказки">Сказки</button>
+          <button class="genre-pill taste-chip-dislike" data-val="ужасы">Хоррор</button>
+          <button class="genre-pill taste-chip-dislike" data-val="поэзия">Поэзия</button>
         </div>
       </div>
 
@@ -2762,7 +2751,7 @@
       </div>
 
       <button class="btn btn-primary btn-block magnetic-btn" id="btn-save-taste-profile" style="padding: 0.8rem; font-size: 1.05rem;">
-        ✓ Сохранить предпочтения и обновить рекомендации
+        Сохранить предпочтения и обновить рекомендации
       </button>
     </div>
   </div>
@@ -2773,7 +2762,7 @@
   <div class="modal-overlay" id="modal-admin-recommendations">
     <div class="modal-box" style="max-width: 600px;">
       <div class="modal-header">
-        <h3 style="color: var(--accent-gold);">⚙️ Тестирование Рекомендательного Движка</h3>
+        <h3 style="color: var(--accent-gold);">Тестирование Рекомендательного Движка</h3>
         <button class="modal-close-btn">✕</button>
       </div>
       <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem;">
@@ -2783,16 +2772,16 @@
       <div style="margin-bottom: 1.2rem;">
         <label class="form-label">Симулировать архетип читателя:</label>
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="military">⚔️ Военный историк</button>
-          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="cyberpunk">🚀 Киберпанк-хакер</button>
-          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="philosophy">📜 Мыслитель-философ</button>
-          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="mystery">🔍 Детектив</button>
+          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="military">Военный историк</button>
+          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="cyberpunk">Киберпанк-хакер</button>
+          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="philosophy">Мыслитель-философ</button>
+          <button class="btn btn-secondary btn-sm btn-sim-archetype" data-arch="mystery">Детектив</button>
         </div>
       </div>
 
       <div style="margin-bottom: 1.5rem;">
         <button class="btn btn-secondary btn-sm" id="btn-reset-user-recommendations" style="color: var(--accent-magenta);">
-          ↻ Очистить рекомендации текущего пользователя
+          Очистить рекомендации текущего пользователя
         </button>
       </div>
 
