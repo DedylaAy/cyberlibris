@@ -1,9 +1,12 @@
 /**
- * CyberLibris Reactive Canvas Engine 2.0
- * Renders interactive background particle systems reacting to cursor physics,
- * velocities, clicks, and theme palettes.
- * Supports distinct particle shapes: Hearts (❤️), Stars (✨), Pixels (👾),
- * Embers/Sparks (🔥), Petals (🍃), Bubbles (🫧), or Theme-Auto mode.
+ * CyberLibris Reactive Canvas Engine 2.5 (High Performance Edition)
+ * Optimized for low-end laptops, integrated GPUs, and battery efficiency.
+ * Features:
+ * - Zero CPU Gaussian blur convolution (removed expensive ctx.shadowBlur).
+ * - Delta-time frame rate clamping (36 FPS active, 14 FPS idle, 0 FPS in reader/paused).
+ * - Idle state auto-detection after 12s of inactivity.
+ * - Spatial Manhattan rejection and line cap on constellation connections.
+ * - Low-Power / Turbo mode support.
  */
 
 const THEME_CONFIG = {
@@ -12,7 +15,7 @@ const THEME_CONFIG = {
     colors: ['#66c0f4', '#c7d5e0', '#a4d007', '#ffd700', '#417a9b'],
     speedMult: 0.85,
     connectLines: true,
-    maxParticles: 75,
+    maxParticles: 36,
     bgAmbient: 'steam'
   },
   'theme-cyberpunk': {
@@ -20,7 +23,7 @@ const THEME_CONFIG = {
     colors: ['#00f0ff', '#ff007f', '#7928ca', '#ffe600', '#00ffc8'],
     speedMult: 1.1,
     connectLines: true,
-    maxParticles: 80,
+    maxParticles: 38,
     bgAmbient: 'cyberpunk'
   },
   'theme-cosmic': {
@@ -28,7 +31,7 @@ const THEME_CONFIG = {
     colors: ['#c77dff', '#7b2cbf', '#3a86ff', '#e0aaff', '#ffffff'],
     speedMult: 0.7,
     connectLines: true,
-    maxParticles: 90,
+    maxParticles: 42,
     bgAmbient: 'cosmic'
   },
   'theme-amber': {
@@ -36,7 +39,7 @@ const THEME_CONFIG = {
     colors: ['#ffaa00', '#ff5500', '#ffd700', '#ff7700', '#ff3700'],
     speedMult: 1.0,
     connectLines: false,
-    maxParticles: 85,
+    maxParticles: 35,
     bgAmbient: 'amber'
   },
   'theme-matrix': {
@@ -44,7 +47,7 @@ const THEME_CONFIG = {
     colors: ['#00ff88', '#00ff44', '#00cc66', '#aaffaa', '#05ffa1'],
     speedMult: 1.25,
     connectLines: false,
-    maxParticles: 70,
+    maxParticles: 36,
     bgAmbient: 'matrix'
   },
   'theme-royal': {
@@ -52,7 +55,7 @@ const THEME_CONFIG = {
     colors: ['#00f5d4', '#00bbf9', '#ffd700', '#9d4edd', '#ffffff'],
     speedMult: 0.8,
     connectLines: true,
-    maxParticles: 80,
+    maxParticles: 38,
     bgAmbient: 'royal'
   },
   'theme-synthwave': {
@@ -60,7 +63,7 @@ const THEME_CONFIG = {
     colors: ['#ff007f', '#ff70a6', '#ffd700', '#00f0ff', '#a032ff'],
     speedMult: 1.0,
     connectLines: false,
-    maxParticles: 75,
+    maxParticles: 35,
     bgAmbient: 'synthwave'
   },
   'theme-ocean': {
@@ -68,7 +71,7 @@ const THEME_CONFIG = {
     colors: ['#00f5d4', '#00bbf9', '#4361ee', '#48cae4', '#7209b7'],
     speedMult: 0.75,
     connectLines: true,
-    maxParticles: 70,
+    maxParticles: 36,
     bgAmbient: 'ocean'
   },
   'theme-zen': {
@@ -76,7 +79,7 @@ const THEME_CONFIG = {
     colors: ['#e2c044', '#d4af37', '#c89666', '#a37081', '#f4ecd8'],
     speedMult: 0.7,
     connectLines: false,
-    maxParticles: 65,
+    maxParticles: 32,
     bgAmbient: 'zen'
   }
 };
@@ -85,11 +88,17 @@ class ReactiveBackground {
   constructor() {
     this.canvas = document.getElementById('bg-canvas');
     if (!this.canvas) return;
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext('2d', { alpha: true });
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.particles = [];
     this.bursts = [];
+
+    // Low power / Eco mode state
+    this.isLowPower = localStorage.getItem('cyberlibris_eco_mode') === 'true';
+    this.isPaused = false;
+    this.lastFrameTime = 0;
+    this.lastInteractionTime = performance.now();
 
     // Interactive mouse tracking with velocity & inertia
     this.mouse = {
@@ -102,7 +111,7 @@ class ReactiveBackground {
       speed: 0,
       isDown: false,
       isInWindow: false,
-      radius: 175
+      radius: 160
     };
 
     // Load persisted preferences or fall back to defaults
@@ -110,7 +119,7 @@ class ReactiveBackground {
     this.currentTheme = savedTheme && THEME_CONFIG[savedTheme] ? savedTheme : 'theme-cyberpunk';
 
     const savedShape = localStorage.getItem('cyberlibris_particle_shape');
-    this.particleShape = savedShape || 'auto'; // 'auto' | 'stars' | 'hearts' | 'pixels' | 'embers' | 'petals' | 'bubbles'
+    this.particleShape = savedShape || 'auto';
 
     this.animationFrameId = null;
     this.time = 0;
@@ -126,12 +135,13 @@ class ReactiveBackground {
     let resizeTimer = null;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => this.resize(), 100);
+      resizeTimer = setTimeout(() => this.resize(), 150);
     }, { passive: true });
 
-    // Smooth mousemove tracking with velocity calculation
+    // Smooth mousemove tracking with velocity calculation and activity timestamp
     let mouseTicking = false;
     window.addEventListener('mousemove', (e) => {
+      this.lastInteractionTime = performance.now();
       if (!mouseTicking) {
         window.requestAnimationFrame(() => {
           const dx = e.clientX - this.mouse.x;
@@ -153,36 +163,44 @@ class ReactiveBackground {
 
     window.addEventListener('mouseenter', () => {
       this.mouse.isInWindow = true;
-    });
+      this.lastInteractionTime = performance.now();
+    }, { passive: true });
 
     window.addEventListener('mouseleave', () => {
       this.mouse.isInWindow = false;
       this.mouse.vx = 0;
       this.mouse.vy = 0;
       this.mouse.speed = 0;
-    });
+    }, { passive: true });
 
     // Click burst reaction
     window.addEventListener('mousedown', (e) => {
       this.mouse.isDown = true;
-      this.triggerClickBurst(e.clientX, e.clientY);
-    });
+      this.lastInteractionTime = performance.now();
+      if (!this.isLowPower) {
+        this.triggerClickBurst(e.clientX, e.clientY);
+      }
+    }, { passive: true });
 
     window.addEventListener('mouseup', () => {
       this.mouse.isDown = false;
-    });
+    }, { passive: true });
+
+    // User activity listener for idle throttling
+    window.addEventListener('keydown', () => {
+      this.lastInteractionTime = performance.now();
+    }, { passive: true });
+
+    window.addEventListener('scroll', () => {
+      this.lastInteractionTime = performance.now();
+    }, { passive: true });
 
     // Tab visibility handling to preserve battery & GPU
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        if (this.animationFrameId) {
-          cancelAnimationFrame(this.animationFrameId);
-          this.animationFrameId = null;
-        }
+        this.pause();
       } else {
-        if (!this.animationFrameId) {
-          this.animate();
-        }
+        this.resume();
       }
     });
 
@@ -193,6 +211,29 @@ class ReactiveBackground {
   resize() {
     this.width = this.canvas.width = window.innerWidth;
     this.height = this.canvas.height = window.innerHeight;
+    this.setupTheme(this.currentTheme);
+  }
+
+  pause() {
+    this.isPaused = true;
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+  }
+
+  resume() {
+    if (!this.isPaused) return;
+    this.isPaused = false;
+    this.lastFrameTime = performance.now();
+    this.lastInteractionTime = performance.now();
+    if (!this.animationFrameId) {
+      this.animate();
+    }
+  }
+
+  setLowPowerMode(enabled) {
+    this.isLowPower = !!enabled;
     this.setupTheme(this.currentTheme);
   }
 
@@ -240,7 +281,10 @@ class ReactiveBackground {
 
     const cfg = THEME_CONFIG[themeId] || THEME_CONFIG['theme-cyberpunk'];
     const activeShape = this.getActiveShape();
-    const count = Math.min(cfg.maxParticles, Math.max(35, Math.floor((this.width * this.height) / 14000)));
+
+    // In Low-Power mode: only 16 particles; in Standard mode: 24 to max 38 particles
+    const maxTarget = this.isLowPower ? 16 : cfg.maxParticles;
+    const count = Math.min(maxTarget, Math.max(14, Math.floor((this.width * this.height) / 45000)));
 
     const chars = ['0', '1', '✦', '✧', '◈', 'λ', '§', '⚡', '★', '♦'];
 
@@ -249,25 +293,25 @@ class ReactiveBackground {
       let size, vx, vy;
 
       if (activeShape === 'hearts') {
-        size = Math.random() * 8 + 8; // 8 - 16px hearts
+        size = Math.random() * 8 + 8;
         vx = (Math.random() - 0.5) * 0.8 * cfg.speedMult;
-        vy = -(Math.random() * 1.0 + 0.3) * cfg.speedMult; // Float upward gently
+        vy = -(Math.random() * 1.0 + 0.3) * cfg.speedMult;
       } else if (activeShape === 'stars') {
-        size = Math.random() * 7 + 4; // 4 - 11px stars
+        size = Math.random() * 6 + 4;
         vx = (Math.random() - 0.5) * 0.5 * cfg.speedMult;
         vy = (Math.random() - 0.5) * 0.5 * cfg.speedMult;
       } else if (activeShape === 'pixels') {
-        size = Math.random() * 5 + 4; // 4 - 9px pixel blocks
+        size = Math.random() * 5 + 4;
         vx = (Math.random() - 0.5) * 1.1 * cfg.speedMult;
         vy = (Math.random() - 0.5) * 1.1 * cfg.speedMult;
       } else if (activeShape === 'embers') {
-        size = Math.random() * 4 + 2; // 2 - 6px glowing embers
+        size = Math.random() * 4 + 2;
         vx = (Math.random() - 0.5) * 0.9 * cfg.speedMult;
-        vy = -(Math.random() * 1.4 + 0.5) * cfg.speedMult; // Ascend like smoke/fire
+        vy = -(Math.random() * 1.4 + 0.5) * cfg.speedMult;
       } else if (activeShape === 'petals') {
         size = Math.random() * 7 + 5;
         vx = (Math.random() - 0.5) * 0.7 * cfg.speedMult;
-        vy = (Math.random() * 0.8 + 0.3) * cfg.speedMult; // Drift downward
+        vy = (Math.random() * 0.8 + 0.3) * cfg.speedMult;
       } else {
         // bubbles
         size = Math.random() * 6 + 4;
@@ -295,18 +339,18 @@ class ReactiveBackground {
       });
     }
 
-    // Special Matrix rain columns setup
+    // Special Matrix rain columns setup (skip or reduce in low power)
     if (this.currentTheme === 'theme-matrix') {
-      const colStep = 28;
+      const colStep = this.isLowPower ? 64 : 36;
       const cols = Math.floor(this.width / colStep);
       this.matrixDrops = [];
       for (let i = 0; i < cols; i++) {
         this.matrixDrops.push({
           x: i * colStep + 6,
           y: Math.random() * this.height,
-          speed: Math.random() * 3 + 2,
+          speed: Math.random() * 2.5 + 1.5,
           charIdx: Math.floor(Math.random() * 20),
-          alpha: Math.random() * 0.6 + 0.2
+          alpha: Math.random() * 0.5 + 0.2
         });
       }
     } else {
@@ -315,13 +359,14 @@ class ReactiveBackground {
   }
 
   triggerClickBurst(x, y) {
+    if (this.isLowPower) return;
     const activeShape = this.getActiveShape();
     const cfg = THEME_CONFIG[this.currentTheme] || THEME_CONFIG['theme-cyberpunk'];
-    const burstCount = 24;
+    const burstCount = 14; // Lightened from 24 for instant responsiveness
 
     for (let i = 0; i < burstCount; i++) {
       const angle = (Math.PI * 2 / burstCount) * i + (Math.random() - 0.5) * 0.4;
-      const speed = Math.random() * 5 + 2.5;
+      const speed = Math.random() * 4 + 2;
       const color = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
 
       this.bursts.push({
@@ -329,11 +374,11 @@ class ReactiveBackground {
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        size: Math.random() * 6 + 4,
+        size: Math.random() * 5 + 3,
         color: color,
         alpha: 1,
         life: 1,
-        decay: Math.random() * 0.025 + 0.02,
+        decay: Math.random() * 0.035 + 0.03,
         rot: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.1,
         shape: activeShape
@@ -341,7 +386,7 @@ class ReactiveBackground {
     }
   }
 
-  // --- DRAWING HELPERS FOR DISTINCT SHAPES ---
+  // --- DRAWING HELPERS FOR DISTINCT SHAPES (ZERO SHADOWBLUR) ---
 
   drawHeart(ctx, x, y, size, color, alpha, rot = 0, scalePulse = 1) {
     if (size <= 0.1 || scalePulse <= 0.01 || alpha <= 0) return;
@@ -352,7 +397,6 @@ class ReactiveBackground {
     ctx.scale(s, s);
 
     ctx.beginPath();
-    // Smooth vector heart path
     ctx.moveTo(0, 0);
     ctx.bezierCurveTo(-5, -7, -12, -4, -12, 3);
     ctx.bezierCurveTo(-12, 9, -5, 14, 0, 18);
@@ -362,8 +406,6 @@ class ReactiveBackground {
 
     ctx.fillStyle = color;
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = color;
     ctx.fill();
     ctx.restore();
   }
@@ -391,8 +433,6 @@ class ReactiveBackground {
 
     ctx.fillStyle = color;
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = color;
     ctx.fill();
     ctx.restore();
   }
@@ -405,8 +445,6 @@ class ReactiveBackground {
 
     ctx.fillStyle = color;
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = color;
     ctx.fillRect(-size / 2, -size / 2, size, size);
 
     // 3D Voxel specular bevel in corner
@@ -426,20 +464,28 @@ class ReactiveBackground {
   drawEmber(ctx, x, y, size, color, alpha) {
     if (size <= 0.1 || alpha <= 0) return;
     ctx.save();
+
+    // Outer soft halo
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(0.1, size * 1.3), 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha * 0.25));
+    ctx.fill();
+
+    // Core body
     ctx.beginPath();
     ctx.arc(x, y, Math.max(0.1, size), 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-    ctx.shadowBlur = 14;
-    ctx.shadowColor = color;
     ctx.fill();
 
-    // White-hot core spark
+    // White-hot center spark
     ctx.beginPath();
     ctx.arc(x, y, Math.max(0.05, size * 0.45), 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff';
-    ctx.globalAlpha = Math.max(0, Math.min(1, alpha * 0.9));
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha * 0.95));
     ctx.fill();
+
     ctx.restore();
   }
 
@@ -453,8 +499,6 @@ class ReactiveBackground {
     ctx.ellipse(0, 0, size * 1.3, size * 0.55, 0, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-    ctx.shadowBlur = 6;
-    ctx.shadowColor = color;
     ctx.fill();
 
     // Subtle leaf center spine
@@ -473,14 +517,12 @@ class ReactiveBackground {
     ctx.beginPath();
     ctx.arc(x, y, Math.max(0.1, size), 0, Math.PI * 2);
     ctx.fillStyle = color;
-    ctx.globalAlpha = Math.max(0, Math.min(1, alpha * 0.5));
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = color;
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha * 0.4));
     ctx.fill();
 
     // Glassy specular rim
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = 1.1;
     ctx.stroke();
 
     // Reflection highlight dot
@@ -508,7 +550,6 @@ class ReactiveBackground {
     } else if (shape === 'petals') {
       this.drawPetal(ctx, p.x, p.y, effectiveSize, p.color, p.alpha, p.rot);
     } else {
-      // bubbles
       this.drawBubble(ctx, p.x, p.y, effectiveSize, p.color, p.alpha);
     }
   }
@@ -531,10 +572,7 @@ class ReactiveBackground {
       this.ctx.beginPath();
       this.ctx.arc(centerX, sunY, sunRadius, 0, Math.PI * 2);
       this.ctx.fillStyle = sunGrad;
-      this.ctx.shadowBlur = 35;
-      this.ctx.shadowColor = '#ff007f';
       this.ctx.fill();
-      this.ctx.shadowBlur = 0;
 
       // Sun horizontal slits
       this.ctx.fillStyle = 'rgba(24, 4, 26, 0.92)';
@@ -544,22 +582,22 @@ class ReactiveBackground {
       }
 
       // Moving perspective grid
-      this.ctx.strokeStyle = 'rgba(255, 0, 127, 0.3)';
+      this.ctx.strokeStyle = 'rgba(255, 0, 127, 0.25)';
       this.ctx.lineWidth = 1;
 
-      for (let y = horizon + (this.gridOffset % 28); y < this.height; y += 28) {
+      for (let y = horizon + (this.gridOffset % 32); y < this.height; y += 32) {
         const distFromHorizon = (y - horizon) / (this.height - horizon);
-        this.ctx.globalAlpha = Math.min(0.85, distFromHorizon * 0.85);
+        this.ctx.globalAlpha = Math.min(0.75, distFromHorizon * 0.75);
         this.ctx.beginPath();
         this.ctx.moveTo(0, y);
         this.ctx.lineTo(this.width, y);
         this.ctx.stroke();
       }
 
-      const rays = 14;
+      const rays = 12;
       for (let i = 0; i <= rays; i++) {
         const bottomX = (this.width / rays) * i;
-        this.ctx.globalAlpha = 0.3;
+        this.ctx.globalAlpha = 0.25;
         this.ctx.beginPath();
         this.ctx.moveTo(centerX, horizon);
         this.ctx.lineTo(bottomX, this.height);
@@ -572,21 +610,21 @@ class ReactiveBackground {
     if (this.currentTheme === 'theme-royal') {
       this.ctx.beginPath();
       this.ctx.moveTo(0, this.height);
-      for (let i = 0; i <= 20; i++) {
-        const x = (this.width / 20) * i;
-        const wave1 = Math.sin(this.time + i * 0.3) * 55;
-        const wave2 = Math.cos(this.time * 0.7 + i * 0.25) * 35;
-        const mouseShift = this.mouse.isInWindow ? (this.mouse.y - this.height * 0.5) * 0.08 : 0;
-        const y = this.height * 0.52 + wave1 + wave2 + mouseShift;
+      for (let i = 0; i <= 16; i++) {
+        const x = (this.width / 16) * i;
+        const wave1 = Math.sin(this.time + i * 0.35) * 45;
+        const wave2 = Math.cos(this.time * 0.6 + i * 0.25) * 25;
+        const mouseShift = this.mouse.isInWindow ? (this.mouse.y - this.height * 0.5) * 0.05 : 0;
+        const y = this.height * 0.54 + wave1 + wave2 + mouseShift;
         this.ctx.lineTo(x, y);
       }
       this.ctx.lineTo(this.width, this.height);
       this.ctx.closePath();
 
-      const gradient = this.ctx.createLinearGradient(0, this.height * 0.3, this.width, this.height);
-      gradient.addColorStop(0, 'rgba(0, 245, 212, 0.12)');
-      gradient.addColorStop(0.5, 'rgba(0, 187, 249, 0.14)');
-      gradient.addColorStop(1, 'rgba(157, 78, 221, 0.08)');
+      const gradient = this.ctx.createLinearGradient(0, this.height * 0.35, this.width, this.height);
+      gradient.addColorStop(0, 'rgba(0, 245, 212, 0.10)');
+      gradient.addColorStop(0.5, 'rgba(0, 187, 249, 0.12)');
+      gradient.addColorStop(1, 'rgba(157, 78, 221, 0.06)');
 
       this.ctx.fillStyle = gradient;
       this.ctx.fill();
@@ -614,9 +652,32 @@ class ReactiveBackground {
 
   // --- MAIN ANIMATION & INTERACTIVE PHYSICS LOOP ---
 
-  animate() {
+  animate(timestamp) {
+    if (this.isPaused) {
+      this.animationFrameId = null;
+      return;
+    }
+
+    this.animationFrameId = requestAnimationFrame((ts) => this.animate(ts));
+
+    if (!timestamp) timestamp = performance.now();
+    const elapsed = timestamp - this.lastFrameTime;
+
+    // Delta-time FPS clamping:
+    // Low-Power mode: 18 FPS; Idle (>12s): 14 FPS; Active standard: 36 FPS
+    const now = performance.now();
+    const isIdle = (now - this.lastInteractionTime) > 12000;
+    const targetFps = this.isLowPower ? 18 : (isIdle ? 14 : 36);
+    const frameInterval = 1000 / targetFps;
+
+    if (elapsed < frameInterval) {
+      return;
+    }
+
+    this.lastFrameTime = timestamp - (elapsed % frameInterval);
+
     this.time += 0.02;
-    this.gridOffset = (this.gridOffset + 1.2) % 28;
+    this.gridOffset = (this.gridOffset + 1.2) % 32;
 
     // Smooth decay of mouse momentum
     this.mouse.vx *= 0.9;
@@ -630,10 +691,14 @@ class ReactiveBackground {
 
     const activeShape = this.getActiveShape();
     const cfg = THEME_CONFIG[this.currentTheme] || THEME_CONFIG['theme-cyberpunk'];
-    const allowsConstellations = cfg.connectLines || activeShape === 'stars' || activeShape === 'pixels' || activeShape === 'bubbles';
+    const allowsConstellations = !this.isLowPower && (cfg.connectLines || activeShape === 'stars' || activeShape === 'pixels' || activeShape === 'bubbles');
+
+    let linesDrawn = 0;
+    const maxLinesPerFrame = 22; // Hard cap prevents O(N^2) stalls
 
     // 1. Process and render floating reactive particles
-    for (let i = 0; i < this.particles.length; i++) {
+    const pLen = this.particles.length;
+    for (let i = 0; i < pLen; i++) {
       const p = this.particles[i];
 
       // Oscillations
@@ -654,37 +719,36 @@ class ReactiveBackground {
         const dist = Math.hypot(dx, dy);
 
         if (dist < this.mouse.radius && dist > 1) {
-          const factor = (this.mouse.radius - dist) / this.mouse.radius; // 0 to 1
+          const factor = (this.mouse.radius - dist) / this.mouse.radius;
 
           // A. Smooth Repulsion / Evasion Force
           const repel = 3.6 * factor;
           p.x -= (dx / dist) * repel;
           p.y -= (dy / dist) * repel;
 
-          // B. Swirl / Vortex Force (adds dynamic fluid eddy around cursor)
+          // B. Swirl / Vortex Force
           const swirl = 1.3 * factor;
           p.x += (-dy / dist) * swirl;
           p.y += (dx / dist) * swirl;
 
-          // C. Mouse Motion Wake Impulse (swipe wind)
+          // C. Mouse Motion Wake Impulse
           if (this.mouse.speed > 2.5) {
             p.vx += (this.mouse.vx * 0.04) * factor;
             p.vy += (this.mouse.vy * 0.04) * factor;
           }
 
-          // D. Reactive laser/constellation link directly to mouse pointer!
-          if (dist < 125) {
+          // D. Reactive laser/constellation link directly to mouse pointer
+          if (dist < 110 && !this.isLowPower) {
             this.ctx.beginPath();
             this.ctx.moveTo(p.x, p.y);
             this.ctx.lineTo(this.mouse.x, this.mouse.y);
             this.ctx.strokeStyle = p.color;
-            this.ctx.globalAlpha = (1 - dist / 125) * 0.38;
-            this.ctx.lineWidth = 1.2;
+            this.ctx.globalAlpha = (1 - dist / 110) * 0.35;
+            this.ctx.lineWidth = 1.1;
             this.ctx.stroke();
           }
 
-          // Particle scales up & brightens slightly near cursor
-          scalePulse += factor * 0.35;
+          scalePulse += factor * 0.3;
         }
       }
 
@@ -703,22 +767,27 @@ class ReactiveBackground {
       this.renderParticleShape(this.ctx, p, scalePulse);
 
       // Connect neighbouring particles with delicate constellation lines
-      if (allowsConstellations) {
-        for (let j = i + 1; j < this.particles.length; j++) {
+      if (allowsConstellations && linesDrawn < maxLinesPerFrame) {
+        for (let j = i + 1; j < pLen; j++) {
           const p2 = this.particles[j];
           const lineDx = p.x - p2.x;
+          // Manhattan early exit
+          if (Math.abs(lineDx) > 90) continue;
           const lineDy = p.y - p2.y;
-          const distSq = lineDx * lineDx + lineDy * lineDy;
+          if (Math.abs(lineDy) > 90) continue;
 
-          if (distSq < 11025) { // ~105px radius
+          const distSq = lineDx * lineDx + lineDy * lineDy;
+          if (distSq < 8100) { // 90px threshold
             const lineDist = Math.sqrt(distSq);
             this.ctx.beginPath();
             this.ctx.moveTo(p.x, p.y);
             this.ctx.lineTo(p2.x, p2.y);
             this.ctx.strokeStyle = p.color;
-            this.ctx.globalAlpha = (1 - lineDist / 105) * 0.22;
+            this.ctx.globalAlpha = (1 - lineDist / 90) * 0.2;
             this.ctx.lineWidth = 0.8;
             this.ctx.stroke();
+            linesDrawn++;
+            if (linesDrawn >= maxLinesPerFrame) break;
           }
         }
       }
@@ -742,7 +811,6 @@ class ReactiveBackground {
     }
 
     this.ctx.globalAlpha = 1;
-    this.animationFrameId = requestAnimationFrame(() => this.animate());
   }
 }
 

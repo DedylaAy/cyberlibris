@@ -70,6 +70,7 @@ class AppController {
     this.bindScrollTopFAB();
 
     // 4. Initial Render
+    this.initEcoMode();
     this.initSteamCarousel();
     this.renderLibrary();
     this.renderDailyQuests();
@@ -112,6 +113,50 @@ class AppController {
       this.updateAudioButtonState();
       this.showToast(isMuted ? 'Звук выключен' : 'Звуковые эффекты включены', 'info');
     });
+
+    // Turbo / Eco Mode toggle button in header
+    document.getElementById('btn-toggle-eco')?.addEventListener('click', () => {
+      this.toggleEcoMode();
+    });
+  }
+
+  initEcoMode() {
+    const isEco = localStorage.getItem('cyberlibris_eco_mode') === 'true';
+    if (isEco) {
+      document.body.classList.add('eco-mode');
+    } else {
+      document.body.classList.remove('eco-mode');
+    }
+    this.updateEcoButtonState();
+    if (window.reactiveBg) {
+      window.reactiveBg.setLowPowerMode(isEco);
+    }
+  }
+
+  toggleEcoMode() {
+    const currentlyEco = document.body.classList.contains('eco-mode');
+    const newEco = !currentlyEco;
+    if (newEco) {
+      document.body.classList.add('eco-mode');
+      localStorage.setItem('cyberlibris_eco_mode', 'true');
+      this.showToast('Турбо-режим ВКЛЮЧЕН (максимальная скорость, эффекты отключены)', 'info');
+    } else {
+      document.body.classList.remove('eco-mode');
+      localStorage.setItem('cyberlibris_eco_mode', 'false');
+      this.showToast('Турбо-режим ВЫКЛЮЧЕН (полная графика и частицы)', 'info');
+    }
+    this.updateEcoButtonState();
+    if (window.reactiveBg) {
+      window.reactiveBg.setLowPowerMode(newEco);
+    }
+  }
+
+  updateEcoButtonState() {
+    const btn = document.getElementById('btn-toggle-eco');
+    if (!btn) return;
+    const isEco = document.body.classList.contains('eco-mode');
+    btn.classList.toggle('active', isEco);
+    btn.innerHTML = `<span>Турбо: ${isEco ? 'Вкл' : 'Выкл'}</span>`;
   }
 
   switchView(viewName) {
@@ -141,6 +186,9 @@ class AppController {
 
     if (viewName !== 'reader') {
       window.readerEngine?.stopTTS?.();
+      window.reactiveBg?.resume?.();
+    } else {
+      window.reactiveBg?.pause?.();
     }
 
     if (viewName === 'library') {
@@ -163,6 +211,7 @@ class AppController {
   }
 
   returnFromReader() {
+    window.reactiveBg?.resume?.();
     const dest = (this.previousView && this.previousView !== 'reader') ? this.previousView : 'steam-library';
     this.switchView(dest);
   }
@@ -2424,11 +2473,17 @@ class AppController {
       if (card._tiltInitialized) return;
       card._tiltInitialized = true;
 
+      let rect = null;
       let rafId = null;
       let targetX = 0, targetY = 0;
       let currentX = 0, currentY = 0;
 
       const update = () => {
+        if (document.body.classList.contains('eco-mode')) {
+          card.style.transform = '';
+          rafId = null;
+          return;
+        }
         currentX += (targetX - currentX) * 0.15;
         currentY += (targetY - currentY) * 0.15;
         card.style.transform = `perspective(1000px) rotateX(${currentX}deg) rotateY(${currentY}deg)`;
@@ -2439,20 +2494,28 @@ class AppController {
         }
       };
 
+      card.addEventListener('mouseenter', () => {
+        if (!document.body.classList.contains('eco-mode')) {
+          rect = card.getBoundingClientRect();
+        }
+      }, { passive: true });
+
       card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
+        if (document.body.classList.contains('eco-mode')) return;
+        if (!rect) rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
         targetX = (y / (rect.height / 2)) * -3.5;
         targetY = (x / (rect.width / 2)) * 3.5;
         if (!rafId) rafId = requestAnimationFrame(update);
-      });
+      }, { passive: true });
 
       card.addEventListener('mouseleave', () => {
+        rect = null;
         targetX = 0;
         targetY = 0;
         if (!rafId) rafId = requestAnimationFrame(update);
-      });
+      }, { passive: true });
     });
   }
 
@@ -2461,16 +2524,36 @@ class AppController {
       if (btn._magneticInitialized) return;
       btn._magneticInitialized = true;
 
+      let rect = null;
+      let rafId = null;
+
+      btn.addEventListener('mouseenter', () => {
+        if (!document.body.classList.contains('eco-mode')) {
+          rect = btn.getBoundingClientRect();
+        }
+      }, { passive: true });
+
       btn.addEventListener('mousemove', (e) => {
-        const rect = btn.getBoundingClientRect();
+        if (document.body.classList.contains('eco-mode')) return;
+        if (!rect) rect = btn.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
-      });
+        if (!rafId) {
+          rafId = requestAnimationFrame(() => {
+            btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+            rafId = null;
+          });
+        }
+      }, { passive: true });
 
       btn.addEventListener('mouseleave', () => {
+        rect = null;
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
         btn.style.transform = 'translate(0px, 0px)';
-      });
+      }, { passive: true });
     });
   }
 
