@@ -116,6 +116,10 @@ class AudioEngine {
     osc.stop(now + 0.09);
   }
 
+  playPageFlip() {
+    return this.playCardFlip();
+  }
+
   playCorrect() {
     if (this.isMuted) return;
     this.init();

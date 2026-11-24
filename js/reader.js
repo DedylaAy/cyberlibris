@@ -781,7 +781,8 @@ class ReaderEngine {
     if (this.currentChapterIdx < chapters.length - 1) {
       this.jumpToChapter(this.currentChapterIdx + 1);
       window.app?.showToast?.(`Глава ${this.currentChapterIdx + 1}: ${chapters[this.currentChapterIdx]?.title || ''}`, 'info');
-      if (window.soundEngine) window.soundEngine.playPageFlip();
+      if (window.soundEngine?.playPageFlip) window.soundEngine.playPageFlip();
+      else window.soundEngine?.playCardFlip?.();
     } else {
       window.app?.showToast?.('Вы на последней главе этой книги', 'info');
     }
@@ -793,7 +794,8 @@ class ReaderEngine {
     if (this.currentChapterIdx > 0) {
       this.jumpToChapter(this.currentChapterIdx - 1);
       window.app?.showToast?.(`Глава ${this.currentChapterIdx + 1}: ${chapters[this.currentChapterIdx]?.title || ''}`, 'info');
-      if (window.soundEngine) window.soundEngine.playPageFlip();
+      if (window.soundEngine?.playPageFlip) window.soundEngine.playPageFlip();
+      else window.soundEngine?.playCardFlip?.();
     } else {
       window.app?.showToast?.('Вы на первой главе этой книги', 'info');
     }

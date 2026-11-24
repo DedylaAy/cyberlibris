@@ -2517,7 +2517,8 @@ class AppController {
 
     fab.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      if (window.soundEngine) window.soundEngine.playPageFlip();
+      if (window.soundEngine?.playPageFlip) window.soundEngine.playPageFlip();
+      else window.soundEngine?.playCardFlip?.();
     });
   }
 }
