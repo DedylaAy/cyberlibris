@@ -762,6 +762,12 @@ body.is-creator .github-status-pill {
 }
 
 /* Steam Book Cards Rarity Styles */
+.steam-book-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 390px;
+  will-change: transform;
+}
+
 .book-rarity-legendary {
   border: 2px solid rgba(255, 170, 0, 0.6);
   box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 0 20px rgba(255, 170, 0, 0.25);

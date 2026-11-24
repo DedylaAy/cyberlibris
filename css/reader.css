@@ -136,6 +136,33 @@
   text-indent: 1.5rem;
 }
 
+/* Optimized Manga Continuous Mode Blocks */
+.manga-chapter-block {
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 750px;
+}
+
+.manga-chapter-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  margin-bottom: 1.4rem;
+  padding: 0.5rem 0.8rem;
+  background: rgba(0, 240, 255, 0.05);
+  border-left: 4px solid var(--accent-cyan);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.manga-chapter-text p {
+  margin-bottom: 1.4rem;
+  line-height: 1.85;
+  text-indent: 1.5rem;
+  text-align: justify;
+}
+
 /* Reader Color Themes */
 .theme-oled .reader-article {
   background: #000000;

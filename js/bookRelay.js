@@ -791,6 +791,7 @@ class BookRelayService {
           book.chapters = data.chapters;
           book.relaySourceName = data.sourceName;
           book.relaySourceUrl = data.sourceUrl;
+          this.manageLruCache(book.id);
           return {
             success: true,
             book,
@@ -837,6 +838,7 @@ class BookRelayService {
             book.chapters = chapters;
             book.relaySourceName = `Викитека (${lang}.wikisource.org)`;
             book.relaySourceUrl = `https://${lang}.wikisource.org/wiki/${encodeURIComponent(pageTitle)}`;
+            this.manageLruCache(book.id);
             return {
               success: true,
               book,
@@ -852,6 +854,21 @@ class BookRelayService {
     }
 
     return null;
+  }
+
+  // LRU in-memory cache manager (Zero-Storage adherence & low RAM footprint)
+  manageLruCache(activeBookId) {
+    if (!this.cachedBookIds) this.cachedBookIds = [];
+    this.cachedBookIds = this.cachedBookIds.filter(id => id !== activeBookId);
+    this.cachedBookIds.push(activeBookId);
+
+    while (this.cachedBookIds.length > 6) {
+      const oldestId = this.cachedBookIds.shift();
+      const oldestBook = this.getBookById(oldestId);
+      if (oldestBook && oldestId !== activeBookId) {
+        delete oldestBook.chapters;
+      }
+    }
   }
 
   // Фильтрация каталога в стиле ReManga

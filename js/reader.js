@@ -553,22 +553,41 @@ class ReaderEngine {
   }
 
   setupScrollTracker() {
+    let ticking = false;
+    let lastSavedProgress = -1;
+    let saveTimeout = null;
+
     window.addEventListener('scroll', () => {
-      if (!this.currentBook || !document.getElementById('view-reader')?.classList.contains('active')) return;
-      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollHeight <= 0) return;
-      const progress = Math.min(100, Math.max(0, Math.round((window.scrollY / scrollHeight) * 100)));
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (this.currentBook && document.getElementById('view-reader')?.classList.contains('active')) {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (scrollHeight > 0) {
+              const progress = Math.min(100, Math.max(0, Math.round((window.scrollY / scrollHeight) * 100)));
 
-      const fill = document.getElementById('reading-progress-fill');
-      const valText = document.getElementById('reading-progress-percent');
-      if (fill) fill.style.width = `${progress}%`;
-      if (valText) valText.textContent = `${progress}%`;
+              const fill = document.getElementById('reading-progress-fill');
+              const valText = document.getElementById('reading-progress-percent');
+              if (fill) fill.style.width = `${progress}%`;
+              if (valText) valText.textContent = `${progress}%`;
 
-      const user = window.auth?.currentUser;
-      if (user && window.bookRelay) {
-        window.bookRelay.updateProgress(user.username, this.currentBook.id, progress, this.currentChapterIdx);
+              // Throttled persistence to prevent continuous storage I/O
+              if (Math.abs(progress - lastSavedProgress) >= 2) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                  lastSavedProgress = progress;
+                  const user = window.auth?.currentUser;
+                  if (user && window.bookRelay) {
+                    window.bookRelay.updateProgress(user.username, this.currentBook.id, progress, this.currentChapterIdx);
+                  }
+                }, 300);
+              }
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
-    });
+    }, { passive: true });
   }
 
   async openBook(bookId, chapterIdx = null, initialMode = null) {

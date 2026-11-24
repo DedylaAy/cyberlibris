@@ -22,17 +22,45 @@ class ReactiveBackground {
 
   init() {
     this.resize();
-    window.addEventListener('resize', () => this.resize());
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => this.resize(), 120);
+    }, { passive: true });
+
+    let mouseTicking = false;
     window.addEventListener('mousemove', (e) => {
-      this.mouse.x = e.clientX;
-      this.mouse.y = e.clientY;
-    });
+      if (!mouseTicking) {
+        window.requestAnimationFrame(() => {
+          this.mouse.x = e.clientX;
+          this.mouse.y = e.clientY;
+          mouseTicking = false;
+        });
+        mouseTicking = true;
+      }
+    }, { passive: true });
+
     window.addEventListener('mousedown', (e) => {
       this.mouse.isDown = true;
       this.triggerClickBurst(e.clientX, e.clientY);
     });
     window.addEventListener('mouseup', () => {
       this.mouse.isDown = false;
+    });
+
+    // Pause animation when browser tab is inactive to preserve battery & CPU/GPU
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (this.animationFrameId) {
+          cancelAnimationFrame(this.animationFrameId);
+          this.animationFrameId = null;
+        }
+      } else {
+        if (!this.animationFrameId) {
+          this.animate();
+        }
+      }
     });
 
     this.setupTheme(this.currentTheme);
@@ -271,8 +299,9 @@ class ReactiveBackground {
         if (p2.isBurst) continue;
         const lineDx = p.x - p2.x;
         const lineDy = p.y - p2.y;
-        const lineDist = Math.sqrt(lineDx * lineDx + lineDy * lineDy);
-        if (lineDist < 120) {
+        const distSq = lineDx * lineDx + lineDy * lineDy;
+        if (distSq < 14400) {
+          const lineDist = Math.sqrt(distSq);
           this.ctx.beginPath();
           this.ctx.moveTo(p.x, p.y);
           this.ctx.lineTo(p2.x, p2.y);

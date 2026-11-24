@@ -301,11 +301,15 @@ class AppController {
     const diffSelect = document.getElementById('remanga-diff-select');
     const resetBtn = document.getElementById('btn-reset-remanga-filters');
 
+    let searchDebounceTimer = null;
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         this.searchQuery = e.target.value.trim();
         if (clearBtn) clearBtn.style.display = this.searchQuery ? 'block' : 'none';
-        this.renderLibrary();
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+          this.renderLibrary();
+        }, 130);
       });
     }
 
@@ -489,7 +493,7 @@ class AppController {
 
       card.innerHTML = `
         <div class="book-cover-banner" style="background: ${b.coverStyle};">
-          <img src="${b.coverImage}" class="book-cover-real-img" alt="${b.title}" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
+          <img src="${b.coverImage}" class="book-cover-real-img" alt="${b.title}" loading="lazy" decoding="async" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
           <div class="book-badges-overlay">
             <span class="rarity-pill ${rarityPillClass}">${b.rarityLabel || 'ШЕДЕВР'}</span>
             ${progressBadge}
@@ -810,7 +814,7 @@ class AppController {
       card.className = `steam-book-card rarity-${b.rarity} tilt-card`;
       card.innerHTML = `
         <div class="book-cover-banner" style="background: ${b.coverStyle};">
-          <img src="${b.coverImage || 'https://covers.openlibrary.org/b/id/12818862-L.jpg'}" class="book-cover-real-img" alt="${b.title}">
+          <img src="${b.coverImage || 'https://covers.openlibrary.org/b/id/12818862-L.jpg'}" class="book-cover-real-img" alt="${b.title}" loading="lazy" decoding="async">
           <div class="book-badges-overlay">
             <span class="rarity-pill rarity-pill-epic">Open Library</span>
           </div>
@@ -954,7 +958,7 @@ class AppController {
             const card = document.createElement('div');
             card.className = 'shelf-book-card';
             card.innerHTML = `
-              <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}">
+              <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
               <div class="shelf-book-title">${b.title}</div>
               <div class="shelf-book-progress-bar">
                 <div class="shelf-book-progress-fill" style="width: ${item.progressPercent}%;"></div>
@@ -986,7 +990,7 @@ class AppController {
           const card = document.createElement('div');
           card.className = 'shelf-book-card';
           card.innerHTML = `
-            <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}">
+            <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
             <div class="shelf-book-title">${b.title}</div>
             <div style="font-size:0.75rem; color:var(--accent-cyan);">${b.author}</div>
             <button class="btn btn-secondary btn-sm" onclick="window.app.openBookDetails('${b.id}')" style="margin-top:0.4rem;">
@@ -1008,7 +1012,7 @@ class AppController {
           const card = document.createElement('div');
           card.className = 'shelf-book-card';
           card.innerHTML = `
-            <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}">
+            <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
             <div class="shelf-book-title">${b.title}</div>
             <div style="font-size:0.75rem; color:var(--accent-green);">✓ Завершено (${item.completedDate})</div>
           `;
