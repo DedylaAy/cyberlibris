@@ -1051,95 +1051,265 @@
           <div class="reading-progress-fill" id="reading-progress-fill"></div>
         </div>
 
-        <div class="reader-container" id="reader-container-box">
-          <!-- Sticky Reader Toolbar -->
-          <div class="reader-toolbar">
-            <div class="reader-tool-group">
-              <button class="tool-btn" id="btn-back-to-library" onclick="window.app.returnFromReader()" title="Вернуться назад (Esc)">
-                ← Назад (Esc)
-              </button>
-              <button class="tool-btn" id="btn-toggle-manga-mode" title="Переключить между постраничным чтением и непрерывной лентой">
-                📜 Режим: Лента (Манга-скролл)
-              </button>
-              <select id="reader-chapter-select" class="form-select" style="padding: 0.35rem 0.65rem; font-size: 0.8rem; max-width: 220px; display: none; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid var(--border-glass);" onchange="window.readerEngine.jumpToChapter(parseInt(this.value))">
-                <option value="0">Глава 1</option>
-              </select>
-              <span id="reading-progress-percent" style="font-size: 0.85rem; color: var(--accent-cyan); font-weight: 800; margin-left: 0.4rem;">0%</span>
-            </div>
+        <!-- Reading Focus Guide Line -->
+        <div class="reader-focus-guide" id="reader-focus-guide" style="display: none;"></div>
 
-            <!-- Typography & Size -->
-            <div class="reader-tool-group">
-              <button class="tool-btn" id="btn-font-dec" title="Уменьшить шрифт">A-</button>
-              <button class="tool-btn" id="btn-font-inc" title="Увеличить шрифт">A+</button>
-              <select id="reader-font-select" class="form-select" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; width: auto;">
-                <option value="var(--font-sans)">Sans-Serif</option>
-                <option value="var(--font-serif)">Serif (Книга)</option>
-                <option value="var(--font-mono)">Monospace</option>
-              </select>
-            </div>
+        <!-- Zen Mode Exit Button -->
+        <button class="zen-exit-pill" id="btn-exit-zen" onclick="window.readerEngine.toggleZenMode(false)" title="Выйти из Дзен-режима (Esc)">
+          <span>✕</span> Выйти из Дзен (Esc)
+        </button>
 
-            <!-- Themes -->
-            <div class="reader-tool-group">
-              <button class="tool-btn btn-reader-theme active" data-theme="dark" title="Тёмная тема">🌙</button>
-              <button class="tool-btn btn-reader-theme" data-theme="oled" title="OLED Чёрный">⬛</button>
-              <button class="tool-btn btn-reader-theme" data-theme="sepia" title="Тёплый Янтарь">📜</button>
-              <button class="tool-btn btn-reader-theme" data-theme="cyber" title="Кибер-Матрица">📟</button>
-              <button class="tool-btn btn-reader-theme" data-theme="paper" title="Бумага">📄</button>
-            </div>
-
-            <!-- Ambient Sound Generator -->
-            <div class="reader-tool-group ambient-bar">
-              <span style="font-size: 0.75rem; color: var(--text-dim);">Атмосфера:</span>
-              <button class="ambient-chip" data-sound="rain">🌧️ Дождь</button>
-              <button class="ambient-chip" data-sound="fire">🔥 Камин</button>
-              <button class="ambient-chip" data-sound="cyber">🏙️ Неон</button>
-              <button class="ambient-chip" data-sound="binaural">🧘 432Hz</button>
-              <div style="display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.3rem;">
-                <span style="font-size: 0.7rem; color: var(--text-dim);" title="Громкость эмбиента">🔊</span>
-                <input type="range" id="reader-ambient-vol" min="0" max="1" step="0.05" value="0.7" style="width: 50px; height: 4px; accent-color: var(--accent-cyan);" title="Громкость атмосферы">
-              </div>
-            </div>
-
-            <!-- Actions: RSVP, TTS Narrator, Quote Share, Bookmark, Fullscreen -->
-            <div class="reader-tool-group">
-              <button class="tool-btn" id="btn-toggle-tts" title="Озвучить главу голосом (Кибер-Чтец)" style="color: var(--accent-green); font-weight: 700;">
-                🎧 Чтец
-              </button>
-              <button class="tool-btn" id="btn-start-rsvp" style="color: var(--accent-magenta); font-weight: 700;">
-                ⚡ Спринт RSVP
-              </button>
-              <button class="tool-btn" id="btn-share-quote" title="Поделиться красивой цитатой (+25 XP)">
-                💬 Цитата
-              </button>
-              <button class="tool-btn" id="btn-open-bookmarks" title="Закладки и заметки">
-                🔖 Закладки
-              </button>
-              <button class="tool-btn" id="btn-toggle-fullscreen" title="Полноэкранный режим чтения">
-                ⛶
-              </button>
-            </div>
-          </div>
-
-          <!-- Web Speech TTS Audio Narrator Bar -->
-          <div id="reader-tts-bar" class="reader-tts-bar" style="display: none;">
-            <div style="display: flex; align-items: center; gap: 0.6rem;">
-              <span class="tts-pulse-icon">🎙️</span>
+        <!-- Table of Contents Slide Drawer -->
+        <div class="reader-toc-drawer-backdrop" id="reader-toc-backdrop"></div>
+        <aside class="reader-toc-drawer" id="reader-toc-drawer">
+          <div class="reader-toc-header">
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+              <span style="font-size: 1.4rem;">📑</span>
               <div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green);" id="tts-status-title">Кибер-Чтец активен</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted);" id="tts-status-sub">Озвучивание текста в реальном времени</div>
+                <div style="font-weight: 800; font-size: 1.05rem; color: #fff;">Оглавление книги</div>
+                <div style="font-size: 0.75rem; color: var(--accent-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" id="reader-toc-book-title">Название книги</div>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-              <button class="btn btn-secondary btn-sm" id="btn-tts-play-toggle">⏸ Пауза</button>
-              <button class="btn btn-secondary btn-sm" id="btn-tts-stop" style="color: #ff5577;">⏹ Стоп</button>
-              <select id="tts-rate-select" class="form-select" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; width: auto; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid var(--border-glass);">
-                <option value="0.8">0.8x Скорость</option>
-                <option value="1.0" selected>1.0x Обычная</option>
-                <option value="1.25">1.25x Быстрее</option>
-                <option value="1.5">1.5x Ускоренная</option>
-              </select>
+            <button class="btn-close-drawer" id="btn-close-toc">✕</button>
+          </div>
+          <div class="reader-toc-search-wrap">
+            <input type="text" id="reader-toc-search-input" placeholder="Поиск главы или эпизода..." class="form-input" style="width: 100%; font-size: 0.85rem; padding: 0.5rem 0.8rem;">
+          </div>
+          <div class="reader-toc-list" id="reader-toc-list">
+            <!-- Dynamically populated chapters -->
+          </div>
+        </aside>
+
+        <!-- Top Floating Control Island -->
+        <div class="reader-floating-island" id="reader-floating-island">
+          <!-- Left: Return & Book Identity -->
+          <div class="reader-island-left">
+            <button class="reader-island-btn reader-back-btn" id="btn-back-to-library" onclick="window.app.returnFromReader()" title="Вернуться назад (Esc)">
+              <span class="btn-icon">←</span>
+              <span class="btn-text">Библиотека</span>
+              <span class="kbd-hint">Esc</span>
+            </button>
+            <div class="reader-island-book-pill" id="reader-island-book-pill">
+              <img src="" class="island-book-thumb" id="reader-island-thumb" alt="Обложка">
+              <div class="island-book-meta">
+                <span class="island-book-title" id="reader-island-title">Книга</span>
+                <span class="island-book-author" id="reader-island-author">Автор</span>
+              </div>
             </div>
           </div>
+
+          <!-- Center: Chapter Pill & Reading Mode -->
+          <div class="reader-island-center">
+            <button class="reader-island-btn reader-chapter-pill" id="btn-open-toc" title="Открыть оглавление">
+              <span class="btn-icon">📑</span>
+              <span id="reader-active-chapter-name">Глава 1</span>
+              <span class="caret">▾</span>
+            </button>
+            <select id="reader-chapter-select" style="display: none;" onchange="window.readerEngine.jumpToChapter(parseInt(this.value))">
+              <option value="0">Глава 1</option>
+            </select>
+            <button class="reader-island-btn reader-mode-pill" id="btn-toggle-manga-mode" title="Переключить между постраничным чтением и непрерывной лентой">
+              <span class="btn-icon">📜</span>
+              <span id="reader-mode-label">Лента</span>
+            </button>
+          </div>
+
+          <!-- Right: Tools, Aa Appearance, Audio, Zen, Fullscreen -->
+          <div class="reader-island-right">
+            <!-- Aa Appearance Popover Anchor -->
+            <div class="reader-popover-anchor">
+              <button class="reader-island-btn" id="btn-reader-appearance" title="Настройки шрифта, темы и полей">
+                <span style="font-weight: 900; font-size: 0.95rem; font-family: var(--font-serif);">Aa</span>
+                <span class="btn-text">Вид</span>
+              </button>
+              <!-- Aa Appearance Popover -->
+              <div class="reader-popover" id="reader-appearance-popover" style="display: none;">
+                <div class="popover-header">
+                  <span>⚙️ Настройки чтения</span>
+                  <button class="popover-close-btn" id="btn-close-appearance">✕</button>
+                </div>
+
+                <!-- Font Family -->
+                <div class="popover-section">
+                  <div class="popover-label">Шрифт</div>
+                  <div class="font-family-chips">
+                    <button class="font-chip active" data-font="serif" style="font-family: var(--font-serif);">Книга (Serif)</button>
+                    <button class="font-chip" data-font="sans" style="font-family: var(--font-sans);">Современный</button>
+                    <button class="font-chip" data-font="mono" style="font-family: var(--font-mono);">Кибер-код</button>
+                  </div>
+                  <select id="reader-font-select" style="display: none;">
+                    <option value="var(--font-serif)" selected>Serif</option>
+                    <option value="var(--font-sans)">Sans</option>
+                    <option value="var(--font-mono)">Mono</option>
+                  </select>
+                </div>
+
+                <!-- Font Size Slider -->
+                <div class="popover-section">
+                  <div class="popover-label-row">
+                    <span>Размер шрифта</span>
+                    <span id="reader-font-size-val" style="color: var(--accent-cyan); font-weight: 800;">18px</span>
+                  </div>
+                  <div class="font-size-controls">
+                    <button class="btn btn-secondary btn-sm" id="btn-font-dec">A-</button>
+                    <input type="range" id="reader-font-slider" min="14" max="28" step="1" value="18" style="flex: 1; accent-color: var(--accent-cyan);">
+                    <button class="btn btn-secondary btn-sm" id="btn-font-inc">A+</button>
+                  </div>
+                </div>
+
+                <!-- Line Spacing & Width -->
+                <div class="popover-section">
+                  <div class="popover-label">Ширина полосы текста</div>
+                  <div class="layout-width-chips">
+                    <button class="width-chip" data-width="narrow">Узкая</button>
+                    <button class="width-chip active" data-width="normal">Стандарт</button>
+                    <button class="width-chip" data-width="wide">Широкая</button>
+                  </div>
+                </div>
+
+                <!-- Color Themes Palette -->
+                <div class="popover-section">
+                  <div class="popover-label">Цветовая тема</div>
+                  <div class="reader-themes-palette">
+                    <button class="theme-swatch-btn active btn-reader-theme" data-theme="dark" title="Неоновая ночь">
+                      <span class="swatch-circle" style="background: #0d1220; border: 1.5px solid #00f0ff;"></span>
+                      <span>Ночь</span>
+                    </button>
+                    <button class="theme-swatch-btn btn-reader-theme" data-theme="sepia" title="Тёплый янтарь">
+                      <span class="swatch-circle" style="background: #231c15; border: 1.5px solid #e0a96d;"></span>
+                      <span>Сепия</span>
+                    </button>
+                    <button class="theme-swatch-btn btn-reader-theme" data-theme="oled" title="OLED Чёрный">
+                      <span class="swatch-circle" style="background: #000000; border: 1.5px solid #555;"></span>
+                      <span>OLED</span>
+                    </button>
+                    <button class="theme-swatch-btn btn-reader-theme" data-theme="paper" title="Мягкая бумага">
+                      <span class="swatch-circle" style="background: #fbf8ef; border: 1.5px solid #ccc;"></span>
+                      <span>Бумага</span>
+                    </button>
+                    <button class="theme-swatch-btn btn-reader-theme" data-theme="cyber" title="Изумрудная матрица">
+                      <span class="swatch-circle" style="background: #06100d; border: 1.5px solid #00ff88;"></span>
+                      <span>Матрица</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Focus Guide Toggle -->
+                <div class="popover-section popover-footer-toggle">
+                  <label style="display: flex; justify-content: space-between; align-items: center; width: 100%; cursor: pointer;">
+                    <span style="font-size: 0.85rem; color: #fff;">Линейка фокуса (линия чтения)</span>
+                    <input type="checkbox" id="toggle-focus-guide" style="accent-color: var(--accent-cyan); width: 18px; height: 18px;">
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Audio & Ambient Popover Anchor -->
+            <div class="reader-popover-anchor">
+              <button class="reader-island-btn" id="btn-reader-audio-panel" title="Атмосферный звук и озвучивание">
+                <span class="btn-icon">🎧</span>
+                <span class="btn-text">Звук</span>
+              </button>
+              <!-- Audio Popover -->
+              <div class="reader-popover" id="reader-audio-popover" style="display: none;">
+                <div class="popover-header">
+                  <span>🎧 Атмосфера & Чтец</span>
+                  <button class="popover-close-btn" id="btn-close-audio">✕</button>
+                </div>
+
+                <div class="popover-section">
+                  <div class="popover-label">Фоновые эмбиент-звуки</div>
+                  <div class="ambient-chips-grid">
+                    <button class="ambient-chip" data-sound="rain">🌧️ Дождь</button>
+                    <button class="ambient-chip" data-sound="fire">🔥 Камин</button>
+                    <button class="ambient-chip" data-sound="cyber">🏙️ Неон</button>
+                    <button class="ambient-chip" data-sound="binaural">🧘 432Hz</button>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.8rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-dim);">Громкость:</span>
+                    <input type="range" id="reader-ambient-vol" min="0" max="1" step="0.05" value="0.7" style="flex: 1; accent-color: var(--accent-cyan);">
+                  </div>
+                </div>
+
+                <div class="popover-section" style="border-top: 1px solid var(--border-glass); padding-top: 0.8rem;">
+                  <div class="popover-label">Голосовой Кибер-Чтец (TTS)</div>
+                  <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.6rem;">
+                    <button class="btn btn-primary btn-sm" id="btn-toggle-tts" style="flex: 1;">
+                      🎙️ Запустить озвучку
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="btn-tts-stop" style="color: #ff5577; display: none;">
+                      ⏹ Стоп
+                    </button>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 0.75rem; color: var(--text-dim);">Скорость:</span>
+                    <select id="tts-rate-select" class="form-select" style="padding: 0.2rem 0.4rem; font-size: 0.75rem; flex: 1;">
+                      <option value="0.8">0.8x</option>
+                      <option value="1.0" selected>1.0x (Обычная)</option>
+                      <option value="1.25">1.25x</option>
+                      <option value="1.5">1.5x</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <button class="reader-island-btn" id="btn-start-rsvp" title="Скоростной спринт RSVP">
+              <span class="btn-icon">⚡</span>
+              <span class="btn-text">RSVP</span>
+            </button>
+            <button class="reader-island-btn" id="btn-open-bookmarks" title="Закладки и заметки">
+              <span class="btn-icon">🔖</span>
+            </button>
+            <button class="reader-island-btn" id="btn-toggle-zen-mode" title="Дзен-режим (только текст)">
+              <span class="btn-icon">🧘</span>
+            </button>
+            <button class="reader-island-btn" id="btn-toggle-fullscreen" title="На весь экран">
+              <span class="btn-icon">⛶</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Web Speech TTS Audio Narrator Bar (Floating Top Alert) -->
+        <div id="reader-tts-bar" class="reader-tts-bar" style="display: none;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span class="tts-pulse-icon">🎙️</span>
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green);" id="tts-status-title">Кибер-Чтец активен</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);" id="tts-status-sub">Озвучивание текста в реальном времени</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" id="btn-tts-play-toggle">⏸ Пауза</button>
+            <button class="btn btn-secondary btn-sm" id="btn-tts-stop-bar" onclick="window.readerEngine.stopTTS()" style="color: #ff5577;">⏹ Стоп</button>
+          </div>
+        </div>
+
+        <div class="reader-container" id="reader-container-box">
+          <!-- Book Titleplate Hero Banner -->
+          <header class="reader-book-hero-banner" id="reader-book-hero-banner">
+            <div class="hero-cover-wrap">
+              <img src="" id="reader-hero-cover-img" class="reader-hero-cover-img" alt="Обложка">
+            </div>
+            <div class="hero-details-wrap">
+              <div class="hero-tags-row">
+                <span class="hero-tag-badge" id="reader-hero-genre-badge">Классика</span>
+                <span class="hero-tag-badge age-badge" id="reader-hero-age-badge">16+</span>
+                <span class="hero-tag-badge year-badge" id="reader-hero-year-badge">1866</span>
+              </div>
+              <h1 class="reader-hero-title" id="reader-book-title">Загрузка книги...</h1>
+              <div class="reader-hero-author">
+                <span class="author-icon">✒️</span>
+                <span id="reader-book-author">Автор произведения</span>
+              </div>
+              <div class="reader-hero-stats">
+                <span class="stat-pill">📖 <span id="reader-hero-chapters-count">15 глав</span></span>
+                <span class="stat-pill" style="color: var(--accent-gold);">⚡ +15 ⬡ за минуту чтения</span>
+                <span class="stat-pill" id="reader-relay-source-badge">📡 Викитека (Zero-Storage)</span>
+              </div>
+            </div>
+          </header>
 
           <!-- Floating selection actions container (Quote + Lexicon) -->
           <div class="floating-selection-actions" id="floating-selection-actions" style="display: none;">
@@ -1151,35 +1321,45 @@
             </button>
           </div>
 
-          <!-- Reader Article -->
-          <article class="reader-article">
-            <div class="reader-book-header">
-              <h1 id="reader-book-title">Загрузка книги...</h1>
-              <div class="reader-meta-row">
-                <span id="reader-book-author">Автор</span>
-                <span>•</span>
-                <span id="reader-reading-time-pill" style="color: var(--accent-gold);">📖 +15 ⬡ за минуту чтения</span>
+          <!-- Reader Article (The Book Canvas) -->
+          <article class="reader-article" id="reader-article-body">
+            <div class="reader-chapter-header-box">
+              <div class="chapter-ornament">✦ ───────── ❖ ───────── ✦</div>
+              <div class="reader-chapter-title" id="reader-chapter-title">
+                Глава 1
               </div>
             </div>
 
-            <div class="reader-chapter-title" id="reader-chapter-title">
-              Глава 1
-            </div>
-
             <div class="reader-text-body" id="reader-body-content">
-              <!-- Book paragraphs -->
+              <!-- Book paragraphs with Drop Cap on the first paragraph -->
             </div>
 
             <!-- Reader Navigation Footer -->
             <div class="reader-nav-footer" id="reader-chapter-nav">
-              <button class="btn btn-secondary" id="btn-prev-chapter" onclick="window.readerEngine.prevChapter()">
+              <button class="btn btn-secondary btn-nav-chapter" id="btn-prev-chapter" onclick="window.readerEngine.prevChapter()">
                 ← Предыдущая глава
               </button>
-              <button class="btn btn-primary" id="btn-next-chapter" onclick="window.readerEngine.nextChapter()">
+              <div class="chapter-nav-center-info">
+                <span id="reader-nav-progress-text" style="font-weight: 700; color: var(--accent-cyan);">Глава 1</span>
+              </div>
+              <button class="btn btn-primary btn-nav-chapter" id="btn-next-chapter" onclick="window.readerEngine.nextChapter()">
                 Следующая глава →
               </button>
             </div>
           </article>
+        </div>
+
+        <!-- Floating Bottom Reading Compass HUD -->
+        <div class="reader-floating-compass" id="reader-floating-compass">
+          <div class="compass-pill">
+            <span class="compass-chapter-tag" id="compass-chapter-tag">Гл. 1</span>
+            <div class="compass-divider"></div>
+            <span class="compass-progress-val" id="reading-progress-percent">0%</span>
+            <div class="compass-divider"></div>
+            <button class="compass-quick-btn" id="btn-compass-toc" title="Оглавление">📑</button>
+            <button class="compass-quick-btn" id="btn-compass-appearance" title="Вид">Aa</button>
+            <button class="compass-quick-btn" id="btn-compass-zen" title="Дзен-режим">🧘</button>
+          </div>
         </div>
       </section>
 

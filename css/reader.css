@@ -1,204 +1,964 @@
 /* ==========================================================================
-   IMMERSIVE READER SUITE (ЧИТАТЕЛЬСКИЙ ЗАЛ И СПРИНТЕР-ЧТЕНИЕ)
+   IMMERSIVE NEO-READER SUITE 5.0 (ЛЮКСОВЫЙ ЧИТАТЕЛЬСКИЙ ЗАЛ)
    ========================================================================== */
 
+#view-reader.active {
+  animation: none !important;
+  transform: none !important;
+}
+
 .reader-container {
-  max-width: 900px;
+  max-width: 860px;
   margin: 0 auto;
   position: relative;
-  transition: all var(--transition-normal);
+  transition: max-width 0.3s ease, margin 0.3s ease;
 }
 
-/* Reader Toolbar */
-.reader-toolbar {
-  position: sticky;
-  top: 75px;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1.25rem;
-  background: rgba(13, 18, 30, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-md);
-  margin-bottom: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
+/* Page Width Variations */
+.reader-width-narrow #reader-container-box, #reader-container-box.reader-width-narrow { max-width: 680px; }
+.reader-width-normal #reader-container-box, #reader-container-box.reader-width-normal { max-width: 860px; }
+.reader-width-wide #reader-container-box, #reader-container-box.reader-width-wide { max-width: 1080px; }
 
-.reader-tool-group {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.tool-btn {
-  padding: 0.4rem 0.75rem;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  transition: all var(--transition-fast);
-}
-
-.tool-btn:hover {
-  background: rgba(0, 240, 255, 0.1);
-  color: #fff;
-  border-color: rgba(0, 240, 255, 0.3);
-}
-
-.tool-btn.active {
-  background: rgba(0, 240, 255, 0.2);
-  color: var(--accent-cyan);
-  border-color: var(--accent-cyan);
-}
-
-/* Reading Progress Bar (Fixed Top) */
+/* Fixed Top Progress Track */
 .reading-progress-track {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  z-index: 999;
+  background: rgba(255, 255, 255, 0.04);
+  z-index: 1000;
 }
 
 .reading-progress-fill {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
-  box-shadow: 0 0 10px var(--accent-cyan);
-  transition: width 0.1s linear;
+  box-shadow: 0 0 12px var(--accent-cyan);
+  transition: width 0.12s linear;
 }
 
-/* Reader Content Article Card */
-.reader-article {
-  background: var(--bg-card);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  padding: 3.5rem 3rem;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+/* Reading Focus Guide (Линейка чтения) */
+.reader-focus-guide {
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  height: 38px;
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.04) 0%, rgba(0, 240, 255, 0.12) 50%, rgba(0, 240, 255, 0.04) 100%);
+  border-top: 1px solid rgba(0, 240, 255, 0.25);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+  pointer-events: none;
+  z-index: 45;
+  transition: top 0.05s ease-out;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+/* ==========================================================================
+   TOP FLOATING CONTROL ISLAND (ПАРИТ ВВЕРХУ)
+   ========================================================================== */
+.reader-floating-island {
+  position: sticky;
+  top: 72px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1rem;
+  background: rgba(11, 16, 28, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: var(--radius-full);
+  margin-bottom: 2.2rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.08);
+  gap: 0.75rem;
   transition: all 0.3s ease;
-  min-height: 70vh;
 }
 
-.reader-book-header {
-  border-bottom: 1px solid var(--border-glass);
-  padding-bottom: 2rem;
-  margin-bottom: 2.5rem;
-  text-align: center;
+.reader-island-left,
+.reader-island-center,
+.reader-island-right {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
-.reader-book-header h1 {
-  font-size: 2.2rem;
+.reader-island-btn {
+  padding: 0.4rem 0.85rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.reader-island-btn:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+}
+
+.reader-back-btn {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.kbd-hint {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.35rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+/* Island Book Badge */
+.reader-island-book-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.7rem 0.2rem 0.3rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  max-width: 200px;
+}
+
+.island-book-thumb {
+  width: 24px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.island-book-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.island-book-title {
+  font-size: 0.75rem;
   font-weight: 800;
-  line-height: 1.25;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.island-book-author {
+  font-size: 0.65rem;
+  color: var(--accent-cyan);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reader-chapter-pill {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.3);
+  color: var(--accent-cyan);
+}
+
+.reader-chapter-pill .caret {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   POPOVERS (Aa НАСТРОЙКИ ЧТЕНИЯ И АТМОСФЕРА)
+   ========================================================================== */
+.reader-popover-anchor {
+  position: relative;
+}
+
+.reader-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 320px;
+  background: rgba(14, 20, 34, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 240, 255, 0.15);
+  z-index: 120;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border-glass);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.popover-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+.popover-close-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+
+.popover-section {
+  margin-bottom: 1.1rem;
+}
+
+.popover-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.popover-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.45rem;
+}
+
+/* Font Family Chips */
+.font-family-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.font-chip {
+  padding: 0.45rem 0.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.font-chip:hover,
+.font-chip.active {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: var(--accent-cyan);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Font Size Controls */
+.font-size-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Width Chips */
+.layout-width-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.width-chip {
+  padding: 0.4rem 0.2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.width-chip:hover,
+.width-chip.active {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: var(--accent-cyan);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Color Themes Palette */
+.reader-themes-palette {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.45rem;
+}
+
+.theme-swatch-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.2rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-swatch-btn .swatch-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: block;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.theme-swatch-btn:hover,
+.theme-swatch-btn.active {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.12);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.ambient-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.45rem;
+}
+
+/* ==========================================================================
+   TABLE OF CONTENTS SLIDE DRAWER (ОГЛАВЛЕНИЕ)
+   ========================================================================== */
+.reader-toc-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 1999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.reader-toc-drawer-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.reader-toc-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  max-width: 90vw;
+  height: 100vh;
+  background: rgba(12, 18, 32, 0.98);
+  border-left: 1px solid var(--border-glow);
+  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.8);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reader-toc-drawer.active {
+  transform: translateX(0);
+}
+
+.reader-toc-header {
+  padding: 1.4rem 1.6rem;
+  border-bottom: 1px solid var(--border-glass);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-close-drawer {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.btn-close-drawer:hover {
+  background: rgba(255, 0, 127, 0.2);
+  border-color: var(--accent-magenta);
+}
+
+.reader-toc-search-wrap {
+  padding: 1rem 1.6rem;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.reader-toc-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.8rem 1rem;
+}
+
+.reader-toc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.reader-toc-item:hover {
+  background: rgba(0, 240, 255, 0.08);
+  color: #fff;
+  border-color: rgba(0, 240, 255, 0.2);
+  transform: translateX(3px);
+}
+
+.reader-toc-item.active {
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.18), rgba(0, 240, 255, 0.05));
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   BOOK TITLEPLATE HERO BANNER (ГЛАВНАЯ ВИНЬЕТКА КНИГИ)
+   ========================================================================== */
+.reader-book-hero-banner {
+  display: flex;
+  gap: 2.2rem;
+  align-items: center;
+  margin-bottom: 3.2rem;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, rgba(20, 28, 48, 0.75), rgba(10, 14, 25, 0.85));
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 240, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.reader-book-hero-banner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-cover-wrap {
+  flex-shrink: 0;
+  perspective: 600px;
+}
+
+.reader-hero-cover-img {
+  width: 125px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.2);
+  transform: rotateY(-8deg);
+  transition: transform 0.4s ease;
+}
+
+.reader-book-hero-banner:hover .reader-hero-cover-img {
+  transform: rotateY(0deg) scale(1.03);
+}
+
+.hero-details-wrap {
+  flex: 1;
+}
+
+.hero-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0.6rem;
 }
 
-.reader-meta-row {
+.hero-tag-badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 240, 255, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.hero-tag-badge.age-badge {
+  background: rgba(255, 0, 127, 0.15);
+  color: var(--accent-magenta);
+  border-color: rgba(255, 0, 127, 0.4);
+}
+
+.hero-tag-badge.year-badge {
+  background: rgba(255, 215, 0, 0.12);
+  color: var(--accent-gold);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.reader-hero-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  font-family: var(--font-serif);
+  line-height: 1.2;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.reader-hero-author {
+  font-size: 1.05rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+
+.reader-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  font-size: 0.82rem;
+}
+
+.reader-hero-stats .stat-pill {
+  padding: 0.3rem 0.75rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-full);
   color: var(--text-muted);
+}
+
+/* ==========================================================================
+   THE BOOK CANVAS & TYPOGRAPHY (.reader-article)
+   ========================================================================== */
+.reader-article {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 4rem 4rem 5rem;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  min-height: 75vh;
+  position: relative;
+}
+
+.reader-chapter-header-box {
+  text-align: center;
+  margin-bottom: 2.8rem;
+  padding-bottom: 1.8rem;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.chapter-ornament {
   font-size: 0.9rem;
+  letter-spacing: 4px;
+  color: var(--accent-cyan);
+  opacity: 0.7;
+  margin-bottom: 0.6rem;
 }
 
 .reader-chapter-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--accent-cyan);
-  margin-bottom: 1.8rem;
-  padding-left: 0.75rem;
-  border-left: 3px solid var(--accent-cyan);
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-family: var(--font-serif);
+  color: #fff;
+  letter-spacing: 0.5px;
 }
 
+/* Reader Typography Engine */
 .reader-text-body {
   font-size: 1.15rem;
-  line-height: 1.85;
-  color: var(--text-main);
+  line-height: 1.95;
+  color: #e2e8f0;
   text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 .reader-text-body p {
-  margin-bottom: 1.6rem;
-  text-indent: 1.5rem;
+  margin-bottom: 1.65rem;
+  text-indent: 1.8rem;
 }
 
-/* Optimized Manga Continuous Mode Blocks */
+/* Illuminated Drop Cap (Буквица в начале главы) */
+.reader-text-body > p:first-of-type::first-letter,
+.reader-page-mode > p:first-of-type::first-letter,
+#reader-body-content > p:first-of-type::first-letter,
+.manga-chapter-text > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.8rem;
+  line-height: 0.8;
+  padding-top: 0.2rem;
+  padding-right: 0.65rem;
+  padding-bottom: 0.1rem;
+  font-family: var(--font-serif);
+  font-weight: 900;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.45);
+}
+
+/* Continuous Manga Mode Blocks */
 .manga-chapter-block {
-  margin-bottom: 3.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  margin-bottom: 4rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
   content-visibility: auto;
   contain-intrinsic-size: 1px 750px;
 }
 
 .manga-chapter-title {
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 800;
+  font-family: var(--font-serif);
   color: var(--accent-cyan);
-  margin-bottom: 1.4rem;
-  padding: 0.5rem 0.8rem;
+  margin-bottom: 1.8rem;
+  padding: 0.6rem 1.2rem;
   background: rgba(0, 240, 255, 0.05);
   border-left: 4px solid var(--accent-cyan);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  letter-spacing: 0.5px;
+}
+
+.manga-chapter-text {
+  font-size: 1.15rem;
+  line-height: 1.95;
+  color: #e2e8f0;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 
 .manga-chapter-text p {
-  margin-bottom: 1.4rem;
-  line-height: 1.85;
-  text-indent: 1.5rem;
-  text-align: justify;
+  margin-bottom: 1.6rem;
+  text-indent: 1.8rem;
 }
 
-/* Reader Color Themes */
-.theme-oled .reader-article {
+/* ==========================================================================
+   COLOR THEMES PALETTE OVERHAUL
+   ========================================================================== */
+
+/* 1. Theme OLED (Истинный чёрный) */
+.theme-oled .reader-article,
+.theme-oled .reader-book-hero-banner {
   background: #000000;
   border-color: #1a1a1a;
-  color: #d1d5db;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+.theme-oled .reader-text-body,
+.theme-oled .manga-chapter-text {
+  color: #cbd5e1;
+}
+.theme-oled .reader-floating-island {
+  background: rgba(0, 0, 0, 0.94);
+  border-color: #222;
 }
 
-.theme-sepia .reader-article {
+/* 2. Theme Sepia (Тёплый винтажный янтарь) */
+.theme-sepia .reader-article,
+.theme-sepia .reader-book-hero-banner {
   background: #231c15;
   border-color: #3d2f21;
-  color: #f3e5ab;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
 }
-.theme-sepia .reader-chapter-title {
-  color: #ffaa00;
-  border-color: #ffaa00;
+.theme-sepia .reader-text-body,
+.theme-sepia .manga-chapter-text {
+  color: #f4ecd8;
+}
+.theme-sepia .reader-chapter-title,
+.theme-sepia .manga-chapter-title,
+.theme-sepia .chapter-ornament,
+.theme-sepia .reader-text-body > p:first-of-type::first-letter,
+.theme-sepia .reader-page-mode > p:first-of-type::first-letter,
+.theme-sepia #reader-body-content > p:first-of-type::first-letter,
+.theme-sepia .manga-chapter-text > p:first-of-type::first-letter {
+  color: #e0a96d;
+  text-shadow: 0 0 15px rgba(224, 169, 109, 0.3);
+  border-color: #e0a96d;
+}
+.theme-sepia .reader-floating-island {
+  background: rgba(28, 22, 16, 0.94);
+  border-color: #4a3826;
 }
 
-.theme-cyber .reader-article {
-  background: #060e14;
-  border-color: rgba(0, 255, 136, 0.3);
+/* 3. Theme Paper (Мягкая дневная бумага) */
+.theme-paper .reader-article,
+.theme-paper .reader-book-hero-banner {
+  background: #fbf8ef;
+  border-color: #e2d9c8;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.15);
+}
+.theme-paper .reader-text-body,
+.theme-paper .manga-chapter-text {
+  color: #1f2328;
+}
+.theme-paper .reader-hero-title,
+.theme-paper .reader-chapter-title {
+  color: #111827;
+}
+.theme-paper .reader-chapter-title,
+.theme-paper .manga-chapter-title,
+.theme-paper .chapter-ornament,
+.theme-paper .reader-text-body > p:first-of-type::first-letter,
+.theme-paper .reader-page-mode > p:first-of-type::first-letter,
+.theme-paper #reader-body-content > p:first-of-type::first-letter,
+.theme-paper .manga-chapter-text > p:first-of-type::first-letter {
+  color: #92400e;
+  text-shadow: none;
+  border-color: #92400e;
+}
+.theme-paper .reader-floating-island {
+  background: rgba(245, 240, 230, 0.96);
+  border-color: #d1c7b7;
+}
+.theme-paper .reader-island-btn {
+  color: #374151;
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+.theme-paper .reader-island-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000;
+}
+
+/* 4. Theme Cyber Matrix (Изумрудная матрица) */
+.theme-cyber .reader-article,
+.theme-cyber .reader-book-hero-banner {
+  background: #06110d;
+  border-color: rgba(0, 255, 136, 0.25);
+  box-shadow: 0 0 35px rgba(0, 255, 136, 0.1);
+}
+.theme-cyber .reader-text-body,
+.theme-cyber .manga-chapter-text {
   color: #a7f3d0;
   font-family: var(--font-mono);
 }
-.theme-cyber .reader-chapter-title {
+.theme-cyber .reader-chapter-title,
+.theme-cyber .manga-chapter-title,
+.theme-cyber .chapter-ornament,
+.theme-cyber .reader-text-body > p:first-of-type::first-letter,
+.theme-cyber .reader-page-mode > p:first-of-type::first-letter,
+.theme-cyber #reader-body-content > p:first-of-type::first-letter,
+.theme-cyber .manga-chapter-text > p:first-of-type::first-letter {
   color: var(--accent-green);
+  text-shadow: 0 0 16px rgba(0, 255, 136, 0.5);
   border-color: var(--accent-green);
 }
 
-.theme-paper .reader-article {
-  background: #fbf8ef;
-  border-color: #e2d9c8;
-  color: #2b2b2b;
+/* ==========================================================================
+   ZEN MODE (ПОЛНОЕ ПОГРУЖЕНИЕ БЕЗ ИНТЕРФЕЙСА)
+   ========================================================================== */
+.zen-mode-active .app-header,
+.zen-mode-active .reader-floating-island,
+.zen-mode-active .reader-floating-compass,
+.zen-mode-active .reader-nav-footer,
+.zen-mode-active .reader-book-hero-banner {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
-.theme-paper .reader-chapter-title {
-  color: #1a202c;
-  border-color: #1a202c;
+
+.zen-mode-active .reader-article {
+  border-color: transparent;
+  box-shadow: none;
+  padding-top: 5rem;
+}
+
+.zen-exit-pill {
+  position: fixed;
+  top: 18px;
+  right: 24px;
+  background: rgba(12, 18, 32, 0.94);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 0.45rem 1.1rem;
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.25);
+}
+.zen-mode-active .zen-exit-pill {
+  pointer-events: auto;
+  opacity: 0.9;
+}
+.zen-mode-active .zen-exit-pill:hover {
+  opacity: 1;
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.85), 0 0 25px rgba(0, 240, 255, 0.45);
+}
+  color: #fff;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+/* ==========================================================================
+   FLOATING BOTTOM COMPASS HUD
+   ========================================================================== */
+.reader-floating-compass {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  transition: all 0.25s ease;
+}
+
+.compass-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 1rem;
+  background: rgba(12, 18, 32, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: var(--radius-full);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+.compass-chapter-tag {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.compass-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.compass-progress-val {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+}
+
+.compass-quick-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.compass-quick-btn:hover {
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.15);
+}
+
+/* Chapter Navigation Footer */
+.reader-nav-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-glass);
+}
+
+.btn-nav-chapter {
+  padding: 0.75rem 1.6rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .reader-floating-island {
+    padding: 0.4rem 0.6rem;
+    top: 65px;
+  }
+  .reader-island-book-pill,
+  .reader-island-btn .btn-text {
+    display: none;
+  }
+  .reader-book-hero-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+    gap: 1.2rem;
+  }
+  .reader-hero-author {
+    justify-content: center;
+  }
+  .reader-hero-stats {
+    justify-content: center;
+  }
+  .reader-article {
+    padding: 2.5rem 1.2rem;
+  }
+  .reader-popover {
+    width: 290px;
+    right: -40px;
+  }
 }
 
 /* Chapter Navigation Footer */

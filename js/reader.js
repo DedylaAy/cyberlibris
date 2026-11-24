@@ -2,6 +2,8 @@
  * CyberLibris Reader & RSVP Speed Reading Suite
  */
 
+const DEFAULT_READER_COVER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 450' fill='%23111827'%3E%3Crect width='300' height='450' fill='%231b2838'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2366c0f4' font-size='64'%3E📖%3C/text%3E%3C/svg%3E";
+
 const CLASSIC_LEXICON = {
   'кибитка': {
     title: 'Кибитка',
@@ -243,17 +245,97 @@ class ReaderEngine {
     this.rsvpInterval = null;
     this.rsvpWpm = 350;
     this.isRsvpPlaying = false;
+
+    // Reader Appearance & UX State
+    this.fontSize = parseInt(localStorage.getItem('cyberlibris_reader_fontsize')) || 18;
+    this.fontFamily = localStorage.getItem('cyberlibris_reader_font') || 'serif';
+    this.readerWidth = localStorage.getItem('cyberlibris_reader_width') || 'normal';
+    this.readerTheme = localStorage.getItem('cyberlibris_reader_theme') || 'dark';
+    this.focusGuideActive = localStorage.getItem('cyberlibris_reader_focus_guide') === 'true';
+    this.isZenMode = false;
+    this._focusGuideBound = false;
   }
 
   init() {
     this.bindEvents();
     this.setupScrollTracker();
+    this.setupKeyboardShortcuts();
+    this.initReaderSettings();
+  }
+
+  initReaderSettings() {
+    this.setFontFamily(this.fontFamily, false);
+    this.setFontSize(this.fontSize, false);
+    this.setReaderWidth(this.readerWidth, false);
+    this.setReaderTheme(this.readerTheme, false);
+    this.toggleFocusGuide(this.focusGuideActive, false);
   }
 
   bindEvents() {
     // Font Size Controls
     document.getElementById('btn-font-dec')?.addEventListener('click', () => this.adjustFontSize(-2));
     document.getElementById('btn-font-inc')?.addEventListener('click', () => this.adjustFontSize(2));
+
+    const fontSlider = document.getElementById('reader-font-slider');
+    if (fontSlider) {
+      fontSlider.addEventListener('input', (e) => this.setFontSize(parseInt(e.target.value)));
+    }
+
+    // Font Family Chips
+    document.querySelectorAll('.font-chip').forEach((chip) => {
+      chip.addEventListener('click', (e) => {
+        const font = e.currentTarget.dataset.font;
+        if (font) this.setFontFamily(font);
+      });
+    });
+
+    // Width Chips
+    document.querySelectorAll('.width-chip').forEach((chip) => {
+      chip.addEventListener('click', (e) => {
+        const width = e.currentTarget.dataset.width;
+        if (width) this.setReaderWidth(width);
+      });
+    });
+
+    // Focus Guide Toggle
+    document.getElementById('toggle-focus-guide')?.addEventListener('change', (e) => {
+      this.toggleFocusGuide(e.target.checked);
+    });
+
+    // Popover Toggles
+    document.getElementById('btn-reader-appearance')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleAppearancePopover();
+    });
+    document.getElementById('btn-close-appearance')?.addEventListener('click', () => this.closeAppearancePopover());
+
+    document.getElementById('btn-reader-audio-panel')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleAudioPopover();
+    });
+    document.getElementById('btn-close-audio')?.addEventListener('click', () => this.closeAudioPopover());
+
+    // Stop popover clicks from bubbling
+    document.getElementById('reader-appearance-popover')?.addEventListener('click', (e) => e.stopPropagation());
+    document.getElementById('reader-audio-popover')?.addEventListener('click', (e) => e.stopPropagation());
+
+    // Table of Contents Drawer
+    document.getElementById('btn-open-toc')?.addEventListener('click', () => this.openTocDrawer());
+    document.getElementById('btn-compass-toc')?.addEventListener('click', () => this.openTocDrawer());
+    document.getElementById('btn-close-toc')?.addEventListener('click', () => this.closeTocDrawer());
+    document.getElementById('reader-toc-backdrop')?.addEventListener('click', () => this.closeTocDrawer());
+    document.getElementById('reader-toc-search-input')?.addEventListener('input', (e) => this.filterTocList(e.target.value));
+
+    // Zen Mode Toggles
+    document.getElementById('btn-toggle-zen-mode')?.addEventListener('click', () => this.toggleZenMode());
+    document.getElementById('btn-compass-zen')?.addEventListener('click', () => this.toggleZenMode());
+    document.getElementById('btn-exit-zen')?.addEventListener('click', () => this.toggleZenMode(false));
+
+    // Compass Quick Action: Aa Appearance
+    document.getElementById('btn-compass-appearance')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleAppearancePopover();
+    });
 
     // Manga vs Page mode toggle
     document.getElementById('btn-toggle-manga-mode')?.addEventListener('click', () => this.toggleReadingMode());
@@ -266,10 +348,12 @@ class ReaderEngine {
       });
     });
 
-    // Font Family
+    // Font Family Select (fallback)
     document.getElementById('reader-font-select')?.addEventListener('change', (e) => {
-      const body = document.getElementById('reader-body-content');
-      if (body) body.style.fontFamily = e.target.value;
+      const val = e.target.value;
+      if (val.includes('serif')) this.setFontFamily('serif');
+      else if (val.includes('sans')) this.setFontFamily('sans');
+      else if (val.includes('mono')) this.setFontFamily('mono');
     });
 
     // Ambient Audio Toggles
@@ -297,6 +381,26 @@ class ReaderEngine {
     document.getElementById('btn-tts-stop')?.addEventListener('click', () => this.stopTTS());
     document.getElementById('tts-rate-select')?.addEventListener('change', (e) => {
       this.narrator?.setRate(parseFloat(e.target.value));
+    });
+
+    // Dismiss popovers on outside click
+    document.addEventListener('click', (e) => {
+      const appPop = document.getElementById('reader-appearance-popover');
+      const appBtn = document.getElementById('btn-reader-appearance');
+      const appCompassBtn = document.getElementById('btn-compass-appearance');
+      const audPop = document.getElementById('reader-audio-popover');
+      const audBtn = document.getElementById('btn-reader-audio-panel');
+
+      if (appPop && appPop.style.display !== 'none') {
+        if (!appPop.contains(e.target) && !appBtn?.contains(e.target) && !appCompassBtn?.contains(e.target)) {
+          this.closeAppearancePopover();
+        }
+      }
+      if (audPop && audPop.style.display !== 'none') {
+        if (!audPop.contains(e.target) && !audBtn?.contains(e.target)) {
+          this.closeAudioPopover();
+        }
+      }
     });
 
     // RSVP Speed Reader trigger
@@ -542,6 +646,7 @@ class ReaderEngine {
             this.currentChapterIdx = idx;
             const selectEl = document.getElementById('reader-chapter-select');
             if (selectEl) selectEl.value = idx;
+            this.updateActiveChapterHeader();
             this.saveProgress();
           }
         }
@@ -632,8 +737,36 @@ class ReaderEngine {
     if (titleEl) titleEl.textContent = book.title;
     if (authorEl) authorEl.textContent = book.author;
 
+    // Floating Island Info
+    const islandThumb = document.getElementById('reader-island-thumb');
+    const islandTitle = document.getElementById('reader-island-title');
+    const islandAuthor = document.getElementById('reader-island-author');
+    if (islandThumb) islandThumb.src = book.cover || DEFAULT_READER_COVER;
+    if (islandTitle) islandTitle.textContent = book.title;
+    if (islandAuthor) islandAuthor.textContent = book.author;
+
+    // Hero Banner Elements
+    const heroCover = document.getElementById('reader-hero-cover-img');
+    const heroGenre = document.getElementById('reader-hero-genre-badge');
+    const heroAge = document.getElementById('reader-hero-age-badge');
+    const heroYear = document.getElementById('reader-hero-year-badge');
+    const heroChapters = document.getElementById('reader-hero-chapters-count');
+
+    if (heroCover) heroCover.src = book.cover || DEFAULT_READER_COVER;
+    if (heroGenre) heroGenre.textContent = book.genre || 'Классика';
+    if (heroAge) heroAge.textContent = book.ageLimit ? `${book.ageLimit}+` : (book.age || '12+');
+    if (heroYear) heroYear.textContent = book.year ? `${book.year} г.` : 'Классика';
+    if (heroChapters) heroChapters.textContent = `${book.chapters?.length || 1} глав`;
+
+    // TOC Drawer Book Title
+    const tocBookTitle = document.getElementById('reader-toc-book-title');
+    if (tocBookTitle) tocBookTitle.textContent = book.title;
+
     const modeBtn = document.getElementById('btn-toggle-manga-mode');
-    if (modeBtn) {
+    const modeLabel = document.getElementById('reader-mode-label');
+    if (modeLabel) {
+      modeLabel.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
+    } else if (modeBtn) {
       modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
     }
 
@@ -656,8 +789,12 @@ class ReaderEngine {
       this.currentChapterIdx = Math.max(0, (book.chapters?.length || 1) - 1);
     }
 
+    if (heroChapters) heroChapters.textContent = `${book.chapters?.length || 1} глав`;
+
     this.updateRelayBadge();
     this.updateChapterDropdown();
+    this.updateActiveChapterHeader();
+    this.renderTocList();
     this.renderContent();
 
     // If resumed from previous reading progress
@@ -764,6 +901,8 @@ class ReaderEngine {
     const chapters = this.currentBook.chapters || [];
     if (idx >= 0 && idx < chapters.length) {
       this.currentChapterIdx = idx;
+      this.updateActiveChapterHeader();
+      this.renderTocList();
       this.saveProgress();
       if (this.readingMode === 'manga') {
         const el = document.getElementById(`chapter-block-${idx}`);
@@ -804,7 +943,10 @@ class ReaderEngine {
   toggleReadingMode() {
     this.readingMode = this.readingMode === 'manga' ? 'page' : 'manga';
     const modeBtn = document.getElementById('btn-toggle-manga-mode');
-    if (modeBtn) {
+    const modeLabel = document.getElementById('reader-mode-label');
+    if (modeLabel) {
+      modeLabel.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
+    } else if (modeBtn) {
       modeBtn.innerHTML = this.readingMode === 'manga' ? '📜 Режим: Лента (Манга-скролл)' : '📖 Режим: По главам';
     }
     this.saveProgress();
@@ -822,12 +964,13 @@ class ReaderEngine {
 
     if (!bodyEl) return;
     if (selectEl) selectEl.value = this.currentChapterIdx;
+    this.updateActiveChapterHeader();
 
     if (this.readingMode === 'manga') {
       if (chapterEl) chapterEl.textContent = `Непрерывная лента (${chapters.length} глав)`;
       if (navControls) navControls.style.display = 'none';
 
-      bodyEl.className = 'reader-manga-mode';
+      bodyEl.className = 'reader-text-body reader-manga-mode';
       bodyEl.innerHTML = chapters.map((ch, idx) => `
         <div class="manga-chapter-block" id="chapter-block-${idx}" data-idx="${idx}">
           <div class="manga-chapter-title">${ch.title}</div>
@@ -841,7 +984,7 @@ class ReaderEngine {
       const chapter = chapters[this.currentChapterIdx] || { title: 'Глава 1', content: 'Текст отсутствует.' };
       if (chapterEl) chapterEl.textContent = chapter.title;
 
-      bodyEl.className = 'reader-page-mode';
+      bodyEl.className = 'reader-text-body reader-page-mode';
       bodyEl.innerHTML = chapter.content
         .split('\n\n')
         .filter((p) => p.trim())
@@ -927,20 +1070,303 @@ class ReaderEngine {
     }, 1000);
   }
 
-  adjustFontSize(delta) {
-    const el = document.getElementById('reader-body-content');
-    if (!el) return;
-    const current = parseInt(window.getComputedStyle(el).fontSize) || 18;
-    const next = Math.max(13, Math.min(32, current + delta));
-    el.style.fontSize = `${next}px`;
+  setFontFamily(family, save = true) {
+    this.fontFamily = family;
+    if (save) localStorage.setItem('cyberlibris_reader_font', family);
+
+    let fontVar = 'var(--font-serif)';
+    if (family === 'sans') fontVar = 'var(--font-sans)';
+    if (family === 'mono') fontVar = 'var(--font-mono)';
+
+    const bodyEl = document.getElementById('reader-body-content');
+    if (bodyEl) bodyEl.style.fontFamily = fontVar;
+
+    const articleEl = document.getElementById('reader-article-body');
+    if (articleEl) articleEl.style.fontFamily = fontVar;
+
+    document.querySelectorAll('.font-chip').forEach((chip) => {
+      chip.classList.toggle('active', chip.dataset.font === family);
+    });
+
+    const fontSelect = document.getElementById('reader-font-select');
+    if (fontSelect) fontSelect.value = fontVar;
   }
 
-  setReaderTheme(themeName) {
+  setFontSize(size, save = true) {
+    this.fontSize = Math.max(14, Math.min(28, size));
+    if (save) localStorage.setItem('cyberlibris_reader_fontsize', this.fontSize);
+
+    const bodyEl = document.getElementById('reader-body-content');
+    if (bodyEl) bodyEl.style.fontSize = `${this.fontSize}px`;
+
+    const slider = document.getElementById('reader-font-slider');
+    if (slider) slider.value = this.fontSize;
+
+    const valEl = document.getElementById('reader-font-size-val');
+    if (valEl) valEl.textContent = `${this.fontSize}px`;
+  }
+
+  adjustFontSize(delta) {
+    this.setFontSize(this.fontSize + delta);
+  }
+
+  setReaderWidth(width, save = true) {
+    this.readerWidth = width;
+    if (save) localStorage.setItem('cyberlibris_reader_width', width);
+
+    const box = document.getElementById('reader-container-box');
+    if (box) {
+      box.classList.remove('reader-width-narrow', 'reader-width-normal', 'reader-width-wide');
+      box.classList.add(`reader-width-${width}`);
+    }
+
+    document.querySelectorAll('.width-chip').forEach((chip) => {
+      chip.classList.toggle('active', chip.dataset.width === width);
+    });
+  }
+
+  setReaderTheme(themeName, save = true) {
+    this.readerTheme = themeName;
+    if (save) localStorage.setItem('cyberlibris_reader_theme', themeName);
+
     const container = document.getElementById('reader-container-box');
-    if (!container) return;
-    container.className = `reader-container theme-${themeName}`;
+    if (container) {
+      const filtered = Array.from(container.classList).filter((c) => !c.startsWith('theme-'));
+      filtered.push(`theme-${themeName}`);
+      container.className = filtered.join(' ');
+    }
+
     document.querySelectorAll('.btn-reader-theme').forEach((b) => {
       b.classList.toggle('active', b.dataset.theme === themeName);
+    });
+  }
+
+  toggleFocusGuide(enable, save = true) {
+    this.focusGuideActive = typeof enable === 'boolean' ? enable : !this.focusGuideActive;
+    if (save) localStorage.setItem('cyberlibris_reader_focus_guide', this.focusGuideActive);
+
+    const guide = document.getElementById('reader-focus-guide');
+    const checkbox = document.getElementById('toggle-focus-guide');
+    if (checkbox) checkbox.checked = this.focusGuideActive;
+
+    if (!guide) return;
+    if (this.focusGuideActive) {
+      guide.style.display = 'block';
+      if (!this._focusGuideBound) {
+        this._focusGuideHandler = (e) => {
+          if (this.focusGuideActive && document.getElementById('view-reader')?.classList.contains('active')) {
+            guide.style.top = `${e.clientY - 19}px`;
+          }
+        };
+        window.addEventListener('mousemove', this._focusGuideHandler, { passive: true });
+        this._focusGuideBound = true;
+      }
+    } else {
+      guide.style.display = 'none';
+    }
+  }
+
+  toggleAppearancePopover(forceState) {
+    const pop = document.getElementById('reader-appearance-popover');
+    if (!pop) return;
+    const isVisible = pop.style.display !== 'none';
+    const next = typeof forceState === 'boolean' ? forceState : !isVisible;
+    if (next) {
+      this.closeAudioPopover();
+      pop.style.display = 'block';
+    } else {
+      pop.style.display = 'none';
+    }
+  }
+
+  closeAppearancePopover() {
+    const pop = document.getElementById('reader-appearance-popover');
+    if (pop) pop.style.display = 'none';
+  }
+
+  toggleAudioPopover(forceState) {
+    const pop = document.getElementById('reader-audio-popover');
+    if (!pop) return;
+    const isVisible = pop.style.display !== 'none';
+    const next = typeof forceState === 'boolean' ? forceState : !isVisible;
+    if (next) {
+      this.closeAppearancePopover();
+      pop.style.display = 'block';
+    } else {
+      pop.style.display = 'none';
+    }
+  }
+
+  closeAudioPopover() {
+    const pop = document.getElementById('reader-audio-popover');
+    if (pop) pop.style.display = 'none';
+  }
+
+  closeAllPopovers() {
+    this.closeAppearancePopover();
+    this.closeAudioPopover();
+  }
+
+  openTocDrawer() {
+    this.closeAllPopovers();
+    const drawer = document.getElementById('reader-toc-drawer');
+    const backdrop = document.getElementById('reader-toc-backdrop');
+    if (drawer) drawer.classList.add('active');
+    if (backdrop) backdrop.classList.add('active');
+    const input = document.getElementById('reader-toc-search-input');
+    if (input) {
+      input.value = '';
+      setTimeout(() => input.focus(), 150);
+    }
+    this.renderTocList();
+  }
+
+  closeTocDrawer() {
+    const drawer = document.getElementById('reader-toc-drawer');
+    const backdrop = document.getElementById('reader-toc-backdrop');
+    if (drawer) drawer.classList.remove('active');
+    if (backdrop) backdrop.classList.remove('active');
+  }
+
+  renderTocList(filterQuery = '') {
+    const listEl = document.getElementById('reader-toc-list');
+    if (!listEl || !this.currentBook) return;
+    const chapters = this.currentBook.chapters || [];
+    const query = (filterQuery || '').trim().toLowerCase();
+
+    const filtered = chapters.map((ch, idx) => ({ ...ch, originalIdx: idx })).filter((ch) => {
+      if (!query) return true;
+      return ch.title.toLowerCase().includes(query) || `глава ${ch.originalIdx + 1}`.includes(query);
+    });
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem; color: var(--text-dim); font-size: 0.85rem;">
+          🔍 Главы по запросу «${filterQuery}» не найдены
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map((ch) => {
+      const isActive = ch.originalIdx === this.currentChapterIdx;
+      const numStr = (ch.originalIdx + 1) < 10 ? `0${ch.originalIdx + 1}` : `${ch.originalIdx + 1}`;
+      return `
+        <div class="reader-toc-item ${isActive ? 'active' : ''}" data-idx="${ch.originalIdx}">
+          <div style="display: flex; align-items: center; gap: 0.8rem; overflow: hidden;">
+            <span style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-cyan); font-weight: 700; opacity: 0.85;">${numStr}</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${ch.title}</span>
+          </div>
+          ${isActive ? '<span style="font-size: 0.72rem; color: var(--accent-cyan); font-weight: 800; letter-spacing: 0.5px;">ЧИТАЕТСЯ</span>' : ''}
+        </div>
+      `;
+    }).join('');
+
+    listEl.querySelectorAll('.reader-toc-item').forEach((item) => {
+      item.addEventListener('click', () => {
+        const idx = parseInt(item.dataset.idx);
+        if (!isNaN(idx)) {
+          this.jumpToChapter(idx);
+          this.closeTocDrawer();
+        }
+      });
+    });
+  }
+
+  filterTocList(query) {
+    this.renderTocList(query);
+  }
+
+  toggleZenMode(forceState) {
+    const next = typeof forceState === 'boolean' ? forceState : !this.isZenMode;
+    this.isZenMode = next;
+    document.body.classList.toggle('zen-mode-active', this.isZenMode);
+
+    if (this.isZenMode) {
+      this.closeAllPopovers();
+      this.closeTocDrawer();
+      window.app?.showToast?.('🧘 Дзен-режим активирован. Нажмите Esc для выхода.', 'info');
+    } else {
+      window.app?.showToast?.('Выход из Дзен-режима', 'info');
+    }
+  }
+
+  updateActiveChapterHeader() {
+    if (!this.currentBook) return;
+    const chapters = this.currentBook.chapters || [];
+    const ch = chapters[this.currentChapterIdx];
+    const chNum = this.currentChapterIdx + 1;
+    const titleText = ch ? ch.title : `Глава ${chNum}`;
+
+    const islandName = document.getElementById('reader-active-chapter-name');
+    if (islandName) islandName.textContent = titleText;
+
+    const compassTag = document.getElementById('compass-chapter-tag');
+    if (compassTag) compassTag.textContent = `Гл. ${chNum}`;
+
+    const navProgress = document.getElementById('reader-nav-progress-text');
+    if (navProgress) navProgress.textContent = `Глава ${chNum} из ${chapters.length}`;
+
+    const selectEl = document.getElementById('reader-chapter-select');
+    if (selectEl) selectEl.value = this.currentChapterIdx;
+  }
+
+  setupKeyboardShortcuts() {
+    window.addEventListener('keydown', (e) => {
+      if (!document.getElementById('view-reader')?.classList.contains('active')) return;
+
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+        if (e.key === 'Escape') {
+          document.activeElement.blur();
+        }
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        const appearancePop = document.getElementById('reader-appearance-popover');
+        const audioPop = document.getElementById('reader-audio-popover');
+        const tocDrawer = document.getElementById('reader-toc-drawer');
+
+        if (appearancePop && appearancePop.style.display !== 'none') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          this.closeAppearancePopover();
+          return;
+        }
+        if (audioPop && audioPop.style.display !== 'none') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          this.closeAudioPopover();
+          return;
+        }
+        if (tocDrawer && tocDrawer.classList.contains('active')) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          this.closeTocDrawer();
+          return;
+        }
+        if (this.isZenMode || document.body.classList.contains('zen-mode-active')) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          this.toggleZenMode(false);
+          return;
+        }
+      }
+
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        if (this.readingMode === 'page') {
+          e.preventDefault();
+          this.nextChapter();
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        if (this.readingMode === 'page') {
+          e.preventDefault();
+          this.prevChapter();
+        }
+      } else if (e.key.toLowerCase() === 'z') {
+        this.toggleZenMode();
+      }
     });
   }
 

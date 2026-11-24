@@ -2981,6 +2981,28 @@ class AppController {
         }
         if (this.currentView === 'reader') {
           e.preventDefault();
+          // 1. If Zen Mode is active, exit Zen Mode first
+          if (document.body.classList.contains('zen-mode-active')) {
+            window.readerEngine?.toggleZenMode?.(false);
+            return;
+          }
+          // 2. If TOC Drawer is open, close TOC Drawer
+          const tocDrawer = document.getElementById('reader-toc-drawer');
+          if (tocDrawer && tocDrawer.classList.contains('active')) {
+            window.readerEngine?.closeTocDrawer?.();
+            return;
+          }
+          // 3. If popovers are open, close them
+          const appPop = document.getElementById('reader-appearance-popover');
+          if (appPop && appPop.style.display !== 'none') {
+            window.readerEngine?.closeAppearancePopover?.();
+            return;
+          }
+          const audPop = document.getElementById('reader-audio-popover');
+          if (audPop && audPop.style.display !== 'none') {
+            window.readerEngine?.closeAudioPopover?.();
+            return;
+          }
           this.returnFromReader();
           return;
         }
