@@ -471,17 +471,27 @@
         <ul class="nav-menu">
           <li class="nav-item">
             <button class="nav-btn active magnetic-btn" data-view="library">
+              <span class="icon">🏪</span> Магазин
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-btn magnetic-btn" data-view="steam-library">
               <span class="icon">📚</span> Библиотека
             </button>
           </li>
           <li class="nav-item">
+            <button class="nav-btn magnetic-btn" data-view="community">
+              <span class="icon">👥</span> Сообщество
+            </button>
+          </li>
+          <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="games">
-              <span class="icon">🎮</span> Игровой Зал
+              <span class="icon">🎮</span> Игры
             </button>
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="shop">
-              <span class="icon">🛍️</span> Гардероб & Магазин
+              <span class="icon">🛍️</span> Предметы
             </button>
           </li>
           <li class="nav-item">
@@ -497,7 +507,7 @@
           <!-- Admin Panel Button: Strictly visible ONLY to Admin, Owner, Creator! -->
           <li class="nav-item admin-only">
             <button class="nav-btn magnetic-btn" data-view="admin" style="color: var(--accent-gold);">
-              <span class="icon">⚡</span> Админ-Панель
+              <span class="icon">⚡</span> Админ
             </button>
           </li>
         </ul>
@@ -515,9 +525,13 @@
           <div class="theme-palette-dropdown" id="theme-palette-dropdown">
             <div class="theme-dropdown-header">
               <span>Палитра атмосферы</span>
-              <span class="theme-count-badge">8 тем</span>
+              <span class="theme-count-badge">9 тем</span>
             </div>
             <div class="theme-swatches-grid" id="theme-swatches-grid">
+              <button class="theme-swatch-item" data-theme="theme-steam" title="Классический Steam: глубокий индиго, стальной синий и зелёный">
+                <span class="theme-color-circle" style="background: linear-gradient(135deg, #1b2838, #66c0f4);"></span>
+                <span class="theme-swatch-name">Steam</span>
+              </button>
               <button class="theme-swatch-item active" data-theme="theme-cyberpunk" title="Киберпанк: неон, бирюза и фуксия">
                 <span class="theme-color-circle" style="background: linear-gradient(135deg, #00f0ff, #ff007f);"></span>
                 <span class="theme-swatch-name">Киберпанк</span>
@@ -807,6 +821,70 @@
             </div>
           </div>
           <div id="daily-quests-container"></div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW: STEAM 2-COLUMN LIBRARY (БИБЛИОТЕКА STEAM)
+           =================================================================== -->
+      <section id="view-steam-library" class="view-section">
+        <div class="steam-lib-layout">
+          <!-- Left Column: Masterpiece Books Sidebar -->
+          <aside class="steam-lib-sidebar">
+            <div class="steam-sidebar-header">
+              <div class="steam-sidebar-search-box">
+                <span style="color: #66c0f4;">🔍</span>
+                <input type="text" id="steam-lib-search-input" class="steam-sidebar-input" placeholder="Поиск в коллекции...">
+                <button id="btn-steam-lib-clear-search" class="steam-clear-btn" style="display:none;">✕</button>
+              </div>
+              <div class="steam-collections-bar">
+                <button class="steam-col-tab active" data-steam-filter="all">Все (<span id="steam-count-all">26</span>)</button>
+                <button class="steam-col-tab" data-steam-filter="reading">Читаю (<span id="steam-count-reading">0</span>)</button>
+                <button class="steam-col-tab" data-steam-filter="fav">Избранное (<span id="steam-count-fav">0</span>)</button>
+              </div>
+            </div>
+            <div class="steam-lib-list" id="steam-lib-list">
+              <!-- Populated dynamically with book rows -->
+            </div>
+          </aside>
+
+          <!-- Right Column: Steam Game / Book Hub Dashboard -->
+          <main class="steam-lib-content" id="steam-lib-content">
+            <!-- Dynamically populated selected book dashboard -->
+          </main>
+        </div>
+      </section>
+
+      <!-- ===================================================================
+           VIEW: STEAM COMMUNITY & REVIEWS (СООБЩЕСТВО STEAM)
+           =================================================================== -->
+      <section id="view-community" class="view-section">
+        <div class="community-hero-banner">
+          <div class="community-hero-content">
+            <div class="steam-hub-tag">ЦЕНТР СООБЩЕСТВА</div>
+            <h2>👥 Литературное Сообщество & Обзоры Читателей</h2>
+            <p>Честные отзывы, рекомендации схоластов, дискуссии и эссе по классическим шедеврам мировой литературы.</p>
+          </div>
+          <button class="btn btn-primary magnetic-btn" id="btn-community-write-review">
+            ✎ Написать свой обзор
+          </button>
+        </div>
+
+        <!-- Community Filters -->
+        <div class="community-filters-bar">
+          <div class="community-tabs">
+            <button class="community-tab active" data-comm-filter="all">Все обзоры</button>
+            <button class="community-tab" data-comm-filter="recommended">Только рекомендуют 👍</button>
+            <button class="community-tab" data-comm-filter="recent">Свежие публикации</button>
+          </div>
+          <div class="community-stats-badge" id="community-reviews-count-badge">
+            Всего обзоров: <strong>24</strong>
+          </div>
+        </div>
+
+        <!-- Community Reviews Grid -->
+        <div class="community-reviews-grid" id="community-reviews-grid">
+          <!-- Populated dynamically -->
         </div>
       </section>
 

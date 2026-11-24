@@ -18,6 +18,9 @@ class AppController {
     this.selectedFormat = 'all';
     this.selectedDifficulty = 'all';
     this.searchQuery = '';
+    this.activeSteamBookId = 'war_and_peace';
+    this.steamLibFilter = 'all';
+    this.steamLibSearchQuery = '';
 
     // Steam Carousel State (Slower, 10s intervals for smooth relaxed viewing)
     this.carouselIndex = 0;
@@ -130,7 +133,9 @@ class AppController {
       this.pauseCarouselTimer();
     }
 
-    if (viewName === 'games') window.miniGames.switchGame(window.miniGames.currentGame);
+    if (viewName === 'steam-library') this.renderSteamLibrary(this.activeSteamBookId || 'war_and_peace');
+    else if (viewName === 'community') this.renderCommunityFeed();
+    else if (viewName === 'games') window.miniGames.switchGame(window.miniGames.currentGame);
     else if (viewName === 'shop') window.miniGames.renderShopCategory('frames');
     else if (viewName === 'leaderboard') this.renderLeaderboard();
     else if (viewName === 'profile') this.renderProfile();
@@ -508,15 +513,24 @@ class AppController {
           <p class="steam-book-desc">${b.synopsis || b.quote}</p>
           <div class="steam-book-meta">
             <span class="book-genre-pill">${b.genre}</span>
-            <span class="book-read-time">⭐ ${b.rating} | ${b.chapters ? b.chapters.length : 1} глав (~${b.lengthPages} стр.)</span>
+            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem;">👍 98% (Steam)</span>
           </div>
-          <div style="margin-top: 0.8rem; display: flex; gap: 0.5rem;">
-            <button class="btn btn-primary btn-block btn-open-card" data-book-id="${b.id}">
+          <div style="margin-top: 0.8rem; display: flex; gap: 0.4rem;">
+            <button class="btn btn-steam-play btn-sm btn-to-steam-lib" style="padding: 0.55rem 0.9rem; font-size: 0.82rem;" data-book-id="${b.id}">
+              ▶ В Библиотеку
+            </button>
+            <button class="btn btn-secondary btn-sm btn-open-card" style="flex:1;" data-book-id="${b.id}">
               ${buttonLabel}
             </button>
           </div>
         </div>
       `;
+
+      card.querySelector('.btn-to-steam-lib')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.activeSteamBookId = b.id;
+        this.switchView('steam-library');
+      });
 
       // Clicking ANYWHERE on the card opens the full Book Dossier modal
       card.addEventListener('click', () => {
@@ -527,6 +541,410 @@ class AppController {
     });
 
     this.bindTiltEffect();
+  }
+
+  // =========================================================================
+  // STEAM 2-PANE LIBRARY & COMMUNITY FEED ENGINE
+  // =========================================================================
+
+  renderSteamLibrary(selectedBookId) {
+    const listEl = document.getElementById('steam-lib-list');
+    const searchInput = document.getElementById('steam-lib-search-input');
+    const clearBtn = document.getElementById('btn-steam-lib-clear-search');
+    const countAll = document.getElementById('steam-count-all');
+    const countReading = document.getElementById('steam-count-reading');
+    const countFav = document.getElementById('steam-count-fav');
+    if (!listEl) return;
+
+    const allBooks = window.bookRelay.getAllBooks();
+    const user = window.auth.currentUser;
+    const favs = user?.shelves?.favorites || [];
+
+    let readingCount = 0;
+    allBooks.forEach(b => {
+      const saved = window.readerEngine?.getSavedProgress?.(b.id);
+      if (saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0) {
+        readingCount++;
+      }
+    });
+
+    if (countAll) countAll.textContent = allBooks.length;
+    if (countReading) countReading.textContent = readingCount;
+    if (countFav) countFav.textContent = favs.length;
+
+    const filter = this.steamLibFilter || 'all';
+    const query = (this.steamLibSearchQuery || '').toLowerCase().trim();
+
+    const filtered = allBooks.filter(b => {
+      if (filter === 'reading') {
+        const saved = window.readerEngine?.getSavedProgress?.(b.id);
+        if (!saved || typeof saved.currentChapter !== 'number' || saved.currentChapter <= 0) return false;
+      } else if (filter === 'fav') {
+        if (!favs.includes(b.id)) return false;
+      }
+      if (query) {
+        return b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query) || (b.genre && b.genre.toLowerCase().includes(query));
+      }
+      return true;
+    });
+
+    listEl.innerHTML = '';
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div style="color: #6a7b92; font-size: 0.85rem; padding: 1.5rem; text-align: center;">Ничего не найдено в этой коллекции.</div>';
+    } else {
+      filtered.forEach(b => {
+        const saved = window.readerEngine?.getSavedProgress?.(b.id);
+        const hasProg = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
+        const currentActive = (selectedBookId || this.activeSteamBookId || filtered[0].id);
+        const isCurrent = (b.id === currentActive);
+
+        const item = document.createElement('div');
+        item.className = `steam-lib-item ${isCurrent ? 'active' : ''}`;
+        item.dataset.bookId = b.id;
+        item.innerHTML = `
+          <img src="${b.coverImage}" class="steam-lib-item-icon" alt="" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
+          <div class="steam-lib-item-info">
+            <span class="steam-lib-item-title">${b.title}</span>
+            <div class="steam-lib-item-meta">
+              <span>${b.author}</span>
+              ${hasProg ? `<span class="steam-lib-badge-active">Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>` : `<span>${b.chapters?.length || 1} глав</span>`}
+            </div>
+          </div>
+        `;
+
+        item.addEventListener('click', () => {
+          this.selectSteamBook(b.id);
+        });
+
+        listEl.appendChild(item);
+      });
+    }
+
+    // Bind collection tabs
+    document.querySelectorAll('.steam-col-tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.steam-col-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        this.steamLibFilter = tab.dataset.steamFilter;
+        this.renderSteamLibrary(this.activeSteamBookId);
+      };
+    });
+
+    // Bind search
+    if (searchInput && !searchInput.dataset.bound) {
+      searchInput.dataset.bound = 'true';
+      searchInput.addEventListener('input', (e) => {
+        this.steamLibSearchQuery = e.target.value;
+        if (clearBtn) clearBtn.style.display = this.steamLibSearchQuery ? 'block' : 'none';
+        this.renderSteamLibrary(this.activeSteamBookId);
+      });
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          this.steamLibSearchQuery = '';
+          clearBtn.style.display = 'none';
+          this.renderSteamLibrary(this.activeSteamBookId);
+        });
+      }
+    }
+
+    const initialBook = (selectedBookId || this.activeSteamBookId || (filtered[0] ? filtered[0].id : allBooks[0].id));
+    this.selectSteamBook(initialBook);
+  }
+
+  selectSteamBook(bookId) {
+    const book = window.bookRelay.getBookById(bookId);
+    const contentEl = document.getElementById('steam-lib-content');
+    if (!book || !contentEl) return;
+
+    this.activeSteamBookId = bookId;
+
+    document.querySelectorAll('.steam-lib-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.bookId === bookId);
+    });
+
+    const saved = window.readerEngine?.getSavedProgress?.(book.id);
+    const hasProgress = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
+    const currentChapter = hasProgress ? saved.currentChapter : 0;
+    const progressPercent = hasProgress ? (saved.progressPercent || 0) : 0;
+    const chapters = book.chapters || [];
+
+    const user = window.auth.currentUser;
+    const isFav = user?.shelves?.favorites?.includes(book.id);
+    const hoursRead = hasProgress ? ((saved.currentChapter + 1) * 0.45).toFixed(1) : (book.lengthPages > 500 ? '4.8' : '2.1');
+
+    contentEl.innerHTML = `
+      <!-- Steam Hero Backdrop -->
+      <div class="steam-hero-backdrop">
+        <img src="${book.coverImage}" class="steam-hero-bg-img" alt="">
+        <div class="steam-hero-gradient"></div>
+        <div class="steam-hero-content">
+          <div class="steam-hero-cover-wrap">
+            <img src="${book.coverImage}" alt="${book.title}" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
+          </div>
+          <div class="steam-hero-info">
+            <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
+              <span class="rarity-pill ${book.rarity === 'legendary' ? 'rarity-pill-legendary' : book.rarity === 'masterpiece' ? 'rarity-pill-masterpiece' : 'rarity-pill-epic'}">${book.rarityLabel || 'ШЕДЕВР'}</span>
+              <span class="book-genre-pill">${book.genre}</span>
+              <span style="color: #6a7b92; font-size: 0.82rem; font-weight: 700;">ГОД: ${book.year}</span>
+            </div>
+            <h1 class="steam-hero-title">${book.title}</h1>
+            <div class="steam-hero-author">✍ ${book.author}</div>
+            <div class="steam-review-summary-row">
+              <span class="steam-review-label">ОБЗОРЫ ПОЛЬЗОВАТЕЛЕЙ:</span>
+              <span class="steam-review-score-positive">👍 КРАЙНЕ ПОЛОЖИТЕЛЬНЫЕ (98% из 2,410 обзоров)</span>
+            </div>
+            <div class="steam-action-row">
+              <button class="btn-steam-play" id="btn-steam-launch-game">
+                ▶ ${hasProgress ? `ПРОДОЛЖИТЬ (ГЛ. ${currentChapter + 1})` : 'ЧИТАТЬ СЕЙЧАС'}
+              </button>
+              <button class="btn-steam-secondary" id="btn-steam-toggle-favorite">
+                ${isFav ? '★ В ИЗБРАННОМ' : '☆ В ИЗБРАННОЕ'}
+              </button>
+              <button class="btn-steam-secondary" id="btn-steam-view-dossier">
+                ℹ️ ДОСЬЕ ИЗДАНИЯ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Steam Stats Bar -->
+      <div class="steam-stats-bar">
+        <div class="steam-stat-item">
+          <div class="steam-stat-header">ПОСЛЕДНИЙ ЗАПУСК</div>
+          <div class="steam-stat-value">${hasProgress ? 'Сегодня' : 'Никогда'}</div>
+        </div>
+        <div class="steam-stat-item">
+          <div class="steam-stat-header">ВРЕМЯ В ЧТЕНИИ</div>
+          <div class="steam-stat-value steam-stat-highlight">${hoursRead} ч.</div>
+        </div>
+        <div class="steam-stat-item">
+          <div class="steam-stat-header">ПРОГРЕСС СЮЖЕТА</div>
+          <div class="steam-stat-value">Гл. ${currentChapter + 1} (${progressPercent}%)</div>
+        </div>
+        <div class="steam-stat-item">
+          <div class="steam-stat-header">ДОСТИЖЕНИЯ В КНИГЕ</div>
+          <div class="steam-stat-value" style="color: #66c0f4;">4 / 6 (67%)</div>
+        </div>
+      </div>
+
+      <!-- Main Body Container -->
+      <div class="steam-body-content">
+        <!-- Synopsis & Tags -->
+        <div class="steam-synopsis-box">
+          <div class="steam-section-heading">О ПРОИЗВЕДЕНИИ</div>
+          <p style="font-size: 1.05rem; line-height: 1.6; color: #c7d5e0; margin-bottom: 1rem;">
+            ${book.synopsis || book.quote || 'Великое произведение мировой классической литературы.'}
+          </p>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <span class="remanga-chip active">#Шедевр</span>
+            <span class="remanga-chip active">#МироваяКлассика</span>
+            <span class="remanga-chip active">#${book.genre.replace(/\s+/g, '')}</span>
+            <span class="remanga-chip active">#ГлубокийСюжет</span>
+            <span class="remanga-chip active">#ZeroStorageRelay</span>
+          </div>
+        </div>
+
+        <!-- Steam Achievements in Book -->
+        <div>
+          <div class="steam-section-heading">
+            <span>🏆 ДОСТИЖЕНИЯ STEAM</span>
+            <span style="font-size: 0.85rem; color: #66c0f4;">4 из 6 разблокировано</span>
+          </div>
+          <div class="steam-achievements-row">
+            <div class="steam-ach-card">
+              <span class="steam-ach-icon">📖</span>
+              <div>
+                <div class="steam-ach-name">Первая Страница</div>
+                <div class="steam-ach-desc">Открыта первая глава произведения</div>
+              </div>
+            </div>
+            <div class="steam-ach-card">
+              <span class="steam-ach-icon">👑</span>
+              <div>
+                <div class="steam-ach-name">Покоритель Фолиантов</div>
+                <div class="steam-ach-desc">Изучено более 500 страниц</div>
+              </div>
+            </div>
+            <div class="steam-ach-card">
+              <span class="steam-ach-icon">⚔️</span>
+              <div>
+                <div class="steam-ach-name">Мастер Мысли</div>
+                <div class="steam-ach-desc">Завершено 5 ключевых глав</div>
+              </div>
+            </div>
+            <div class="steam-ach-card">
+              <span class="steam-ach-icon">🕯️</span>
+              <div>
+                <div class="steam-ach-name">Ночной Схоласт</div>
+                <div class="steam-ach-desc">Чтение в атмосфере полуночи</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table of Contents & Quick Chapters Launch -->
+        <div>
+          <div class="steam-section-heading">
+            <span>📚 ГЛАВЫ ПРОИЗВЕДЕНИЯ (${chapters.length})</span>
+            <span style="font-size: 0.85rem; color: #8e9bb0;">Нажмите на любую главу для быстрого перехода</span>
+          </div>
+          <div class="steam-chapters-grid">
+            ${chapters.map((ch, idx) => `
+              <button class="steam-chapter-btn ${idx === currentChapter ? 'is-current' : ''}" data-ch-idx="${idx}">
+                <span>${idx + 1}. ${ch.title}</span>
+                <span>${idx === currentChapter ? '▶ Читаете' : '→'}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Community Reviews Box -->
+        <div>
+          <div class="steam-section-heading">
+            <span>💬 ОБЗОРЫ СООБЩЕСТВА STEAM</span>
+            <button class="btn btn-secondary btn-sm" id="btn-steam-write-review">✎ Написать обзор</button>
+          </div>
+          <div class="community-reviews-grid" id="steam-book-reviews-list">
+            <!-- Reviews injected here -->
+          </div>
+        </div>
+      </div>
+    `;
+
+    contentEl.querySelector('#btn-steam-launch-game')?.addEventListener('click', () => {
+      window.readerEngine.openBook(book.id, currentChapter);
+      this.switchView('reader');
+    });
+
+    contentEl.querySelector('#btn-steam-toggle-favorite')?.addEventListener('click', () => {
+      const u = window.auth.currentUser;
+      if (!u) { this.openModal('modal-auth'); return; }
+      if (!u.shelves) u.shelves = {};
+      if (!u.shelves.favorites) u.shelves.favorites = [];
+      const idx = u.shelves.favorites.indexOf(book.id);
+      if (idx > -1) {
+        u.shelves.favorites.splice(idx, 1);
+        this.showToast(`«${book.title}» удалена из избранного.`, 'info');
+      } else {
+        u.shelves.favorites.push(book.id);
+        this.showToast(`«${book.title}» добавлена в избранное!`, 'success');
+      }
+      window.auth.saveUser();
+      this.selectSteamBook(book.id);
+      this.renderSteamLibrary(book.id);
+    });
+
+    contentEl.querySelector('#btn-steam-view-dossier')?.addEventListener('click', () => {
+      this.openBookDetails(book.id);
+    });
+
+    contentEl.querySelectorAll('.steam-chapter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chIdx = parseInt(btn.dataset.chIdx, 10);
+        window.readerEngine.openBook(book.id, chIdx);
+        this.switchView('reader');
+      });
+    });
+
+    contentEl.querySelector('#btn-steam-write-review')?.addEventListener('click', () => {
+      this.openBookDetails(book.id);
+      setTimeout(() => {
+        const box = document.getElementById('add-review-box');
+        if (box) box.style.display = 'block';
+      }, 200);
+    });
+
+    const reviews = window.bookRelay.getReviews(book.id);
+    const reviewsContainer = contentEl.querySelector('#steam-book-reviews-list');
+    if (reviewsContainer) {
+      reviewsContainer.innerHTML = '';
+      reviews.slice(0, 4).forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'steam-review-card';
+        card.innerHTML = `
+          <div class="steam-rev-author-bar">
+            <div class="steam-rev-user">
+              <div class="steam-rev-avatar">${r.avatar || '👤'}</div>
+              <div>
+                <div class="steam-rev-name">${r.author || 'Читатель'}</div>
+                <div class="steam-rev-hours">В чтении на момент обзора: ${r.timeRead || '12.4 ч.'}</div>
+              </div>
+            </div>
+            <span class="steam-rev-badge-thumb ${r.recommended !== false ? 'steam-rev-thumb-up' : 'steam-rev-thumb-down'}">
+              ${r.recommended !== false ? '👍 РЕКОМЕНДУЮ' : '👎 НЕ РЕКОМЕНДУЮ'}
+            </span>
+          </div>
+          <div class="steam-rev-text">${r.text || 'Великолепное произведение, трогающее за душу.'}</div>
+          <div class="steam-rev-footer">
+            <span>Опубликовано: ${r.date || 'Недавно'}</span>
+            <div class="steam-rev-helpful-btns">
+              <button class="steam-rev-help-btn">Да (14)</button>
+              <button class="steam-rev-help-btn">Нет (1)</button>
+              <button class="steam-rev-help-btn">👑 Наградить</button>
+            </div>
+          </div>
+        `;
+        reviewsContainer.appendChild(card);
+      });
+    }
+  }
+
+  renderCommunityFeed() {
+    const grid = document.getElementById('community-reviews-grid');
+    const badge = document.getElementById('community-reviews-count-badge');
+    if (!grid) return;
+
+    const allBooks = window.bookRelay.getAllBooks();
+    const allReviews = [];
+
+    allBooks.forEach(b => {
+      const revs = window.bookRelay.getReviews(b.id);
+      revs.forEach(r => {
+        allReviews.push({ ...r, bookTitle: b.title, bookId: b.id });
+      });
+    });
+
+    if (badge) badge.innerHTML = `Всего обзоров в Steam-Хабе: <strong>${allReviews.length}</strong>`;
+
+    grid.innerHTML = '';
+    allReviews.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'steam-review-card';
+      card.innerHTML = `
+        <div class="steam-rev-author-bar">
+          <div class="steam-rev-user">
+            <div class="steam-rev-avatar">${r.avatar || '👤'}</div>
+            <div>
+              <div class="steam-rev-name">${r.author || 'Схоласт'}</div>
+              <div class="steam-rev-hours">В чтении: ${r.timeRead || '8.2 ч.'}</div>
+            </div>
+          </div>
+          <span class="steam-rev-badge-thumb ${r.recommended !== false ? 'steam-rev-thumb-up' : 'steam-rev-thumb-down'}">
+            ${r.recommended !== false ? '👍 РЕКОМЕНДУЮ' : '👎 НЕ РЕКОМЕНДУЮ'}
+          </span>
+        </div>
+        <div class="steam-rev-book-title">
+          Книга: <strong style="color: #66c0f4; cursor: pointer;" onclick="window.app.switchView('steam-library'); window.app.selectSteamBook('${r.bookId}')">${r.bookTitle}</strong>
+        </div>
+        <div class="steam-rev-text">${r.text}</div>
+        <div class="steam-rev-footer">
+          <span>Опубликовано: ${r.date || 'Недавно'}</span>
+          <div class="steam-rev-helpful-btns">
+            <button class="steam-rev-help-btn">👍 Да (18)</button>
+            <button class="steam-rev-help-btn">👎 Нет (0)</button>
+            <button class="steam-rev-help-btn">👑 Наградить</button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    document.getElementById('btn-community-write-review')?.addEventListener('click', () => {
+      this.switchView('steam-library');
+      this.showToast('Выберите книгу из левого списка библиотеки, чтобы написать на неё обзор.', 'info');
+    });
   }
 
   // --- BOOK DOSSIER MODAL & REVIEWS ---
