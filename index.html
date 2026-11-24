@@ -741,98 +741,183 @@
           </div>
         </div>
 
-        <!-- ReManga-Style Faceted Filter Panel -->
-        <div class="remanga-filter-panel" id="remanga-filter-panel">
+        <!-- Grand Mega-Filter & Catalog Control Hub -->
+        <div class="remanga-filter-panel grand-filter-hub" id="remanga-filter-panel">
           <div class="remanga-main-row">
             <!-- Search -->
             <div class="remanga-search-box">
               <span class="remanga-search-icon">🔍</span>
-              <input type="text" id="remanga-search-input" class="remanga-input" placeholder="Поиск по названию, автору или тегу (#Толстой, #Оруэлл, #Стратегия)...">
+              <input type="text" id="remanga-search-input" class="remanga-input" placeholder="Поиск по названию, автору, эпохе или тегу (#Толстой, #1869, #Sci-Fi)...">
               <button class="remanga-clear-btn" id="btn-clear-search" style="display:none;" title="Очистить поиск">✕</button>
             </div>
+
+            <!-- Sorting Dropdown -->
+            <div class="remanga-select-group" style="max-width: 195px;">
+              <label class="remanga-label">Сортировка</label>
+              <select id="remanga-sort-select" class="remanga-select">
+                <option value="popular">🌟 По популярности</option>
+                <option value="rating">⭐ По рейтингу</option>
+                <option value="year_desc">📅 Сначала новые (год)</option>
+                <option value="year_asc">🕰️ Сначала классика (год)</option>
+                <option value="pages_desc">📄 По объёму (страницам)</option>
+                <option value="pages_asc">⚡ Сначала короткие</option>
+                <option value="title">🔤 По названию (А-Я)</option>
+              </select>
+            </div>
+
+            <!-- Mega Filter Button (Toggle Drawer) -->
+            <button class="btn btn-primary magnetic-btn mega-filter-trigger-btn" id="btn-toggle-mega-filter" title="Развернуть расширенные фильтры (год, жанр, возраст, объём, статус)">
+              <span>⚡ Большой фильтр</span>
+              <span class="mega-filter-badge" id="mega-filter-badge">0</span>
+              <span class="mega-filter-chevron" id="mega-filter-chevron">▾</span>
+            </button>
 
             <!-- Random Book Button -->
             <button class="btn btn-secondary" id="btn-random-book" title="Выбрать случайную книгу наугад" style="display:flex; align-items:center; gap:0.4rem; padding:0.6rem 0.9rem; font-size:0.85rem; white-space:nowrap; border-color: rgba(0,240,255,0.3); color: var(--accent-cyan);">
               🎲 Случайная
             </button>
 
-            <!-- Sorting Dropdown -->
-            <div class="remanga-select-group">
-              <label class="remanga-label">Сортировка</label>
-              <select id="remanga-sort-select" class="remanga-select">
-                <option value="popular">🌟 По популярности</option>
-                <option value="rating">⭐ По рейтингу</option>
-                <option value="pages_desc">📄 По объёму (страницам)</option>
-                <option value="year_desc">📅 Сначала новые</option>
-                <option value="year_asc">🕰️ Сначала классика</option>
-                <option value="title">🔤 По названию (А-Я)</option>
-              </select>
-            </div>
-
-            <!-- Reading Status Dropdown -->
-            <div class="remanga-select-group">
-              <label class="remanga-label">Мой статус</label>
-              <select id="remanga-status-select" class="remanga-select">
-                <option value="all">Все книги</option>
-                <option value="reading">📖 Читаю сейчас</option>
-                <option value="favorite">❤️ В избранном</option>
-                <option value="completed">✅ Прочитано</option>
-              </select>
-            </div>
-
-            <!-- Format Dropdown -->
-            <div class="remanga-select-group">
-              <label class="remanga-label">Формат</label>
-              <select id="remanga-format-select" class="remanga-select">
-                <option value="all">Все форматы</option>
-                <option value="foliant">📜 Фолиант / Эпопея</option>
-                <option value="novel">📖 Роман</option>
-                <option value="treatise">🏛️ Трактат</option>
-                <option value="novella">📑 Повесть</option>
-                <option value="collection">📚 Сборник</option>
-              </select>
-            </div>
-
-            <!-- Difficulty Dropdown -->
-            <div class="remanga-select-group">
-              <label class="remanga-label">Сложность</label>
-              <select id="remanga-diff-select" class="remanga-select">
-                <option value="all">Любая сложность</option>
-                <option value="easy">🟢 Базовая (Легкая)</option>
-                <option value="medium">🟡 Продвинутая (Средняя)</option>
-                <option value="hardcore">🔴 Хардкор (Монументальная)</option>
-              </select>
-            </div>
-
-            <!-- Taste settings button -->
-            <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-open-taste-settings" title="Персональные настройки вкусов">
-              ⚙️ Вкусы
+            <!-- Reset Filters Button -->
+            <button class="btn btn-secondary btn-sm" id="btn-reset-remanga-filters" style="display:none; color:#ff4d4d; border-color:rgba(255,77,77,0.35);" title="Сбросить все активные фильтры">
+              🔄 Сброс
             </button>
           </div>
 
-          <!-- Genre / Theme Chips Row (ReManga-style) -->
+          <!-- Genre / Theme Chips Row -->
           <div class="remanga-genres-row">
-            <span class="remanga-genre-label">Жанры & Темы:</span>
+            <span class="remanga-genre-label">Жанры:</span>
             <div class="remanga-chips-list" id="remanga-genre-chips">
               <button class="remanga-chip active" data-genre="all">Все книги</button>
-              <button class="remanga-chip" data-genre="recommend">🌟 Для вас (Рекомендации)</button>
+              <button class="remanga-chip" data-genre="recommend">🌟 Для вас</button>
               <button class="remanga-chip" data-genre="masterpiece">👑 Шедевры</button>
-              <button class="remanga-chip" data-genre="legendary">🌌 Легендарные</button>
               <button class="remanga-chip" data-genre="военная проза">⚔️ Военная проза</button>
-              <button class="remanga-chip" data-genre="киберпанк">🚀 Киберпанк & Sci-Fi</button>
+              <button class="remanga-chip" data-genre="классика">🏛️ Классика</button>
+              <button class="remanga-chip" data-genre="фантастика">🚀 Фантастика & Sci-Fi</button>
               <button class="remanga-chip" data-genre="детектив">🔍 Детектив</button>
               <button class="remanga-chip" data-genre="философия">📜 Философия</button>
               <button class="remanga-chip" data-genre="мистика">🕯️ Мистика & Готика</button>
-              <button class="remanga-chip" data-genre="openlibrary" id="remanga-chip-openlibrary">🌐 Мировой Каталог</button>
+              <button class="remanga-chip" data-genre="приключения">🧭 Приключения</button>
+              <button class="remanga-chip" data-genre="openlibrary" id="remanga-chip-openlibrary">🌐 Мировой каталог</button>
+            </div>
+          </div>
+
+          <!-- EXPANDABLE GRAND MEGA-FILTER DRAWER -->
+          <div class="grand-mega-filter-drawer" id="grand-mega-filter-drawer">
+            <div class="mega-filter-grid">
+              
+              <!-- Block 1: Year & Era -->
+              <div class="mega-filter-col">
+                <div class="mega-filter-col-title">
+                  <span>📅</span> Год издания & Эпоха
+                </div>
+                <div class="mega-filter-chips-wrap" id="mega-filter-era-chips">
+                  <button class="mega-chip active" data-era="all">Все эпохи</button>
+                  <button class="mega-chip" data-era="before_1800">До XIX в. (&lt;1800)</button>
+                  <button class="mega-chip" data-era="1800_1899">XIX век (1800–1899)</button>
+                  <button class="mega-chip" data-era="1900_1999">XX век (1900–1999)</button>
+                  <button class="mega-chip" data-era="2000_plus">XXI век (2000+)</button>
+                </div>
+                <div class="mega-filter-range-row" style="margin-top: 0.5rem;">
+                  <span style="font-size: 0.75rem; color: var(--text-dim);">Точный диапазон лет:</span>
+                  <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.3rem;">
+                    <input type="number" id="filter-year-min" class="mega-filter-num-input" placeholder="От (-500)" min="-1000" max="2030">
+                    <span style="color: var(--text-dim);">—</span>
+                    <input type="number" id="filter-year-max" class="mega-filter-num-input" placeholder="До (2026)" min="-1000" max="2030">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Block 2: Age Rating -->
+              <div class="mega-filter-col">
+                <div class="mega-filter-col-title">
+                  <span>🔞</span> Возрастной рейтинг
+                </div>
+                <div class="mega-filter-chips-wrap" id="mega-filter-age-chips">
+                  <button class="mega-chip active" data-age="all">Все возраста</button>
+                  <button class="mega-chip age-0" data-age="0+">0+ (Для всех)</button>
+                  <button class="mega-chip age-6" data-age="6+">6+ (Семейное)</button>
+                  <button class="mega-chip age-12" data-age="12+">12+ (Подростки)</button>
+                  <button class="mega-chip age-16" data-age="16+">16+ (Юноши & Взрослые)</button>
+                  <button class="mega-chip age-18" data-age="18+">18+ (Строго 18+)</button>
+                </div>
+              </div>
+
+              <!-- Block 3: Volume & Format -->
+              <div class="mega-filter-col">
+                <div class="mega-filter-col-title">
+                  <span>📖</span> Объём & Формат
+                </div>
+                <div class="mega-filter-chips-wrap" id="mega-filter-volume-chips">
+                  <button class="mega-chip active" data-volume="all">Любой объём</button>
+                  <button class="mega-chip" data-volume="short">⚡ Короткие (&lt;200 стр)</button>
+                  <button class="mega-chip" data-volume="medium">📚 Средние (200–500)</button>
+                  <button class="mega-chip" data-volume="epic">🏛️ Фолианты (500+)</button>
+                </div>
+                <div style="margin-top: 0.6rem;">
+                  <label class="remanga-label">Литературный формат:</label>
+                  <select id="mega-filter-format-select" class="remanga-select" style="width: 100%; margin-top: 0.2rem;">
+                    <option value="all">Все форматы</option>
+                    <option value="Роман">📖 Роман</option>
+                    <option value="Повесть">📝 Повесть</option>
+                    <option value="Фолиант">📜 Фолиант / Эпопея</option>
+                    <option value="Трактат">🏛️ Трактат</option>
+                    <option value="Сборник">📚 Сборник</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Block 4: Reading Status & Difficulty -->
+              <div class="mega-filter-col">
+                <div class="mega-filter-col-title">
+                  <span>🎯</span> Статус в профиле & Сложность
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                  <div>
+                    <label class="remanga-label">Мой статус:</label>
+                    <select id="mega-filter-status-select" class="remanga-select" style="width: 100%; margin-top: 0.2rem;">
+                      <option value="all">Все книги хаба</option>
+                      <option value="reading">📖 Читаю сейчас</option>
+                      <option value="favorite">❤️ В избранном</option>
+                      <option value="completed">✅ Прочитано</option>
+                      <option value="unstarted">⏳ Не начато</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="remanga-label">Сложность текста:</label>
+                    <select id="mega-filter-diff-select" class="remanga-select" style="width: 100%; margin-top: 0.2rem;">
+                      <option value="all">Любая сложность</option>
+                      <option value="Базовая">🟢 Базовая (Легкая)</option>
+                      <option value="Средняя">🟡 Средняя (Продвинутая)</option>
+                      <option value="Хардкор">🔴 Хардкор (Монументальная)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Mega Filter Footer Controls -->
+            <div class="mega-filter-drawer-footer">
+              <div class="mega-filter-stats-text">
+                Найдено произведений: <strong id="mega-filter-found-count" style="color: var(--accent-cyan); font-size: 1.1rem;">26</strong>
+              </div>
+              <div style="display: flex; gap: 0.6rem; align-items: center;">
+                <button class="btn btn-secondary btn-sm" id="btn-mega-filter-reset">
+                  🔄 Сбросить фильтры
+                </button>
+                <button class="btn btn-primary btn-sm" id="btn-mega-filter-apply">
+                  ✓ Применить и свернуть
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- Filter Results Bar -->
           <div class="remanga-results-bar">
             <div class="remanga-counter-text">
-              Найдено: <strong id="remanga-books-found-count" style="color:var(--accent-cyan);">14</strong> произведений
+              Найдено: <strong id="remanga-books-found-count" style="color:var(--accent-cyan);">26</strong> произведений
             </div>
-            <button class="btn-text-reset" id="btn-reset-remanga-filters" style="display:none;">
+            <button class="btn-text-reset" id="btn-reset-filters-link" style="display:none;">
               🔄 Сбросить все фильтры
             </button>
           </div>

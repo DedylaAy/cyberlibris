@@ -738,6 +738,48 @@ class BookRelayService {
         }
       }
     ];
+
+    // Map verified age ratings across catalog
+    const AGE_MAP = {
+      'relay_war_and_peace': '16+',
+      'relay_art_of_war': '12+',
+      'relay_taras_bulba': '12+',
+      'relay_white_guard': '16+',
+      'relay_crime_and_punishment': '16+',
+      'relay_master_margarita': '16+',
+      'relay_heart_of_dog': '16+',
+      'relay_captains_daughter': '12+',
+      'relay_eugene_onegin': '12+',
+      'relay_hero_of_our_time': '16+',
+      'relay_woe_from_wit': '12+',
+      'relay_dead_souls': '12+',
+      'relay_fathers_and_sons': '16+',
+      'relay_anna_karenina': '16+',
+      'relay_the_idiot': '16+',
+      'relay_idiot': '16+',
+      'relay_overcoat': '12+',
+      'relay_revisor': '12+',
+      'relay_inspector_general': '12+',
+      'relay_prince_machiavelli': '16+',
+      'relay_prince': '16+',
+      'relay_time_machine': '12+',
+      'relay_war_of_the_worlds': '12+',
+      'relay_twenty_thousand_leagues': '6+',
+      'relay_20000_leagues': '6+',
+      'relay_dracula': '16+',
+      'relay_frankenstein': '16+',
+      'relay_dorian_gray': '16+',
+      'relay_sherlock_holmes': '12+',
+      'relay_treasure_island': '6+',
+      'relay_alice_in_wonderland': '0+',
+      'relay_alice_wonderland': '0+'
+    };
+
+    this.relayedCatalog.forEach(b => {
+      if (!b.ageRating) {
+        b.ageRating = AGE_MAP[b.id] || (b.lengthPages > 500 ? '16+' : '12+');
+      }
+    });
   }
 
   // Получить все книги каталога
@@ -871,63 +913,144 @@ class BookRelayService {
     }
   }
 
-  // Фильтрация каталога в стиле ReManga
+  // Универсальный движок Большого Фильтра и Сортировки
   filterCatalog(criteria = {}) {
     let result = [...this.relayedCatalog];
 
-    // 1. Поиск по строке
+    // 1. Поиск по строке (название, автор, синопсис, теги, год)
     const query = (criteria.search || criteria.query || '').trim().toLowerCase();
     if (query) {
-      result = result.filter(b =>
-        b.title.toLowerCase().includes(query) ||
-        b.author.toLowerCase().includes(query) ||
-        (b.synopsis && b.synopsis.toLowerCase().includes(query)) ||
-        (b.tags && b.tags.some(t => t.toLowerCase().includes(query)))
-      );
+      const qTokens = query.split(/\s+/).filter(Boolean);
+      result = result.filter(b => {
+        const title = (b.title || '').toLowerCase();
+        const author = (b.author || '').toLowerCase();
+        const synopsis = (b.synopsis || '').toLowerCase();
+        const tags = Array.isArray(b.tags) ? b.tags.map(t => t.toLowerCase()).join(' ') : '';
+        const yearStr = String(b.year || '');
+        const genre = (b.genre || '').toLowerCase();
+
+        const fullHaystack = `${title} ${author} ${synopsis} ${tags} ${yearStr} ${genre}`;
+        return qTokens.every(tok => fullHaystack.includes(tok));
+      });
     }
 
-    // 2. Жанр / Теги
+    // 2. Год издания / Эпоха (criteria.yearMin, criteria.yearMax, criteria.era)
+    if (criteria.era && criteria.era !== 'all') {
+      if (criteria.era === 'ancient' || criteria.era === 'before_1800') {
+        result = result.filter(b => (b.year || 0) < 1800);
+      } else if (criteria.era === '19th' || criteria.era === '1800_1899') {
+        result = result.filter(b => (b.year || 0) >= 1800 && (b.year || 0) <= 1899);
+      } else if (criteria.era === '20th' || criteria.era === '1900_1999') {
+        result = result.filter(b => (b.year || 0) >= 1900 && (b.year || 0) <= 1999);
+      } else if (criteria.era === '21st' || criteria.era === '2000_plus') {
+        result = result.filter(b => (b.year || 0) >= 2000);
+      }
+    }
+    if (typeof criteria.yearMin === 'number' && !isNaN(criteria.yearMin)) {
+      result = result.filter(b => (b.year || 0) >= criteria.yearMin);
+    }
+    if (typeof criteria.yearMax === 'number' && !isNaN(criteria.yearMax)) {
+      result = result.filter(b => (b.year || 0) <= criteria.yearMax);
+    }
+
+    // 3. Возрастной рейтинг (criteria.age / criteria.ageRating)
+    if (criteria.ageRating && criteria.ageRating !== 'all') {
+      const ar = criteria.ageRating.trim();
+      if (criteria.ageMode === 'exact') {
+        result = result.filter(b => (b.ageRating || '12+') === ar);
+      } else {
+        if (ar === '0+') {
+          result = result.filter(b => (b.ageRating || '12+') === '0+');
+        } else if (ar === '6+') {
+          result = result.filter(b => ['0+', '6+'].includes(b.ageRating || '12+'));
+        } else if (ar === '12+') {
+          result = result.filter(b => ['0+', '6+', '12+'].includes(b.ageRating || '12+'));
+        } else if (ar === '16+') {
+          result = result.filter(b => ['0+', '6+', '12+', '16+'].includes(b.ageRating || '12+'));
+        } else if (ar === '18+') {
+          result = result.filter(b => (b.ageRating || '12+') === '18+');
+        } else {
+          result = result.filter(b => (b.ageRating || '12+') === ar);
+        }
+      }
+    }
+
+    // 4. Жанр / Тематика
     if (criteria.genre && criteria.genre !== 'all') {
       const g = criteria.genre.toLowerCase();
       if (g === 'recommend') {
-        // Рекомендации
+        // Рекомендации вычисляются на уровне приложения
       } else if (g === 'masterpiece' || g === 'legendary') {
         result = result.filter(b => b.rarity === g || (b.tags && b.tags.includes(g)));
       } else {
-        result = result.filter(b =>
-          b.genre.toLowerCase().includes(g) ||
-          (b.tags && b.tags.some(t => t.toLowerCase().includes(g)))
-        );
+        result = result.filter(b => {
+          const bGenre = (b.genre || '').toLowerCase();
+          const bTags = Array.isArray(b.tags) ? b.tags.map(t => t.toLowerCase()) : [];
+          return bGenre.includes(g) || bTags.some(t => t.includes(g));
+        });
       }
     }
 
-    // 3. Формат (Фолиант, Роман, Трактат, Повесть, Сборник)
+    // 5. Объём страниц (criteria.pagesLength / criteria.volume)
+    if (criteria.pagesLength && criteria.pagesLength !== 'all') {
+      if (criteria.pagesLength === 'short') {
+        result = result.filter(b => (b.lengthPages || 0) < 200);
+      } else if (criteria.pagesLength === 'medium') {
+        result = result.filter(b => (b.lengthPages || 0) >= 200 && (b.lengthPages || 0) <= 500);
+      } else if (criteria.pagesLength === 'epic' || criteria.pagesLength === 'long') {
+        result = result.filter(b => (b.lengthPages || 0) > 500);
+      }
+    }
+
+    // 6. Формат (Фолиант, Роман, Трактат, Повесть, Сборник)
     if (criteria.format && criteria.format !== 'all') {
-      result = result.filter(b => b.format === criteria.format);
+      const formatMap = {
+        'foliant': 'Фолиант',
+        'novel': 'Роман',
+        'treatise': 'Трактат',
+        'novella': 'Повесть',
+        'collection': 'Сборник'
+      };
+      const targetFormat = formatMap[criteria.format] || criteria.format;
+      result = result.filter(b => b.format === targetFormat);
     }
 
-    // 4. Сложность (Легкая, Средняя, Хардкор)
+    // 7. Сложность (Базовая/Легкая, Средняя, Хардкор)
     if (criteria.difficulty && criteria.difficulty !== 'all') {
-      result = result.filter(b => b.difficulty === criteria.difficulty);
+      const diffMap = {
+        'easy': 'Базовая',
+        'medium': 'Средняя',
+        'hardcore': 'Хардкор'
+      };
+      const targetDiff = diffMap[criteria.difficulty] || criteria.difficulty;
+      result = result.filter(b => {
+        if (targetDiff === 'Базовая' || targetDiff === 'Легкая') {
+          return b.difficulty === 'Базовая' || b.difficulty === 'Легкая';
+        }
+        return b.difficulty === targetDiff;
+      });
     }
 
-    // 5. Статус чтения
+    // 8. Статус чтения в профиле
     const username = criteria.username || criteria.userId;
     if (criteria.status && criteria.status !== 'all' && username) {
       const shelves = this.getUserShelves(username);
+      const readingIds = new Set((shelves.readingNow || []).map(r => r.id));
+      const compIds = new Set((shelves.completed || []).map(c => c.id));
+      const favIds = new Set(shelves.favorites || []);
+
       if (criteria.status === 'reading') {
-        const readingIds = new Set(shelves.readingNow.map(r => r.id));
         result = result.filter(b => readingIds.has(b.id));
       } else if (criteria.status === 'completed') {
-        const compIds = new Set(shelves.completed.map(c => c.id));
         result = result.filter(b => compIds.has(b.id));
       } else if (criteria.status === 'favorite' || criteria.status === 'favorites') {
-        const favIds = new Set(shelves.favorites);
         result = result.filter(b => favIds.has(b.id));
+      } else if (criteria.status === 'unstarted') {
+        result = result.filter(b => !readingIds.has(b.id) && !compIds.has(b.id));
       }
     }
 
-    // 6. Сортировка
+    // 9. Сортировка
     const sortMode = criteria.sort || criteria.sortBy;
     if (sortMode) {
       if (sortMode === 'popular') {

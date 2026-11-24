@@ -358,15 +358,49 @@ class AppController {
 
   // --- REMANGA-STYLE FACETED FILTERS & RELAYED CATALOG ---
 
+  updateMegaFilterActiveCount() {
+    let count = 0;
+    if (this.selectedEra && this.selectedEra !== 'all') count++;
+    if (typeof this.filterYearMin === 'number' && !isNaN(this.filterYearMin)) count++;
+    if (typeof this.filterYearMax === 'number' && !isNaN(this.filterYearMax)) count++;
+    if (this.selectedAge && this.selectedAge !== 'all') count++;
+    if (this.selectedVolume && this.selectedVolume !== 'all') count++;
+    if (this.selectedFormat && this.selectedFormat !== 'all') count++;
+    if (this.selectedDifficulty && this.selectedDifficulty !== 'all') count++;
+    if (this.selectedStatus && this.selectedStatus !== 'all') count++;
+    if (this.selectedCategory && this.selectedCategory !== 'all') count++;
+
+    const badge = document.getElementById('mega-filter-badge');
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+    return count;
+  }
+
   bindSearchAndFilters() {
     const searchInput = document.getElementById('remanga-search-input');
     const clearBtn = document.getElementById('btn-clear-search');
     const sortSelect = document.getElementById('remanga-sort-select');
-    const statusSelect = document.getElementById('remanga-status-select');
-    const formatSelect = document.getElementById('remanga-format-select');
-    const diffSelect = document.getElementById('remanga-diff-select');
-    const resetBtn = document.getElementById('btn-reset-remanga-filters');
+    const btnToggleMega = document.getElementById('btn-toggle-mega-filter');
+    const panel = document.getElementById('remanga-filter-panel');
+    const minInput = document.getElementById('filter-year-min');
+    const maxInput = document.getElementById('filter-year-max');
 
+    // Default Filter State
+    this.searchQuery = '';
+    this.selectedCategory = 'all';
+    this.selectedSort = 'popular';
+    this.selectedEra = 'all';
+    this.filterYearMin = null;
+    this.filterYearMax = null;
+    this.selectedAge = 'all';
+    this.selectedVolume = 'all';
+    this.selectedFormat = 'all';
+    this.selectedDifficulty = 'all';
+    this.selectedStatus = 'all';
+
+    // 1. Search with debounce
     let searchDebounceTimer = null;
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -375,7 +409,7 @@ class AppController {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
           this.renderLibrary();
-        }, 130);
+        }, 120);
       });
     }
 
@@ -388,6 +422,7 @@ class AppController {
       });
     }
 
+    // 2. Sorting
     if (sortSelect) {
       sortSelect.addEventListener('change', (e) => {
         this.selectedSort = e.target.value;
@@ -395,29 +430,18 @@ class AppController {
       });
     }
 
-    if (statusSelect) {
-      statusSelect.addEventListener('change', (e) => {
-        this.selectedStatus = e.target.value;
-        this.renderLibrary();
+    // 3. Toggle Grand Mega-Filter Drawer
+    if (btnToggleMega && panel) {
+      btnToggleMega.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.classList.toggle('drawer-open');
+        if (window.soundEngine) window.soundEngine.playCardFlip();
       });
     }
 
-    if (formatSelect) {
-      formatSelect.addEventListener('change', (e) => {
-        this.selectedFormat = e.target.value;
-        this.renderLibrary();
-      });
-    }
-
-    if (diffSelect) {
-      diffSelect.addEventListener('change', (e) => {
-        this.selectedDifficulty = e.target.value;
-        this.renderLibrary();
-      });
-    }
-
+    // 4. Quick Genre / Theme Chips
     document.querySelectorAll('#remanga-genre-chips .remanga-chip').forEach((chip) => {
-      chip.addEventListener('click', (e) => {
+      chip.addEventListener('click', () => {
         document.querySelectorAll('#remanga-genre-chips .remanga-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
         this.selectedCategory = chip.dataset.genre || 'all';
@@ -431,6 +455,7 @@ class AppController {
         } else {
           if (olExplorer) olExplorer.style.display = 'none';
           if (localWrapper) localWrapper.style.display = 'block';
+          this.updateMegaFilterActiveCount();
           this.renderLibrary();
         }
 
@@ -438,35 +463,155 @@ class AppController {
       });
     });
 
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        this.searchQuery = '';
-        this.selectedCategory = 'all';
-        this.selectedSort = 'popular';
-        this.selectedStatus = 'all';
-        this.selectedFormat = 'all';
-        this.selectedDifficulty = 'all';
+    // 5. Mega Filter: Year Era Chips
+    document.querySelectorAll('#mega-filter-era-chips .mega-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#mega-filter-era-chips .mega-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        this.selectedEra = chip.dataset.era || 'all';
 
-        if (searchInput) searchInput.value = '';
-        if (clearBtn) clearBtn.style.display = 'none';
-        if (sortSelect) sortSelect.value = 'popular';
-        if (statusSelect) statusSelect.value = 'all';
-        if (formatSelect) formatSelect.value = 'all';
-        if (diffSelect) diffSelect.value = 'all';
+        if (this.selectedEra !== 'all') {
+          if (minInput) minInput.value = '';
+          if (maxInput) maxInput.value = '';
+          this.filterYearMin = null;
+          this.filterYearMax = null;
+        }
 
-        document.querySelectorAll('#remanga-genre-chips .remanga-chip').forEach(c => {
-          c.classList.toggle('active', c.dataset.genre === 'all');
-        });
-
-        const olExplorer = document.getElementById('openlibrary-explorer');
-        const localWrapper = document.getElementById('local-catalog-wrapper');
-        if (olExplorer) olExplorer.style.display = 'none';
-        if (localWrapper) localWrapper.style.display = 'block';
-
+        this.updateMegaFilterActiveCount();
         this.renderLibrary();
         if (window.soundEngine) window.soundEngine.playClick();
       });
-    }
+    });
+
+    // 6. Mega Filter: Year Exact Inputs
+    let yearTimer = null;
+    const handleYearInput = () => {
+      clearTimeout(yearTimer);
+      yearTimer = setTimeout(() => {
+        const minVal = minInput?.value !== '' ? parseInt(minInput.value, 10) : null;
+        const maxVal = maxInput?.value !== '' ? parseInt(maxInput.value, 10) : null;
+        this.filterYearMin = !isNaN(minVal) ? minVal : null;
+        this.filterYearMax = !isNaN(maxVal) ? maxVal : null;
+
+        if (this.filterYearMin !== null || this.filterYearMax !== null) {
+          document.querySelectorAll('#mega-filter-era-chips .mega-chip').forEach(c => c.classList.remove('active'));
+          this.selectedEra = 'all';
+        }
+
+        this.updateMegaFilterActiveCount();
+        this.renderLibrary();
+      }, 200);
+    };
+    minInput?.addEventListener('input', handleYearInput);
+    maxInput?.addEventListener('input', handleYearInput);
+
+    // 7. Mega Filter: Age Rating Chips
+    document.querySelectorAll('#mega-filter-age-chips .mega-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#mega-filter-age-chips .mega-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        this.selectedAge = chip.dataset.age || 'all';
+
+        this.updateMegaFilterActiveCount();
+        this.renderLibrary();
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+
+    // 8. Mega Filter: Volume Chips
+    document.querySelectorAll('#mega-filter-volume-chips .mega-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#mega-filter-volume-chips .mega-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        this.selectedVolume = chip.dataset.volume || 'all';
+
+        this.updateMegaFilterActiveCount();
+        this.renderLibrary();
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+
+    // 9. Mega Filter: Format Select
+    document.getElementById('mega-filter-format-select')?.addEventListener('change', (e) => {
+      this.selectedFormat = e.target.value;
+      this.updateMegaFilterActiveCount();
+      this.renderLibrary();
+    });
+
+    // 10. Mega Filter: Status Select
+    document.getElementById('mega-filter-status-select')?.addEventListener('change', (e) => {
+      this.selectedStatus = e.target.value;
+      this.updateMegaFilterActiveCount();
+      this.renderLibrary();
+    });
+
+    // 11. Mega Filter: Difficulty Select
+    document.getElementById('mega-filter-diff-select')?.addEventListener('change', (e) => {
+      this.selectedDifficulty = e.target.value;
+      this.updateMegaFilterActiveCount();
+      this.renderLibrary();
+    });
+
+    // 12. Apply & Collapse Button
+    document.getElementById('btn-mega-filter-apply')?.addEventListener('click', () => {
+      panel?.classList.remove('drawer-open');
+      this.renderLibrary();
+      if (window.soundEngine) window.soundEngine.playCardFlip();
+    });
+
+    // 13. Reset Filter Actions
+    const resetAllFilters = () => {
+      this.searchQuery = '';
+      this.selectedCategory = 'all';
+      this.selectedSort = 'popular';
+      this.selectedEra = 'all';
+      this.filterYearMin = null;
+      this.filterYearMax = null;
+      this.selectedAge = 'all';
+      this.selectedVolume = 'all';
+      this.selectedFormat = 'all';
+      this.selectedDifficulty = 'all';
+      this.selectedStatus = 'all';
+
+      if (searchInput) searchInput.value = '';
+      if (clearBtn) clearBtn.style.display = 'none';
+      if (sortSelect) sortSelect.value = 'popular';
+      if (minInput) minInput.value = '';
+      if (maxInput) maxInput.value = '';
+
+      const formatSel = document.getElementById('mega-filter-format-select');
+      if (formatSel) formatSel.value = 'all';
+      const statusSel = document.getElementById('mega-filter-status-select');
+      if (statusSel) statusSel.value = 'all';
+      const diffSel = document.getElementById('mega-filter-diff-select');
+      if (diffSel) diffSel.value = 'all';
+
+      document.querySelectorAll('#remanga-genre-chips .remanga-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.genre === 'all');
+      });
+      document.querySelectorAll('#mega-filter-era-chips .mega-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.era === 'all');
+      });
+      document.querySelectorAll('#mega-filter-age-chips .mega-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.age === 'all');
+      });
+      document.querySelectorAll('#mega-filter-volume-chips .mega-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.volume === 'all');
+      });
+
+      const olExplorer = document.getElementById('openlibrary-explorer');
+      const localWrapper = document.getElementById('local-catalog-wrapper');
+      if (olExplorer) olExplorer.style.display = 'none';
+      if (localWrapper) localWrapper.style.display = 'block';
+
+      this.updateMegaFilterActiveCount();
+      this.renderLibrary();
+      if (window.soundEngine) window.soundEngine.playClick();
+    };
+
+    document.getElementById('btn-reset-remanga-filters')?.addEventListener('click', resetAllFilters);
+    document.getElementById('btn-mega-filter-reset')?.addEventListener('click', resetAllFilters);
+    document.getElementById('btn-reset-filters-link')?.addEventListener('click', resetAllFilters);
 
     // Random Book Button
     document.getElementById('btn-random-book')?.addEventListener('click', () => {
@@ -479,12 +624,16 @@ class AppController {
         this.openBookDetails(randomBook.id);
       }
     });
+
+    this.updateMegaFilterActiveCount();
   }
 
   renderLibrary() {
     const grid = document.getElementById('books-catalog-grid');
     const counterEl = document.getElementById('remanga-books-found-count');
+    const megaCountEl = document.getElementById('mega-filter-found-count');
     const resetBtn = document.getElementById('btn-reset-remanga-filters');
+    const resetLink = document.getElementById('btn-reset-filters-link');
     if (!grid) return;
     grid.innerHTML = '';
 
@@ -493,6 +642,12 @@ class AppController {
       search: this.searchQuery,
       query: this.searchQuery,
       genre: this.selectedCategory,
+      era: this.selectedEra,
+      yearMin: this.filterYearMin,
+      yearMax: this.filterYearMax,
+      ageRating: this.selectedAge,
+      volume: this.selectedVolume,
+      pagesLength: this.selectedVolume,
       format: this.selectedFormat,
       difficulty: this.selectedDifficulty,
       status: this.selectedStatus,
@@ -517,22 +672,32 @@ class AppController {
     }
 
     if (counterEl) counterEl.textContent = displayBooks.length;
+    if (megaCountEl) megaCountEl.textContent = displayBooks.length;
 
-    const isFiltered = this.searchQuery || 
-                       this.selectedCategory !== 'all' || 
-                       this.selectedSort !== 'popular' || 
-                       this.selectedStatus !== 'all' || 
-                       this.selectedFormat !== 'all' || 
-                       this.selectedDifficulty !== 'all';
+    const isFiltered = Boolean(
+      this.searchQuery || 
+      this.selectedCategory !== 'all' || 
+      this.selectedSort !== 'popular' || 
+      this.selectedEra !== 'all' || 
+      this.filterYearMin !== null || 
+      this.filterYearMax !== null || 
+      this.selectedAge !== 'all' || 
+      this.selectedVolume !== 'all' || 
+      this.selectedFormat !== 'all' || 
+      this.selectedDifficulty !== 'all' || 
+      this.selectedStatus !== 'all'
+    );
+
     if (resetBtn) resetBtn.style.display = isFiltered ? 'inline-block' : 'none';
+    if (resetLink) resetLink.style.display = isFiltered ? 'inline-block' : 'none';
 
     if (displayBooks.length === 0) {
       grid.innerHTML = `
         <div style="grid-column: 1/-1; text-align: center; padding: 3.5rem 1rem; color: var(--text-muted); background: rgba(0,0,0,0.3); border-radius: var(--radius-lg); border: 1px dashed var(--border-glass);">
           <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🔍</div>
-          <h3 style="color:#fff; font-size:1.3rem; margin-bottom:0.5rem;">По вашим фильтрам ничего не найдено</h3>
-          <p style="font-size:0.9rem; max-width:500px; margin:0 auto 1.2rem;">Попробуйте смягчить критерии поиска или сбросить фильтры.</p>
-          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('btn-reset-remanga-filters')?.click()">Сбросить фильтры</button>
+          <h3 style="color:#fff; font-size:1.3rem; margin-bottom:0.5rem;">По вашим критериям произведений не найдено</h3>
+          <p style="font-size:0.9rem; max-width:500px; margin:0 auto 1.2rem;">Попробуйте расширить диапазон лет, изменить возраст или сбросить фильтры.</p>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('btn-reset-remanga-filters')?.click()">🔄 Сбросить все фильтры</button>
         </div>
       `;
       return;
@@ -553,6 +718,10 @@ class AppController {
         ? `📖 Продолжить (Гл. ${saved.currentChapter + 1})`
         : `ℹ️ Открыть карточку & Главы`;
 
+      const age = b.ageRating || '12+';
+      const ageClass = age === '0+' ? 'age-0' : age === '6+' ? 'age-6' : age === '12+' ? 'age-12' : age === '16+' ? 'age-16' : 'age-18';
+      const yearText = b.year < 0 ? `${Math.abs(b.year)} г. до н.э.` : `${b.year} г.`;
+
       const card = document.createElement('div');
       card.className = `steam-book-card rarity-${b.rarity} tilt-card`;
       card.style.cursor = 'pointer';
@@ -562,16 +731,19 @@ class AppController {
           <img src="${b.coverImage}" class="book-cover-real-img" alt="${b.title}" loading="lazy" decoding="async" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">
           <div class="book-badges-overlay">
             <span class="rarity-pill ${rarityPillClass}">${b.rarityLabel || 'ШЕДЕВР'}</span>
+            <span class="age-badge-pill ${ageClass}">${age}</span>
             ${progressBadge}
           </div>
         </div>
         <div class="steam-book-info">
           <h3 class="steam-book-title" title="${b.title}">${b.title}</h3>
-          <p class="steam-book-author">✍ ${b.author} (${b.year})</p>
+          <p class="steam-book-author">✍ ${b.author} • <span class="book-year-tag">${yearText}</span></p>
           <p class="steam-book-desc">${b.synopsis || b.quote}</p>
-          <div class="steam-book-meta">
+          <div class="steam-book-meta" style="flex-wrap: wrap; gap: 0.4rem; justify-content: flex-start;">
             <span class="book-genre-pill">${b.genre}</span>
-            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem;">👍 98% (Steam)</span>
+            <span class="book-format-pill">${b.format || 'Роман'}</span>
+            <span class="book-pages-pill">📄 ${b.lengthPages || 200} стр.</span>
+            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem; margin-left: auto;">👍 98% (Steam)</span>
           </div>
           <div style="margin-top: 0.8rem; display: flex; gap: 0.4rem;">
             <button class="btn btn-steam-play btn-sm btn-to-steam-lib" style="padding: 0.55rem 0.9rem; font-size: 0.82rem;" data-book-id="${b.id}">
