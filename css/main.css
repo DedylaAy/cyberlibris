@@ -1273,51 +1273,39 @@ body.is-creator .github-status-pill {
 }
 
 .particle-shape-btn {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.25rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
+  padding: 0.5rem 0.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
   color: #c7d5e0;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
 }
 
 .particle-shape-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(0, 240, 255, 0.45);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(0, 240, 255, 0.5);
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .particle-shape-btn.active {
-  background: rgba(0, 240, 255, 0.14);
+  background: rgba(0, 240, 255, 0.16);
   border-color: var(--accent-cyan);
   color: #ffffff;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
-}
-
-.particle-shape-btn .shape-icon {
-  font-size: 1.15rem;
-  line-height: 1;
-  transition: transform 0.2s ease;
-}
-
-.particle-shape-btn:hover .shape-icon {
-  transform: scale(1.2);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
 }
 
 .particle-shape-btn .shape-name {
   white-space: nowrap;
-  font-size: 0.68rem;
 }
 
 /* Real Book Cover Image */
@@ -2996,7 +2984,6 @@ body.is-creator .github-status-pill {
 }
 
 .oracle-crystal-orb {
-  font-size: 3.2rem;
   width: 74px;
   height: 74px;
   display: flex;
@@ -3010,6 +2997,55 @@ body.is-creator .github-status-pill {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
   flex-shrink: 0;
   animation: crystalHover 4s infinite ease-in-out alternate;
+}
+
+.oracle-gem-core {
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+  transform: rotate(45deg);
+  border-radius: 4px;
+  box-shadow: 0 0 16px var(--accent-cyan), inset 0 0 8px rgba(255, 255, 255, 0.8);
+  animation: pulse-gem 3.5s infinite ease-in-out;
+}
+
+@keyframes pulse-gem {
+  0%, 100% { transform: rotate(45deg) scale(1); filter: drop-shadow(0 0 8px var(--accent-cyan)); }
+  50% { transform: rotate(225deg) scale(1.15); filter: drop-shadow(0 0 18px var(--accent-magenta)); }
+}
+
+.remanga-search-svg {
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+  margin-left: 0.25rem;
+}
+
+.ticker-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 3px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.bento-badge-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 0.35rem;
 }
 
 @keyframes crystalHover {

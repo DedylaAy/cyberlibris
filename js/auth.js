@@ -106,7 +106,7 @@ class AuthManager {
     this.currentUser.avatarFrame = 'frame-gold';
     this.saveUser();
     this.syncUserToUI();
-    window.app.showToast('👑 Верховные права Создателя успешно восстановлены!', 'reward');
+    window.app.showToast('Верховные права Создателя успешно восстановлены', 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
   }
 
@@ -254,7 +254,7 @@ class AuthManager {
       this.currentUser.badges.push(badgeId);
       const badge = window.dbEngine.getBadges().find((b) => b.id === badgeId);
       if (window.app) {
-        window.app.showToast(`🏆 Получен значок: "${badge?.name || badgeId}"!`, 'reward');
+        window.app.showToast(`Получено достижение: «${badge?.name || badgeId}»`, 'reward');
         if (window.soundEngine) window.soundEngine.playCorrect();
       }
       this.saveUser();

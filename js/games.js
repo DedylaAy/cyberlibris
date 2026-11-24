@@ -682,7 +682,7 @@ class MiniGamesSuite {
       if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
     }
 
-    window.app.showToast(`⚡ Раунд завершен! Счёт: ${this.speedScore}. Награда: +${lumensEarned} ⬡, +${xpEarned} XP!`, 'reward');
+    window.app.showToast(`Раунд завершен! Счёт: ${this.speedScore}. Награда: +${lumensEarned} ⬡, +${xpEarned} XP`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
   }
 
@@ -808,7 +808,7 @@ class MiniGamesSuite {
             if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
           }
 
-          window.app.showToast(`✓ Верно! +${reward} ⬡, +${reward * 2} XP!`, 'reward');
+          window.app.showToast(`Верно! +${reward} ⬡, +${reward * 2} XP`, 'reward');
           if (window.soundEngine) window.soundEngine.playCorrect();
         } else {
           btn.style.background = 'rgba(255, 0, 127, 0.25)';
@@ -1078,7 +1078,7 @@ class MiniGamesSuite {
     const secs = timeSec % 60;
     const timeStr = mins > 0 ? `${mins}м ${secs}с` : `${secs}с`;
 
-    window.app.showToast(`🧠 Все пары найдены за ${timeStr}! Ходы: ${this.memoryMoves}. Награда: +${totalLumens} ⬡, +${totalXp} XP!`, 'reward');
+    window.app.showToast(`Все пары найдены за ${timeStr}! Ходы: ${this.memoryMoves}. Награда: +${totalLumens} ⬡, +${totalXp} XP`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
   }
 
@@ -1299,7 +1299,7 @@ class MiniGamesSuite {
       });
     }
 
-    window.app.showToast(`👁️ Раунд скорочтения пройден! Точность: ${accuracy}%. Награда: +${lumensEarned} ⬡, +${xpEarned} XP!`, 'reward');
+    window.app.showToast(`Раунд скорочтения пройден! Точность: ${accuracy}%. Награда: +${lumensEarned} ⬡, +${xpEarned} XP`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
   }
 
@@ -1459,7 +1459,7 @@ class MiniGamesSuite {
 
     if (candidate) {
       this.addWordToAssembly(candidate);
-      window.app.showToast(`💡 Подсказка: «${neededWord}»`, 'info');
+      window.app.showToast(`Подсказка: «${neededWord}»`, 'info');
     }
   }
 
@@ -1498,7 +1498,7 @@ class MiniGamesSuite {
         if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
       }
 
-      window.app.showToast(`✨ Идеально собрано по памяти! +${rewardLumens} ⬡, +${rewardXp} XP!`, 'reward');
+      window.app.showToast(`Идеально собрано по памяти! +${rewardLumens} ⬡, +${rewardXp} XP`, 'reward');
       if (window.soundEngine) window.soundEngine.playLevelUp();
 
       setTimeout(() => {
@@ -1638,7 +1638,7 @@ class MiniGamesSuite {
     window.auth.saveUser();
     window.auth.syncUserToUI();
 
-    window.app.showToast(`🎉 Куплено: "${itemName}" (-${price} ⬡)!`, 'reward');
+    window.app.showToast(`Куплено: «${itemName}» (-${price} ⬡)`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
 
     this.equipItem(category, itemId, itemName);
@@ -1665,7 +1665,7 @@ class MiniGamesSuite {
     window.auth.syncUserToUI();
     this.updateShopUserPreview();
     this.renderShopCategory(category);
-    window.app.showToast(`✨ Применено: "${itemName}"`, 'success');
+    window.app.showToast(`Применено: «${itemName}»`, 'success');
     if (window.soundEngine) window.soundEngine.playCorrect();
   }
 }

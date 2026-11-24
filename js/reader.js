@@ -138,7 +138,7 @@ class SpeechNarrator {
   speakCurrentSentence() {
     if (!this.isPlaying || this.currentSentenceIdx >= this.sentences.length) {
       this.stop();
-      window.app?.showToast('🎧 Чтение главы завершено', 'info');
+      window.app?.showToast('Чтение главы завершено', 'info');
       return;
     }
 
@@ -364,7 +364,7 @@ class ReaderEngine {
         const playing = window.soundEngine.playAmbient(soundType);
         if (playing) {
           e.currentTarget.classList.add('active');
-          window.app.showToast(`🎧 Фоновый звук: ${e.currentTarget.textContent}`, 'info');
+          window.app.showToast(`Фоновый звук: ${e.currentTarget.textContent}`, 'info');
         }
       });
     });
@@ -487,12 +487,12 @@ class ReaderEngine {
       const bodyEl = document.getElementById('reader-body-content');
       const text = bodyEl ? bodyEl.innerText : '';
       if (!text || text.length < 10) {
-        window.app.showToast('⚠️ Текст главы ещё загружается...', 'error');
+        window.app.showToast('Текст главы ещё загружается...', 'error');
         return;
       }
       if (bar) bar.style.display = 'flex';
       this.narrator.start(text);
-      window.app.showToast('🎧 Кибер-Чтец запущен: озвучивание главы', 'info');
+      window.app.showToast('Кибер-Чтец запущен: озвучивание главы', 'info');
     } else {
       this.narrator.toggle();
     }
@@ -564,7 +564,7 @@ class ReaderEngine {
     if (window.auth) {
       window.auth.addXp(10);
       window.auth.addLumens(5);
-      window.app.showToast('🧠 Толкование изучено: +10 XP, +5 ⬡!', 'reward');
+      window.app.showToast('Толкование изучено: +10 XP, +5 ⬡', 'reward');
       if (window.soundEngine) window.soundEngine.playCorrect();
     }
 
@@ -800,7 +800,7 @@ class ReaderEngine {
     // If resumed from previous reading progress
     if (resumed && this.currentChapterIdx > 0) {
       const chTitle = book.chapters?.[this.currentChapterIdx]?.title || `Глава ${this.currentChapterIdx + 1}`;
-      window.app.showToast(`📖 Возобновлено чтение: ${chTitle}`, 'info');
+      window.app.showToast(`Возобновлено чтение: ${chTitle}`, 'info');
 
       if (this.readingMode === 'manga') {
         setTimeout(() => {
@@ -1026,7 +1026,7 @@ class ReaderEngine {
           window.auth.updateStat('booksRead', 1);
           window.auth.addXp(200);
           window.auth.addLumens(100);
-          window.app.showToast('🏆 Поздравляем! Произведение полностью прочитано: +200 XP, +100 ⬡!', 'reward');
+          window.app.showToast('Поздравляем! Произведение полностью прочитано: +200 XP, +100 Люменов', 'reward');
           if (window.soundEngine) window.soundEngine.playLevelUp();
         }
       }
@@ -1064,7 +1064,7 @@ class ReaderEngine {
           window.dbEngine.updateQuestProgress('quest_read_2min', 1);
           if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
         }
-        window.app.showToast('📖 Чтение вознаграждено: +15 ⬡, +40 XP!', 'reward');
+        window.app.showToast('Чтение вознаграждено: +15 ⬡, +40 XP', 'reward');
         if (window.soundEngine) window.soundEngine.playClick();
       }
     }, 1000);
@@ -1285,7 +1285,7 @@ class ReaderEngine {
     if (this.isZenMode) {
       this.closeAllPopovers();
       this.closeTocDrawer();
-      window.app?.showToast?.('🧘 Дзен-режим активирован. Нажмите Esc для выхода.', 'info');
+      window.app?.showToast?.('Дзен-режим активирован. Нажмите Esc для выхода.', 'info');
     } else {
       window.app?.showToast?.('Выход из Дзен-режима', 'info');
     }
@@ -1397,9 +1397,9 @@ class ReaderEngine {
     const shareText = `${quote}\n— ${this.currentBook.author}, «${this.currentBook.title}»\n\n📖 Читайте на CyberLibris: https://dedylaay.github.io/cyberlibris/`;
 
     navigator.clipboard?.writeText(shareText).then(() => {
-      window.app.showToast('📋 Цитата скопирована в буфер обмена!', 'success');
+      window.app.showToast('Цитата скопирована в буфер обмена', 'success');
     }).catch(() => {
-      window.app.showToast('📋 Цитата готова к отправке!', 'success');
+      window.app.showToast('Цитата готова к отправке', 'success');
     });
 
     // Award XP and Lumens for sharing knowledge
@@ -1409,7 +1409,7 @@ class ReaderEngine {
       window.dbEngine.updateQuestProgress('quest_share_quote', 1);
       if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
     }
-    window.app.showToast('✨ Вознаграждение за шеринг цитаты: +25 XP, +15 ⬡!', 'reward');
+    window.app.showToast('Вознаграждение за шеринг цитаты: +25 XP, +15 ⬡', 'reward');
     if (window.soundEngine) window.soundEngine.playCorrect();
     window.app.closeAllModals();
   }
@@ -1458,7 +1458,7 @@ class ReaderEngine {
 
     if (noteInput) noteInput.value = '';
     this.renderBookmarksList();
-    window.app.showToast('🔖 Закладка успешно зафиксирована!', 'success');
+    window.app.showToast('Закладка успешно зафиксирована', 'success');
     if (window.soundEngine) window.soundEngine.playCorrect();
   }
 
@@ -1521,13 +1521,13 @@ class ReaderEngine {
     user.bookmarks = user.bookmarks.filter(b => b.id !== id);
     window.auth.saveUser();
     this.renderBookmarksList();
-    window.app.showToast('🗑️ Закладка удалена', 'info');
+    window.app.showToast('Закладка удалена', 'info');
   }
 
   toggleFullscreen() {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen?.().catch(() => {});
-      window.app.showToast('⛶ Полноэкранный режим чтения включен', 'info');
+      window.app.showToast('Полноэкранный режим чтения включен', 'info');
     } else {
       document.exitFullscreen?.().catch(() => {});
       window.app.showToast('Полноэкранный режим выключен', 'info');
@@ -1577,7 +1577,7 @@ class ReaderEngine {
         window.auth.updateStat('speedRecordWPM', this.rsvpWpm, true);
         window.auth.addLumens(30);
         window.auth.addXp(80);
-        window.app.showToast(`⚡ Скорочтение завершено (${this.rsvpWpm} WPM)! +30 ⬡, +80 XP`, 'reward');
+        window.app.showToast(`Скорочтение завершено (${this.rsvpWpm} WPM)! +30 ⬡, +80 XP`, 'reward');
         return;
       }
       this.renderRsvpWord();

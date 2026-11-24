@@ -110,7 +110,7 @@ class AppController {
     document.getElementById('btn-toggle-sfx')?.addEventListener('click', () => {
       const isMuted = window.soundEngine.toggleMute();
       this.updateAudioButtonState();
-      this.showToast(isMuted ? '🔇 Звук выключен' : '🔊 Звуковые эффекты включены', 'info');
+      this.showToast(isMuted ? 'Звук выключен' : 'Звуковые эффекты включены', 'info');
     });
   }
 
@@ -320,7 +320,7 @@ class AppController {
           const user = window.auth.currentUser;
           if (!user) { this.openModal('modal-auth'); return; }
           const isFav = window.bookRelay.toggleFavorite(user.username, book.id);
-          this.showToast(isFav ? `❤️ «${book.title}» добавлена в избранное!` : `Удалено из избранного`, 'info');
+          this.showToast(isFav ? `«${book.title}» добавлена в избранное` : `Удалено из избранного`, 'info');
         });
 
         mainEl.classList.remove('carousel-fade-out');
@@ -620,7 +620,7 @@ class AppController {
       const randomBook = allBooks[Math.floor(Math.random() * allBooks.length)];
       if (randomBook) {
         if (window.soundEngine) window.soundEngine.playLevelUp();
-        this.showToast(`🎲 Выбор Судьбы: «${randomBook.title}» (${randomBook.author})!`, 'reward');
+        this.showToast(`Выбор Случайной Книги: «${randomBook.title}» (${randomBook.author})`, 'reward');
         this.openBookDetails(randomBook.id);
       }
     });
@@ -1223,7 +1223,7 @@ class AppController {
     document.getElementById('book-modal-cover').src = book.coverImage;
     document.getElementById('book-modal-author').textContent = `Автор: ${book.author} (${book.year})`;
     document.getElementById('book-modal-genre').textContent = book.genre;
-    document.getElementById('book-modal-rating').textContent = `⭐ ${book.rating} (${book.ratingCount || 100}+ оценок)`;
+    document.getElementById('book-modal-rating').textContent = `${book.rating} / 5.0 (${book.ratingCount || 100}+ оценок)`;
     document.getElementById('book-modal-pages').textContent = `~${book.lengthPages} стр. (${book.wordsCount?.toLocaleString()} слов)`;
     document.getElementById('book-modal-difficulty').textContent = book.difficulty;
     document.getElementById('book-modal-year').textContent = book.year;
@@ -1243,7 +1243,7 @@ class AppController {
         tocEl.innerHTML = `
           <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 0.8rem 1rem;">
             <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--accent-cyan); font-weight:800; margin-bottom:0.5rem; display:flex; justify-content:space-between;">
-              <span>📚 Содержание произведения</span>
+              <span>Содержание произведения</span>
               <span>${chapters.length} глав(ы)</span>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.35rem; max-height:130px; overflow-y:auto; padding-right:0.3rem;">
@@ -1270,7 +1270,7 @@ class AppController {
         tocEl.innerHTML = `
           <div style="background: rgba(0,0,0,0.35); border: 1px dashed rgba(0, 240, 255, 0.3); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
             <div>
-              <div style="font-size:0.78rem; font-weight:700; color:var(--accent-cyan);">📡 Живая потоковая ретрансляция</div>
+              <div style="font-size:0.78rem; font-weight:700; color:var(--accent-cyan);">Живая потоковая ретрансляция</div>
               <div style="font-size:0.74rem; color:var(--text-muted); margin-top:2px;">Подлинный текст подкачивается из <strong>${providerName}</strong> в память при чтении</div>
             </div>
             <span class="pulse-dot"></span>
@@ -1289,8 +1289,8 @@ class AppController {
     const readMangaBtn = document.getElementById('btn-modal-read-manga');
     if (readMangaBtn) {
       readMangaBtn.innerHTML = hasProgress 
-        ? `📜 Продолжить чтение (Гл. ${savedChNum})` 
-        : '📜 Читать в режиме ленты';
+        ? `Продолжить чтение (Гл. ${savedChNum})` 
+        : 'Читать в режиме ленты';
       readMangaBtn.title = hasProgress ? `Возобновить чтение: ${savedChTitle}` : 'Читать в режиме непрерывной ленты';
       readMangaBtn.onclick = () => {
         this.closeAllModals();
@@ -1301,8 +1301,8 @@ class AppController {
     const readPageBtn = document.getElementById('btn-modal-read-page');
     if (readPageBtn) {
       readPageBtn.innerHTML = hasProgress 
-        ? `📖 Продолжить по главам (Гл. ${savedChNum})` 
-        : '📖 Читать по главам';
+        ? `Продолжить по главам (Гл. ${savedChNum})` 
+        : 'Читать по главам';
       readPageBtn.title = hasProgress ? `Возобновить чтение: ${savedChTitle}` : 'Читать по главам';
       readPageBtn.onclick = () => {
         this.closeAllModals();
@@ -1316,8 +1316,8 @@ class AppController {
         const user = window.auth.currentUser;
         if (!user) { this.openModal('modal-auth'); return; }
         const isFav = window.bookRelay.toggleFavorite(user.username, book.id);
-        favBtn.textContent = isFav ? '❤️ В избранном' : '🤍 В избранное';
-        this.showToast(isFav ? '❤️ Добавлено в избранное!' : 'Удалено из избранного', 'info');
+        favBtn.textContent = isFav ? 'В избранном' : 'В избранное';
+        this.showToast(isFav ? 'Добавлено в избранное!' : 'Удалено из избранного', 'info');
       };
     }
 
@@ -1345,7 +1345,7 @@ class AppController {
         window.bookRelay.addReview(book.id, newReview);
         window.auth.addXp(30);
         window.auth.addLumens(15);
-        this.showToast('💬 Рецензия опубликована! +30 XP, +15 ⬡', 'reward');
+        this.showToast('Рецензия опубликована! +30 XP, +15 Люменов', 'reward');
         if (textEl) textEl.value = '';
         document.getElementById('add-review-box').style.display = 'none';
         this.renderBookReviews(book.id);
@@ -2076,7 +2076,7 @@ class AppController {
       window.auth.syncUserToUI();
       this.closeAllModals();
       this.renderProfile();
-      this.showToast('✨ Профиль успешно обновлен и настроен!', 'reward');
+      this.showToast('Профиль успешно обновлен и сохранен', 'reward');
       if (window.soundEngine) window.soundEngine.playLevelUp();
     });
   }
@@ -2195,7 +2195,7 @@ class AppController {
         window.dbEngine.updateQuestProgress('quest_change_theme', 1);
         this.renderDailyQuests();
 
-        this.showToast(`🎨 Выбрана атмосфера: ${themeNames[themeId] || themeId}`, 'info');
+        this.showToast(`Выбрана атмосфера: ${themeNames[themeId] || themeId}`, 'info');
         if (window.soundEngine) window.soundEngine.playCardFlip();
       });
     });
@@ -2217,7 +2217,7 @@ class AppController {
         }
 
         updateActiveShapeUI(shape);
-        this.showToast(`✨ Форма частиц: ${shapeLabels[shape] || shape}`, 'info');
+        this.showToast(`Форма частиц: ${shapeLabels[shape] || shape}`, 'info');
         if (window.soundEngine) window.soundEngine.playCardFlip();
       });
     });
@@ -2554,7 +2554,7 @@ class AppController {
             if (window.auth && window.auth.currentUser) {
               window.auth.addXp(15);
               window.auth.addLumens(5);
-              this.showToast('🔮 Мудрость Оракула получена: +15 XP и +5 Люменов!', 'reward');
+              this.showToast('Мудрость Оракула получена: +15 XP и +5 Люменов', 'reward');
             }
           }
         }, 18);
