@@ -62,6 +62,7 @@ class AppController {
     this.bindSteamCarouselControls();
     this.bindTasteOnboarding();
     this.bindBookDetailsModal();
+    this.bindEditProfileModal();
     this.bindAdminRecommendations();
     this.bindOpenLibraryExplorer();
     this.bindCommandPalette();
@@ -1360,24 +1361,78 @@ class AppController {
 
     const shelves = window.bookRelay.getUserShelves(user.username);
 
-    // Profile header
+    // 1. Dynamic Profile Backdrop Theme
+    const bgEl = document.getElementById('steam-profile-ambient-bg');
+    if (bgEl) {
+      bgEl.className = `steam-profile-ambient-bg ${user.profileBg || 'bg-steam'}`;
+    }
+
+    // 2. Avatar & Frame
     const wrap = document.getElementById('profile-avatar-wrap');
     if (wrap) {
       wrap.className = `avatar-frame-wrap preview-avatar-large ${user.avatarFrame || 'frame-gold'}`;
-      wrap.innerHTML = `<div class="avatar-inner">${user.avatar || '📖'}</div>`;
+      wrap.innerHTML = `<div class="avatar-inner" id="profile-avatar-emoji">${user.avatar || '👑'}</div>`;
     }
 
-    document.getElementById('profile-display-name').textContent = user.displayName || user.username;
-    document.getElementById('profile-username-tag').textContent = `@${user.username}`;
-    document.getElementById('profile-level-num').textContent = user.level;
+    // 3. User Identity
+    const dispNameEl = document.getElementById('profile-display-name');
+    if (dispNameEl) dispNameEl.textContent = user.displayName || user.username;
+    
+    const userTagEl = document.getElementById('profile-username-tag');
+    if (userTagEl) userTagEl.textContent = `@${user.username}`;
+
+    const roleBadgeEl = document.getElementById('profile-role-badge');
+    if (roleBadgeEl && window.auth.getRoleBadgeHTML) {
+      roleBadgeEl.innerHTML = window.auth.getRoleBadgeHTML(user.role, user.level);
+    }
+
+    // 4. Online Status Indicator
+    let lastBookId = localStorage.getItem('cyberlibris_last_read_book');
+    if (!lastBookId && user.readingProgress) {
+      const keys = Object.keys(user.readingProgress);
+      if (keys.length > 0) lastBookId = keys[keys.length - 1];
+    }
+    if (!lastBookId) lastBookId = 'war_and_peace';
+    const activeBook = window.bookRelay?.getBookById?.(lastBookId);
+    const activeProg = window.readerEngine?.getSavedProgress?.(lastBookId);
+    const curCh = (activeProg && typeof activeProg.currentChapter === 'number') ? activeProg.currentChapter + 1 : 1;
+    const curPct = (activeProg && typeof activeProg.progressPercent === 'number') ? activeProg.progressPercent : 0;
+    
+    const statusOnlineEl = document.getElementById('profile-status-online');
+    if (statusOnlineEl) {
+      statusOnlineEl.textContent = `В сети • Читает «${activeBook?.title || 'Шедевр'}» (Гл. ${curCh}, ${curPct}%)`;
+    }
+
+    // 5. Steam Level & XP Progress
+    const levelNumEl = document.getElementById('profile-level-num');
+    if (levelNumEl) levelNumEl.textContent = user.level;
 
     const neededXp = user.level * 400;
     const currentXp = user.xp || 0;
     const percent = Math.min(100, Math.round((currentXp / neededXp) * 100));
-    document.getElementById('profile-xp-text').textContent = `${currentXp} / ${neededXp} XP (${percent}%)`;
-    document.getElementById('profile-xp-fill').style.width = `${percent}%`;
+    
+    const xpTextEl = document.getElementById('profile-xp-text');
+    if (xpTextEl) xpTextEl.textContent = `${currentXp} / ${neededXp} XP (${percent}%)`;
+    
+    const xpFillEl = document.getElementById('profile-xp-fill');
+    if (xpFillEl) xpFillEl.style.width = `${percent}%`;
 
-    // Calculate Dynamic Genre Title & Justification
+    const xpNextEl = document.getElementById('profile-xp-next-text');
+    if (xpNextEl) {
+      const diff = Math.max(0, neededXp - currentXp);
+      xpNextEl.textContent = `+${diff} XP до ${user.level + 1} ур.`;
+    }
+
+    // 6. Highlights Row
+    const lumensHighlight = document.getElementById('stat-lumens-highlight');
+    if (lumensHighlight) lumensHighlight.textContent = `${user.lumens || 0} ⬡`;
+
+    const streakValEl = document.getElementById('profile-streak-count');
+    if (streakValEl) streakValEl.textContent = '3 дня подряд';
+    const streakSubEl = document.getElementById('profile-streak-count-sub');
+    if (streakSubEl) streakSubEl.textContent = '3 дня подряд';
+
+    // 7. Dynamic Genre Title & Justification
     const militaryCount = shelves.completed.filter(c => {
       const b = window.bookRelay.getBookById(c.id);
       return b && (b.genre.includes('Военная') || b.tags.includes('военная проза'));
@@ -1414,48 +1469,147 @@ class AppController {
     const rankBooksList = document.getElementById('profile-rank-books-list');
     if (rankBooksList) {
       rankBooksList.innerHTML = '';
-      earnedBooks.forEach(item => {
-        const b = window.bookRelay.getBookById(item.id);
-        if (b) {
-          const chip = document.createElement('div');
-          chip.className = 'rank-book-mini-chip';
-          chip.innerHTML = `<img src="${b.coverImage}" alt="${b.title}"> <span>«${b.title}»</span>`;
-          rankBooksList.appendChild(chip);
-        }
-      });
+      if (!earnedBooks.length && activeBook) {
+        const chip = document.createElement('div');
+        chip.className = 'rank-book-mini-chip';
+        chip.innerHTML = `<img src="${activeBook.coverImage}" alt="${activeBook.title}"> <span>«${activeBook.title}»</span>`;
+        rankBooksList.appendChild(chip);
+      } else {
+        earnedBooks.forEach(item => {
+          const b = window.bookRelay.getBookById(item.id);
+          if (b) {
+            const chip = document.createElement('div');
+            chip.className = 'rank-book-mini-chip';
+            chip.innerHTML = `<img src="${b.coverImage}" alt="${b.title}"> <span>«${b.title}»</span>`;
+            rankBooksList.appendChild(chip);
+          }
+        });
+      }
     }
 
-    // Meaningful Stats
-    document.getElementById('stat-yearly-goal').textContent = `${shelves.completedThisYear} / ${shelves.yearlyGoal} книг`;
-    document.getElementById('stat-useful-books').textContent = `${shelves.usefulBooksCount} книг`;
-    document.getElementById('stat-pages-read').textContent = `${(shelves.completedThisYear * 450 + 240).toLocaleString()} стр.`;
-    document.getElementById('stat-reviews-count').textContent = '4 рецензии';
-    document.getElementById('stat-lumens').textContent = `${user.lumens || 0} ⬡`;
-
-    // Render Weekly Reading Activity Heatmap
-    this.renderWeeklyHeatmap(user);
-
-    // Editable status motto
-    const mottoEl = document.getElementById('profile-user-status');
-    if (mottoEl) {
-      mottoEl.textContent = user.motto || '«В книгах ищу то, чего не хватает в реальности...» ✎';
-      mottoEl.onclick = () => {
+    // 8. Editable status motto
+    const mottoTextEl = document.getElementById('profile-motto-text');
+    if (mottoTextEl) {
+      mottoTextEl.textContent = user.motto || 'В книгах ищу то, чего не хватает в реальности...';
+    }
+    const mottoBubble = document.getElementById('profile-user-status');
+    if (mottoBubble) {
+      mottoBubble.onclick = () => {
         const next = prompt('Введите ваш статус / читательский девиз:', user.motto || '');
         if (next !== null && next.trim()) {
           user.motto = next.trim();
           window.auth.saveUser();
-          mottoEl.textContent = `«${user.motto}» ✎`;
+          if (mottoTextEl) mottoTextEl.textContent = user.motto;
           this.showToast('Девиз профиля обновлен!', 'success');
         }
       };
     }
+
+    // 9. Featured Masterpiece Showcase
+    const featuredBook = activeBook || window.bookRelay?.getBookById?.('war_and_peace');
+    if (featuredBook) {
+      const coverImg = document.getElementById('featured-book-cover-img');
+      if (coverImg) coverImg.src = featuredBook.coverImage;
+
+      const titleEl = document.getElementById('featured-book-title');
+      if (titleEl) titleEl.textContent = featuredBook.title;
+
+      const authorEl = document.getElementById('featured-book-author');
+      if (authorEl) authorEl.textContent = featuredBook.author;
+
+      const statChapters = document.getElementById('featured-stat-chapters');
+      if (statChapters) statChapters.textContent = `Глава ${curCh} из ${featuredBook.chapters?.length || 1}`;
+
+      const statPercent = document.getElementById('featured-stat-percent');
+      if (statPercent) statPercent.textContent = `${curPct}% книги`;
+
+      const statTime = document.getElementById('featured-stat-time');
+      if (statTime) statTime.textContent = `${Math.max(15, (user.stats?.readTimeMinutes || 45))} мин`;
+
+      const btnContinue = document.getElementById('btn-featured-continue-read');
+      if (btnContinue) {
+        btnContinue.onclick = () => {
+          window.readerEngine.openBook(featuredBook.id, (activeProg && activeProg.currentChapter) || 0);
+          this.switchView('reader');
+        };
+      }
+    }
+
+    // 10. Rare Achievements Showcase
+    const rareContainer = document.getElementById('profile-rare-achievements-grid');
+    if (rareContainer) {
+      const rareBadges = [
+        { id: 'creator', name: '👑 Создатель Реальности', desc: 'Обладатель высшего статуса системы CyberLibris', pct: '1.2%', xp: '+500 XP' },
+        { id: 'master', name: '⚡ Пожиратель Фолиантов', desc: 'Прочтите более 1000 страниц классических текстов', pct: '3.8%', xp: '+250 XP' },
+        { id: 'sage', name: '🔮 Пророк Мудрости', desc: 'Получите 5 глубоких предсказаний Кибер-Оракула', pct: '4.5%', xp: '+180 XP' },
+        { id: 'critic', name: '✍️ Истинный Критик', desc: 'Напишите подробные рецензии к 3 и более книгам', pct: '5.1%', xp: '+200 XP' }
+      ];
+      rareContainer.innerHTML = rareBadges.map(ach => `
+        <div class="rare-achievement-card tilt-card">
+          <div class="rare-ach-icon-wrap">
+            <span class="rare-ach-icon">${ach.name.split(' ')[0]}</span>
+          </div>
+          <div class="rare-ach-title">${ach.name.substring(2)}</div>
+          <div class="rare-ach-desc">${ach.desc}</div>
+          <div class="rare-ach-footer">
+            <span class="rare-ach-pct">Редкость: ${ach.pct}</span>
+            <span class="rare-ach-xp">${ach.xp}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 11. Bento Stats Grid 2.0
+    const statYearly = document.getElementById('stat-yearly-goal');
+    if (statYearly) statYearly.textContent = `${shelves.completedThisYear} / ${shelves.yearlyGoal} книг`;
+
+    const statUseful = document.getElementById('stat-useful-books');
+    if (statUseful) statUseful.textContent = `${shelves.usefulBooksCount} книг`;
+
+    const statPages = document.getElementById('stat-pages-read');
+    if (statPages) statPages.textContent = `${(shelves.completedThisYear * 450 + 240).toLocaleString()} стр.`;
+
+    const statReviews = document.getElementById('stat-reviews-count');
+    if (statReviews) statReviews.textContent = '4 рецензии';
+
+    const statLumens = document.getElementById('stat-lumens');
+    if (statLumens) statLumens.textContent = `${user.lumens || 0} ⬡`;
+
+    // 12. Render Weekly Reading Activity Heatmap
+    this.renderWeeklyHeatmap(user);
+
+    // 13. Shelf Tab Counts
+    const countReading = document.getElementById('profile-shelf-count-reading');
+    if (countReading) countReading.textContent = shelves.readingNow.length;
+
+    const countFav = document.getElementById('profile-shelf-count-fav');
+    if (countFav) countFav.textContent = shelves.favorites.length;
+
+    const countCompleted = document.getElementById('profile-shelf-count-completed');
+    if (countCompleted) countCompleted.textContent = shelves.completed.length;
+
+    const countReviews = document.getElementById('profile-shelf-count-reviews');
+    if (countReviews) countReviews.textContent = '2';
+
+    // 14. Shelves Tab Switching
+    document.querySelectorAll('.profile-shelf-tab').forEach(tab => {
+      tab.onclick = () => {
+        document.querySelectorAll('.profile-shelf-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.profileTab;
+        document.querySelectorAll('.profile-shelf-content').forEach(c => {
+          c.classList.toggle('active', c.id === `tab-content-${target}`);
+        });
+        if (window.soundEngine) window.soundEngine.playClick();
+      };
+    });
 
     // Shelf 1: Reading Now
     const readingNowGrid = document.getElementById('profile-shelf-reading-now');
     if (readingNowGrid) {
       readingNowGrid.innerHTML = '';
       if (!shelves.readingNow.length) {
-        readingNowGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Нет активных книг. Выберите книгу на витрине!</div>';
+        readingNowGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 1.5rem; text-align: center;">Нет активных книг. Выберите книгу на витрине или продолжите любимый шедевр!</div>';
       } else {
         shelves.readingNow.forEach(item => {
           const b = window.bookRelay.getBookById(item.id);
@@ -1478,6 +1632,7 @@ class AppController {
             `;
             card.querySelector('.btn-continue-reading')?.addEventListener('click', () => {
               window.readerEngine.openBook(b.id, typeof item.chapterIdx === 'number' ? item.chapterIdx : null, 'manga');
+              this.switchView('reader');
             });
             readingNowGrid.appendChild(card);
           }
@@ -1489,50 +1644,106 @@ class AppController {
     const favGrid = document.getElementById('profile-shelf-favorites');
     if (favGrid) {
       favGrid.innerHTML = '';
-      shelves.favorites.forEach(bookId => {
-        const b = window.bookRelay.getBookById(bookId);
-        if (b) {
-          const card = document.createElement('div');
-          card.className = 'shelf-book-card';
-          card.innerHTML = `
-            <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
-            <div class="shelf-book-title">${b.title}</div>
-            <div style="font-size:0.75rem; color:var(--accent-cyan);">${b.author}</div>
-            <button class="btn btn-secondary btn-sm" onclick="window.app.openBookDetails('${b.id}')" style="margin-top:0.4rem;">
-              Карточка
-            </button>
-          `;
-          favGrid.appendChild(card);
-        }
-      });
+      if (!shelves.favorites.length) {
+        favGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 1.5rem; text-align: center;">В избранном пока пусто. Добавьте понравившиеся книги кнопкой «В избранное»!</div>';
+      } else {
+        shelves.favorites.forEach(bookId => {
+          const b = window.bookRelay.getBookById(bookId);
+          if (b) {
+            const card = document.createElement('div');
+            card.className = 'shelf-book-card';
+            card.innerHTML = `
+              <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+              <div class="shelf-book-title">${b.title}</div>
+              <div style="font-size:0.75rem; color:var(--accent-cyan);">${b.author}</div>
+              <button class="btn btn-secondary btn-sm" onclick="window.app.openBookDetails('${b.id}')" style="margin-top:0.4rem;">
+                Карточка
+              </button>
+            `;
+            favGrid.appendChild(card);
+          }
+        });
+      }
     }
 
     // Shelf 3: Completed
     const compGrid = document.getElementById('profile-shelf-completed');
     if (compGrid) {
       compGrid.innerHTML = '';
-      shelves.completed.forEach(item => {
-        const b = window.bookRelay.getBookById(item.id);
-        if (b) {
-          const card = document.createElement('div');
-          card.className = 'shelf-book-card';
-          card.innerHTML = `
-            <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
-            <div class="shelf-book-title">${b.title}</div>
-            <div style="font-size:0.75rem; color:var(--accent-green);">✓ Завершено (${item.completedDate})</div>
-          `;
-          compGrid.appendChild(card);
-        }
-      });
+      if (!shelves.completed.length) {
+        compGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 1.5rem; text-align: center;">Пока нет полностью завершенных книг. Дочитайте все главы до конца!</div>';
+      } else {
+        shelves.completed.forEach(item => {
+          const b = window.bookRelay.getBookById(item.id);
+          if (b) {
+            const card = document.createElement('div');
+            card.className = 'shelf-book-card';
+            card.innerHTML = `
+              <img src="${b.coverImage}" class="shelf-book-cover" alt="${b.title}" loading="lazy" decoding="async">
+              <div class="shelf-book-title">${b.title}</div>
+              <div style="font-size:0.75rem; color:var(--accent-green);">✓ Завершено (${item.completedDate})</div>
+            `;
+            compGrid.appendChild(card);
+          }
+        });
+      }
     }
 
-    // Badges Showcase
+    // Shelf 4: Reviews Showcase
+    const reviewsList = document.getElementById('profile-reviews-list');
+    if (reviewsList) {
+      reviewsList.innerHTML = `
+        <div class="steam-review-card" style="margin-bottom: 1rem;">
+          <div class="steam-rev-header">
+            <div class="steam-rev-badge">👍 РЕКОМЕНДУЮ (ОБЗОР ЧИТАТЕЛЯ)</div>
+            <div class="steam-rev-time">В книге: 4 ч. 20 мин.</div>
+          </div>
+          <div class="steam-rev-book-title">
+            Книга: <strong style="color: #66c0f4;">«Война и мир» (Лев Толстой)</strong>
+          </div>
+          <div class="steam-rev-text">
+            Потрясающее монументальное произведение. Батальные сцены под Аустерлицем и Бородино читаются на одном дыхании, а психологическая глубина Пьера Безухова и Андрея Болконского актуальна и сегодня. Всем рекомендую!
+          </div>
+          <div class="steam-rev-footer">
+            <span>Опубликовано: 2026 г.</span>
+            <div class="steam-rev-helpful-btns">
+              <button class="steam-rev-help-btn">👍 Полезно (24)</button>
+              <button class="steam-rev-help-btn">👑 Награда</button>
+            </div>
+          </div>
+        </div>
+        <div class="steam-review-card">
+          <div class="steam-rev-header">
+            <div class="steam-rev-badge">👍 РЕКОМЕНДУЮ (ОБЗОР ЧИТАТЕЛЯ)</div>
+            <div class="steam-rev-time">В книге: 2 ч. 15 мин.</div>
+          </div>
+          <div class="steam-rev-book-title">
+            Книга: <strong style="color: #66c0f4;">«Дракула» (Брэм Стокер)</strong>
+          </div>
+          <div class="steam-rev-text">
+            Невероятно густая готическая атмосфера, эпистолярный формат дневников и писем держит в напряжении с первой страницы в замке графа. Читать в темное время суток с эмбиентом дождя — абсолютный кайф.
+          </div>
+          <div class="steam-rev-footer">
+            <span>Опубликовано: 2026 г.</span>
+            <div class="steam-rev-helpful-btns">
+              <button class="steam-rev-help-btn">👍 Полезно (19)</button>
+              <button class="steam-rev-help-btn">👑 Награда</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 15. Badges Showcase with Filter Pills
     const badgesGrid = document.getElementById('profile-badges-grid');
     if (badgesGrid) {
       badgesGrid.innerHTML = '';
       const allBadges = window.dbEngine.getBadges();
+      let unlockedCount = 0;
+
       allBadges.forEach((b) => {
         const has = user.badges?.includes(b.id);
+        if (has) unlockedCount++;
         const el = document.createElement('div');
         el.className = `profile-badge-card ${has ? 'unlocked' : 'locked'}`;
         const auraColor = has ? (b.color || '#00f0ff') : 'rgba(255, 255, 255, 0.2)';
@@ -1546,9 +1757,86 @@ class AppController {
         `;
         badgesGrid.appendChild(el);
       });
+
+      // Update badge counts
+      const countAllB = document.getElementById('badge-count-all');
+      if (countAllB) countAllB.textContent = allBadges.length;
+      const countUnlockedB = document.getElementById('badge-count-unlocked');
+      if (countUnlockedB) countUnlockedB.textContent = unlockedCount;
+      const countLockedB = document.getElementById('badge-count-locked');
+      if (countLockedB) countLockedB.textContent = allBadges.length - unlockedCount;
+
+      // Filter pills listeners
+      document.querySelectorAll('.badge-pill-btn').forEach(pill => {
+        pill.onclick = () => {
+          document.querySelectorAll('.badge-pill-btn').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          const filter = pill.dataset.badgeFilter;
+          badgesGrid.querySelectorAll('.profile-badge-card').forEach(card => {
+            if (filter === 'all') card.style.display = 'flex';
+            else if (filter === 'unlocked') card.style.display = card.classList.contains('unlocked') ? 'flex' : 'none';
+            else if (filter === 'locked') card.style.display = card.classList.contains('locked') ? 'flex' : 'none';
+          });
+          if (window.soundEngine) window.soundEngine.playClick();
+        };
+      });
     }
 
     this.bindTiltEffect();
+  }
+
+  // --- EDIT PROFILE MODAL ENGINE ---
+
+  bindEditProfileModal() {
+    const btnOpen = document.getElementById('btn-open-edit-profile');
+    const form = document.getElementById('form-edit-profile');
+    if (!btnOpen || !form) return;
+
+    btnOpen.addEventListener('click', () => {
+      const user = window.auth.currentUser;
+      if (!user) { this.openModal('modal-auth'); return; }
+
+      document.getElementById('edit-display-name').value = user.displayName || user.username;
+      const mottoField = document.getElementById('edit-profile-motto');
+      if (mottoField) mottoField.value = user.motto || '';
+
+      const avatarRadio = form.querySelector(`input[name="edit-avatar"][value="${user.avatar || '👑'}"]`);
+      if (avatarRadio) avatarRadio.checked = true;
+
+      const frameRadio = form.querySelector(`input[name="edit-avatar-frame"][value="${user.avatarFrame || 'frame-gold'}"]`);
+      if (frameRadio) frameRadio.checked = true;
+
+      const bgRadio = form.querySelector(`input[name="edit-profile-bg"][value="${user.profileBg || 'bg-steam'}"]`);
+      if (bgRadio) bgRadio.checked = true;
+
+      this.openModal('modal-edit-profile');
+      if (window.soundEngine) window.soundEngine.playClick();
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = window.auth.currentUser;
+      if (!user) return;
+
+      const newName = document.getElementById('edit-display-name').value.trim();
+      const newMotto = document.getElementById('edit-profile-motto')?.value.trim();
+      const newAvatar = form.querySelector('input[name="edit-avatar"]:checked')?.value;
+      const newFrame = form.querySelector('input[name="edit-avatar-frame"]:checked')?.value;
+      const newBg = form.querySelector('input[name="edit-profile-bg"]:checked')?.value;
+
+      if (newName) user.displayName = newName;
+      if (newMotto !== undefined) user.motto = newMotto;
+      if (newAvatar) user.avatar = newAvatar;
+      if (newFrame) user.avatarFrame = newFrame;
+      if (newBg) user.profileBg = newBg;
+
+      window.auth.saveUser();
+      window.auth.syncUserToUI();
+      this.closeAllModals();
+      this.renderProfile();
+      this.showToast('✨ Профиль успешно обновлен и настроен!', 'reward');
+      if (window.soundEngine) window.soundEngine.playLevelUp();
+    });
   }
 
   // --- INTERACTIVE THEME PALETTE (COLOR CIRCLES PREVIEW) ---

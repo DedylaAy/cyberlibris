@@ -1257,92 +1257,215 @@
       </section>
 
       <!-- ===================================================================
-           VIEW 6: PROFILE (ЛИЧНЫЙ КАБИНЕТ)
+           VIEW 6: PROFILE (STEAM-GRADE ЛИЧНЫЙ КАБИНЕТ & ХАБ СХОЛАСТА)
            =================================================================== -->
       <section id="view-profile" class="view-section">
-        <div class="section-header">
-          <div class="section-title-wrap">
-            <h2>👤 Личный Профиль & Досье</h2>
-            <p>Ваша персональная статистика, прогресс рангов, коллекция значков и достижения.</p>
-          </div>
-          <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
-            <!-- Emergency Creator Recovery Button -->
-            <button class="btn btn-gold btn-sm magnetic-btn" id="btn-profile-recover-creator" title="Восстановить полные права Создателя (если случайно сняли)">
-              👑 Восстановить статус Создателя
-            </button>
-            <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-open-edit-profile">
-              ✎ Редактировать
-            </button>
-            <button class="btn btn-secondary btn-sm" id="btn-profile-logout" style="color: var(--accent-magenta);">
-              Выйти
-            </button>
-          </div>
-        </div>
+        <!-- Steam Profile Grand Header Card with Dynamic Backdrop -->
+        <div class="steam-profile-hub-card" id="steam-profile-hub-card">
+          <div class="steam-profile-ambient-bg" id="steam-profile-ambient-bg"></div>
 
-        <!-- Profile Hero Card -->
-        <div class="cyber-card tilt-card" style="margin-bottom: 2rem;">
-          <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
-            <div id="profile-avatar-wrap" class="avatar-frame-wrap preview-avatar-large frame-gold">
-              <div class="avatar-inner">⚡</div>
+          <!-- Top Action Ribbon -->
+          <div class="steam-profile-top-ribbon">
+            <div class="profile-online-badge">
+              <span class="online-pulse-dot"></span>
+              <span id="profile-status-online">В сети • Читает «Война и мир»</span>
             </div>
-            <div style="flex: 1;">
-              <h3 id="profile-display-name" style="font-size: 1.8rem; font-weight: 800; color: #fff;">Пользователь</h3>
-              <div id="profile-username-tag" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.3rem;">@username</div>
-              <div id="profile-title-tag" style="margin-bottom: 0.6rem;">Ранг</div>
-
-              <!-- Editable Status Motto -->
-              <div id="profile-user-status" style="font-style: italic; color: #aaa; font-size: 0.9rem; margin-bottom: 1rem; cursor: pointer;" title="Нажмите, чтобы изменить девиз профиля">
-                «В книгах ищу то, чего не хватает в реальности...» ✎
-              </div>
-
-              <!-- XP Bar -->
-              <div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
-                  <span>Уровень <strong id="profile-level-num" style="color: var(--accent-gold);">1</strong></span>
-                  <span id="profile-xp-text" style="color: var(--text-muted);">0 / 400 XP</span>
-                </div>
-                <div class="book-progress-bar" style="height: 10px;">
-                  <div class="book-progress-fill" id="profile-xp-fill" style="width: 50%;"></div>
-                </div>
-              </div>
+            <div class="steam-profile-actions">
+              <!-- Emergency Creator Recovery Button -->
+              <button class="btn btn-gold btn-sm magnetic-btn" id="btn-profile-recover-creator" title="Восстановить полные права Создателя (если случайно сняли)">
+                👑 Статус Создателя
+              </button>
+              <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-open-edit-profile">
+                ✎ Редактировать профиль
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-profile-logout" style="color: var(--accent-magenta);">
+                🚪 Выйти
+              </button>
             </div>
           </div>
+
+          <!-- Main Identity Row -->
+          <div class="steam-profile-identity-row">
+            <!-- Grand Avatar Showcase -->
+            <div class="steam-profile-avatar-block">
+              <div id="profile-avatar-wrap" class="avatar-frame-wrap preview-avatar-large frame-gold">
+                <div class="avatar-inner" id="profile-avatar-emoji">👑</div>
+              </div>
+            </div>
+
+            <!-- Identity Info -->
+            <div class="steam-profile-info-block">
+              <div class="steam-profile-name-row">
+                <h2 id="profile-display-name" class="steam-profile-name">Александр</h2>
+                <span id="profile-role-badge"></span>
+              </div>
+              <div class="steam-profile-submeta">
+                <span id="profile-username-tag" class="steam-profile-tag">@stas</span>
+                <span class="steam-profile-sep">•</span>
+                <span class="steam-profile-guild">📍 Нео-Александрийская Академия</span>
+              </div>
+              <div id="profile-title-tag" class="steam-profile-title-tag">
+                <span class="rarity-pill rarity-pill-legendary">⚔️ Воевода Стратегии</span>
+              </div>
+
+              <!-- Motto Quote Bubble -->
+              <div class="steam-profile-motto-bubble" id="profile-user-status" title="Нажмите, чтобы изменить читательский девиз">
+                <span class="motto-quote-mark">“</span>
+                <span id="profile-motto-text">В книгах ищу то, чего не хватает в реальности...</span>
+                <span class="motto-edit-icon">✎</span>
+              </div>
+            </div>
+
+            <!-- Steam Level Showcase Box -->
+            <div class="steam-level-showcase-box">
+              <div class="steam-level-circle">
+                <span class="level-star">⭐</span>
+                <span class="level-number" id="profile-level-num">1</span>
+                <span class="level-label">LVL</span>
+              </div>
+              <div class="steam-level-meta">
+                <div class="steam-xp-text" id="profile-xp-text">0 / 400 XP</div>
+                <div class="steam-next-xp" id="profile-xp-next-text">+400 XP до 2 ур.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- XP Progress Bar -->
+          <div class="steam-profile-xp-track">
+            <div class="steam-profile-xp-fill" id="profile-xp-fill" style="width: 50%;"></div>
+          </div>
+
+          <!-- Quick Highlights Bar -->
+          <div class="steam-profile-quick-stats">
+            <div class="quick-stat-item">
+              <span>📅 В клубе:</span> <strong>с 2026 г.</strong>
+            </div>
+            <div class="quick-stat-item">
+              <span>🔥 Серия чтения:</span> <strong id="profile-streak-count" style="color: #00ff88;">3 дня подряд</strong>
+            </div>
+            <div class="quick-stat-item">
+              <span>⬡ Люмены:</span> <strong id="stat-lumens-highlight" style="color: var(--accent-gold);">0 ⬡</strong>
+            </div>
+            <div class="quick-stat-item">
+              <span>📚 Шедевров в доступе:</span> <strong>26 книг</strong>
+            </div>
+          </div>
         </div>
 
-        <!-- Specialized Genre Rank with Justification (За что выдано звание) -->
-        <div class="rank-justification-card">
-          <div class="rank-justification-header">
-            <span>🎖️</span> Специализированное Звание & Обоснование:
+        <!-- Steam Profile Showcase 1: Featured Masterpiece Showcase -->
+        <div class="steam-showcase-container" id="profile-featured-book-showcase">
+          <div class="steam-showcase-header">
+            <div class="showcase-title-left">
+              <span>⭐</span>
+              <h4>Главная витрина: Любимый Шедевр Читателя</h4>
+            </div>
+            <span class="showcase-badge-pill">ШЕДЕВР МИРОВОЙ ЛИТЕРАТУРЫ</span>
           </div>
-          <div id="profile-rank-justification-text" style="font-size: 0.9rem; color: #ddd; line-height: 1.5; margin-bottom: 0.8rem;">
-            Звание присуждено на основе прочитанных произведений и тематической направленности читателя.
-          </div>
-          <div class="rank-books-pills-row" id="profile-rank-books-list">
-            <!-- Miniature book chips with covers populated by app.js -->
+          <div class="steam-showcase-body">
+            <div class="featured-book-cover-col">
+              <div class="featured-book-card-wrap tilt-card" id="featured-book-cover-wrap">
+                <img id="featured-book-cover-img" src="https://covers.openlibrary.org/b/id/12818862-L.jpg" alt="Обложка" class="featured-cover-img">
+                <div class="featured-book-foil-glow"></div>
+              </div>
+              <button class="btn btn-steam-play btn-sm" id="btn-featured-continue-read" style="width: 100%; margin-top: 0.8rem;">
+                ▶ Продолжить чтение
+              </button>
+            </div>
+            <div class="featured-book-details-col">
+              <h3 id="featured-book-title" class="featured-title">Война и мир</h3>
+              <div id="featured-book-author" class="featured-author">Лев Толстой</div>
+              
+              <div class="featured-book-metrics-grid">
+                <div class="featured-metric-item">
+                  <span class="metric-label">Прочитано глав</span>
+                  <strong class="metric-val" id="featured-stat-chapters">Глава 1 из 28</strong>
+                </div>
+                <div class="featured-metric-item">
+                  <span class="metric-label">Освоение книги</span>
+                  <strong class="metric-val" id="featured-stat-percent" style="color: var(--accent-cyan);">4%</strong>
+                </div>
+                <div class="featured-metric-item">
+                  <span class="metric-label">Время в книге</span>
+                  <strong class="metric-val" id="featured-stat-time">45 мин</strong>
+                </div>
+                <div class="featured-metric-item">
+                  <span class="metric-label">Оценка Steam</span>
+                  <strong class="metric-val" style="color: #66c0f4;">👍 98% (Шедевр)</strong>
+                </div>
+              </div>
+
+              <div class="featured-reader-quote-box">
+                <div class="quote-header">💬 Заметка и вердикт читателя:</div>
+                <p id="featured-reader-quote" class="quote-content">
+                  «Один из монументальнейших эпосов мировой культуры. Глубина характеров и батальная панорама эпохи поражают воображение.»
+                </p>
+              </div>
+
+              <div class="rank-justification-mini-box">
+                <div style="font-size: 0.78rem; color: #8e9bb0; margin-bottom: 0.4rem;">
+                  🎖️ Влияние на звание: <span id="profile-rank-justification-text" style="color: #c6d4df;">Звание присуждено на основе прочитанных произведений.</span>
+                </div>
+                <div class="rank-books-pills-row" id="profile-rank-books-list"></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Meaningful 2026 Reader Stats Grid -->
-        <div class="admin-stats-grid">
-          <div class="admin-stat-card tilt-card">
-            <div class="admin-stat-label">Цель на 2026 год</div>
-            <div class="admin-stat-val" id="stat-yearly-goal" style="color: var(--accent-cyan);">3 / 25 книг</div>
+        <!-- Steam Profile Showcase 2: Rarest Achievements & Badges Showcase -->
+        <div class="steam-showcase-container">
+          <div class="steam-showcase-header">
+            <div class="showcase-title-left">
+              <span>🏆</span>
+              <h4>Витрина редчайших достижений и значков</h4>
+            </div>
+            <span class="showcase-badge-pill" style="border-color: #ffd700; color: #ffd700;">ТОП 5% СХОЛАСТОВ</span>
           </div>
-          <div class="admin-stat-card tilt-card">
-            <div class="admin-stat-label">Полезных & Великих книг</div>
-            <div class="admin-stat-val" id="stat-useful-books" style="color: #ffd700;">2</div>
+          <div class="rare-achievements-grid" id="profile-rare-achievements-grid">
+            <!-- Dynamically populated with 4 top badges -->
           </div>
-          <div class="admin-stat-card tilt-card">
-            <div class="admin-stat-label">Всего прочитано страниц</div>
-            <div class="admin-stat-val" id="stat-pages-read">1 840</div>
+        </div>
+
+        <!-- Bento Grid of Reader Statistics 2.0 -->
+        <div class="profile-bento-stats-grid">
+          <div class="bento-stat-card tilt-card">
+            <div class="bento-card-icon">🎯</div>
+            <div class="bento-card-data">
+              <span class="bento-label">Цель на 2026 год</span>
+              <strong class="bento-val" id="stat-yearly-goal" style="color: var(--accent-cyan);">3 / 25 книг</strong>
+              <div class="bento-mini-bar"><div class="bento-mini-fill" style="width: 12%;"></div></div>
+            </div>
           </div>
-          <div class="admin-stat-card tilt-card">
-            <div class="admin-stat-label">Написано рецензий</div>
-            <div class="admin-stat-val" id="stat-reviews-count">4</div>
+          <div class="bento-stat-card tilt-card">
+            <div class="bento-card-icon">📖</div>
+            <div class="bento-card-data">
+              <span class="bento-label">Всего прочитано страниц</span>
+              <strong class="bento-val" id="stat-pages-read" style="color: #fff;">1 840 стр.</strong>
+              <span class="bento-sub">Полезных книг: <strong id="stat-useful-books" style="color: #ffd700;">2</strong></span>
+            </div>
           </div>
-          <div class="admin-stat-card tilt-card">
-            <div class="admin-stat-label">Люмены (Валюта)</div>
-            <div class="admin-stat-val" id="stat-lumens" style="color: var(--accent-gold);">0 ⬡</div>
+          <div class="bento-stat-card tilt-card">
+            <div class="bento-card-icon">💎</div>
+            <div class="bento-card-data">
+              <span class="bento-label">Баланс Люменов</span>
+              <strong class="bento-val" id="stat-lumens" style="color: var(--accent-gold);">0 ⬡</strong>
+              <span class="bento-sub">Кристаллы за чтение и игры</span>
+            </div>
+          </div>
+          <div class="bento-stat-card tilt-card">
+            <div class="bento-card-icon">💬</div>
+            <div class="bento-card-data">
+              <span class="bento-label">Написано рецензий</span>
+              <strong class="bento-val" id="stat-reviews-count" style="color: #66c0f4;">4 обзора</strong>
+              <span class="bento-sub">Степень: Критик словесности</span>
+            </div>
+          </div>
+          <div class="bento-stat-card tilt-card">
+            <div class="bento-card-icon">⚡</div>
+            <div class="bento-card-data">
+              <span class="bento-label">Скорость чтения</span>
+              <strong class="bento-val" id="stat-wpm-val" style="color: #00ff88;">240 WPM</strong>
+              <span class="bento-sub">Слов в минуту (Комфорт)</span>
+            </div>
           </div>
         </div>
 
@@ -1354,7 +1477,7 @@
               <h4 style="color: #fff; font-size: 1rem; font-weight: 700; margin: 0;">Ритм Чтения & Активность Недели:</h4>
             </div>
             <div style="font-size: 0.8rem; color: var(--accent-cyan);">
-              🔥 Серия дней: <strong id="profile-streak-count" style="color: #00ff88;">3 дня подряд</strong>
+              🔥 Серия дней: <strong id="profile-streak-count-sub" style="color: #00ff88;">3 дня подряд</strong>
             </div>
           </div>
           <div class="weekly-heatmap-grid" id="weekly-heatmap-container">
@@ -1394,41 +1517,58 @@
           </div>
         </div>
 
-        <!-- Bookshelf 1: Reading Now (Сейчас читает) -->
-        <div class="profile-shelf-title">
-          <span>📖</span> Сейчас Читает:
-        </div>
-        <div class="profile-shelf-grid" id="profile-shelf-reading-now">
-          <!-- Populated by app.js -->
+        <!-- Interactive Tabbed Shelves Section -->
+        <div class="profile-shelves-tabbed-container">
+          <div class="profile-shelves-tabs-bar">
+            <button class="profile-shelf-tab active" data-profile-tab="reading">
+              <span>📖</span> Читаю сейчас (<span id="profile-shelf-count-reading">0</span>)
+            </button>
+            <button class="profile-shelf-tab" data-profile-tab="favorites">
+              <span>❤️</span> Любимые шедевры (<span id="profile-shelf-count-fav">0</span>)
+            </button>
+            <button class="profile-shelf-tab" data-profile-tab="completed">
+              <span>✓</span> Завершено (<span id="profile-shelf-count-completed">0</span>)
+            </button>
+            <button class="profile-shelf-tab" data-profile-tab="reviews">
+              <span>💬</span> Мои рецензии (<span id="profile-shelf-count-reviews">0</span>)
+            </button>
+          </div>
+
+          <div class="profile-shelf-content active" id="tab-content-reading">
+            <div class="profile-shelf-grid" id="profile-shelf-reading-now">
+              <!-- Populated by app.js -->
+            </div>
+          </div>
+          <div class="profile-shelf-content" id="tab-content-favorites" style="display: none;">
+            <div class="profile-shelf-grid" id="profile-shelf-favorites">
+              <!-- Populated by app.js -->
+            </div>
+          </div>
+          <div class="profile-shelf-content" id="tab-content-completed" style="display: none;">
+            <div class="profile-shelf-grid" id="profile-shelf-completed">
+              <!-- Populated by app.js -->
+            </div>
+          </div>
+          <div class="profile-shelf-content" id="tab-content-reviews" style="display: none;">
+            <div id="profile-reviews-list">
+              <!-- Populated by app.js -->
+            </div>
+          </div>
         </div>
 
-        <!-- Bookshelf 2: Favorites (Любимые шедевры / В Лав) -->
-        <div class="profile-shelf-title">
-          <span>❤️</span> Любимые Книги (В Лав):
-        </div>
-        <div class="profile-shelf-grid" id="profile-shelf-favorites">
-          <!-- Populated by app.js -->
-        </div>
-
-        <!-- Bookshelf 3: Completed Books (Прочитано) -->
-        <div class="profile-shelf-title">
-          <span>✓</span> Прочитано (Завершенные произведения):
-        </div>
-        <div class="profile-shelf-grid" id="profile-shelf-completed">
-          <!-- Populated by app.js -->
-        </div>
-
-        <!-- User Reviews & Opinions Showcase -->
-        <div class="profile-shelf-title" style="margin-top: 3rem;">
-          <span>💬</span> Мои Рецензии и Оценки к Книгам:
-        </div>
-        <div id="profile-reviews-list" style="margin-bottom: 2rem;">
-          <!-- Populated by app.js -->
-        </div>
-
-        <!-- Badges Grid -->
-        <div style="margin-top: 3rem;">
-          <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1.25rem;">🏅 Коллекция Достижений & Значков</h3>
+        <!-- Badges & Achievements Grid with Filter Pills -->
+        <div class="profile-badges-hall-container" style="margin-top: 3rem;">
+          <div class="badges-hall-header">
+            <div>
+              <h3 style="font-size: 1.4rem; font-weight: 800; margin: 0; color: #fff;">🏅 Коллекция Достижений & Значков</h3>
+              <p style="font-size: 0.82rem; color: #8e9bb0; margin-top: 0.2rem;">Получайте уникальные голографические значки за чтение, игры и эрудицию.</p>
+            </div>
+            <div class="badge-filter-pills">
+              <button class="badge-pill-btn active" data-badge-filter="all">Все (<span id="badge-count-all">8</span>)</button>
+              <button class="badge-pill-btn" data-badge-filter="unlocked">Получено (<span id="badge-count-unlocked">0</span>)</button>
+              <button class="badge-pill-btn" data-badge-filter="locked">В процессе (<span id="badge-count-locked">0</span>)</button>
+            </div>
+          </div>
           <div class="badge-grid" id="profile-badges-grid">
             <!-- Filled dynamically -->
           </div>
@@ -1805,21 +1945,28 @@
 
   <!-- Edit Profile Modal -->
   <div class="modal-overlay" id="modal-edit-profile">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 540px;">
       <div class="modal-header">
-        <h3>Редактирование Профиля</h3>
+        <h3 style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+          <span>✎</span> Настройка и Персонализация Профиля
+        </h3>
         <button class="modal-close-btn">✕</button>
       </div>
 
       <form id="form-edit-profile">
         <div class="form-group">
           <label class="form-label">Отображаемое имя (Никнейм)</label>
-          <input type="text" id="edit-display-name" class="form-input" required>
+          <input type="text" id="edit-display-name" class="form-input" required placeholder="Ваше имя">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Выберите иконку аватара:</label>
-          <div style="display: flex; gap: 0.8rem; font-size: 2rem; margin-top: 0.5rem; flex-wrap: wrap;">
+          <label class="form-label">Читательский девиз / статус</label>
+          <input type="text" id="edit-profile-motto" class="form-input" placeholder="«В книгах ищу то, чего не хватает в реальности...»">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Иконка аватара:</label>
+          <div style="display: flex; gap: 0.7rem; font-size: 1.8rem; margin-top: 0.5rem; flex-wrap: wrap;">
             <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="👑"> 👑</label>
             <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="⚜️"> ⚜️</label>
             <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="⚡"> ⚡</label>
@@ -1828,10 +1975,66 @@
             <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="🔮"> 🔮</label>
             <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="🕶️"> 🕶️</label>
             <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="🧠"> 🧠</label>
+            <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="🐉"> 🐉</label>
+            <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="🌟"> 🌟</label>
+            <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="🦉"> 🦉</label>
+            <label style="cursor: pointer;"><input type="radio" name="edit-avatar" value="🔥"> 🔥</label>
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Рамка аватара:</label>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.4rem;">
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-avatar-frame" value="frame-gold">
+              <span>👑 Золото</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-avatar-frame" value="frame-neon">
+              <span>⚡ Неон</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-avatar-frame" value="frame-dragon">
+              <span>🐉 Дракон</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-avatar-frame" value="frame-matrix">
+              <span>🟩 Матрица</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-avatar-frame" value="frame-default">
+              <span>⚪ Классика</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Тема фона профиля (Steam Backdrop):</label>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.4rem;">
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-profile-bg" value="bg-steam">
+              <span>🌌 Steam Midnight</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-profile-bg" value="bg-cyber">
+              <span>⚡ Cyberpunk Neon</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-profile-bg" value="bg-aurora">
+              <span>✨ Cosmic Aurora</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-profile-bg" value="bg-amber">
+              <span>🕯️ Golden Folio</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-profile-bg" value="bg-matrix">
+              <span>📟 Matrix Core</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.25rem;">
           Сохранить изменения
         </button>
       </form>

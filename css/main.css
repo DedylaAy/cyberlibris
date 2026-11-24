@@ -3955,3 +3955,736 @@ body.theme-steam {
   line-height: 1;
   margin-top: 2px;
 }
+
+
+/* ==========================================================================
+   STEAM-GRADE PROFILE HUB & SHOWCASE ENGINE (PREMIUM PROFILE UPGRADE)
+   ========================================================================== */
+
+/* Grand Header Card */
+.steam-profile-hub-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(18, 25, 38, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(102, 192, 244, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  transition: border-color 0.3s ease;
+}
+
+.steam-profile-ambient-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  pointer-events: none;
+  transition: all 0.5s ease;
+  z-index: 0;
+  background: radial-gradient(circle at 85% 20%, rgba(102, 192, 244, 0.4), transparent 60%),
+              radial-gradient(circle at 15% 80%, rgba(117, 176, 34, 0.25), transparent 60%);
+}
+
+.steam-profile-ambient-bg.bg-steam {
+  background: radial-gradient(circle at 85% 20%, rgba(102, 192, 244, 0.45), transparent 60%),
+              radial-gradient(circle at 15% 80%, rgba(117, 176, 34, 0.3), transparent 60%);
+}
+
+.steam-profile-ambient-bg.bg-cyber {
+  background: radial-gradient(circle at 80% 20%, rgba(255, 0, 127, 0.45), transparent 55%),
+              radial-gradient(circle at 20% 80%, rgba(0, 240, 255, 0.4), transparent 55%);
+}
+
+.steam-profile-ambient-bg.bg-aurora {
+  background: radial-gradient(circle at 75% 25%, rgba(157, 78, 221, 0.5), transparent 60%),
+              radial-gradient(circle at 20% 75%, rgba(6, 214, 160, 0.35), transparent 60%);
+}
+
+.steam-profile-ambient-bg.bg-amber {
+  background: radial-gradient(circle at 85% 20%, rgba(245, 158, 11, 0.45), transparent 60%),
+              radial-gradient(circle at 15% 85%, rgba(217, 119, 6, 0.35), transparent 60%);
+}
+
+.steam-profile-ambient-bg.bg-matrix {
+  background: radial-gradient(circle at 70% 30%, rgba(0, 255, 102, 0.35), transparent 60%),
+              radial-gradient(circle at 30% 70%, rgba(0, 59, 31, 0.6), transparent 60%);
+}
+
+/* Top Action Ribbon */
+.steam-profile-top-ribbon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.profile-online-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #a4d007;
+  background: rgba(117, 176, 34, 0.15);
+  border: 1px solid rgba(117, 176, 34, 0.4);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.online-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #a4d007;
+  box-shadow: 0 0 10px #a4d007;
+  animation: onlinePulseDot 2s infinite ease-in-out;
+}
+
+@keyframes onlinePulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 6px #a4d007; }
+  50% { transform: scale(1.3); opacity: 0.7; box-shadow: 0 0 14px #a4d007; }
+}
+
+.steam-profile-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Identity Row */
+.steam-profile-identity-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.steam-profile-avatar-block {
+  flex-shrink: 0;
+}
+
+.steam-profile-info-block {
+  flex: 1;
+  min-width: 260px;
+}
+
+.steam-profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.steam-profile-name {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 0 25px rgba(102, 192, 244, 0.4);
+  letter-spacing: 0.3px;
+}
+
+.steam-profile-submeta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: #8e9bb0;
+  margin-top: 0.2rem;
+}
+
+.steam-profile-tag {
+  color: #66c0f4;
+  font-family: monospace;
+}
+
+.steam-profile-sep {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.steam-profile-guild {
+  color: #c6d4df;
+}
+
+.steam-profile-title-tag {
+  margin-top: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.steam-profile-motto-bubble {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  font-style: italic;
+  font-size: 0.88rem;
+  color: #c6d4df;
+  margin-top: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.steam-profile-motto-bubble:hover {
+  border-color: #66c0f4;
+  background: rgba(42, 71, 94, 0.4);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.motto-quote-mark {
+  color: #ffd700;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.motto-edit-icon {
+  font-size: 0.75rem;
+  color: #66c0f4;
+  margin-left: 0.4rem;
+}
+
+/* Steam Level Badge */
+.steam-level-showcase-box {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.35rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.12);
+  align-self: flex-start;
+}
+
+.steam-level-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid #ffd700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.25), rgba(0, 0, 0, 0.7));
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.level-star {
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.level-number {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.level-label {
+  font-size: 0.58rem;
+  color: #ffd700;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.steam-level-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.steam-xp-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.steam-next-xp {
+  font-size: 0.76rem;
+  color: #ffd700;
+  margin-top: 2px;
+}
+
+/* XP Progress Bar */
+.steam-profile-xp-track {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.steam-profile-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #66c0f4, #00f0ff, #75b022);
+  border-radius: 5px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.6);
+}
+
+/* Quick Highlights Bar */
+.steam-profile-quick-stats {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.quick-stat-item {
+  font-size: 0.84rem;
+  color: #8e9bb0;
+}
+
+.quick-stat-item strong {
+  color: #fff;
+  margin-left: 0.2rem;
+}
+
+/* Steam Showcases */
+.steam-showcase-container {
+  background: rgba(18, 25, 38, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(102, 192, 244, 0.3);
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.steam-showcase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.4rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.showcase-title-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.showcase-title-left h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.showcase-badge-pill {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid #66c0f4;
+  color: #66c0f4;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.steam-showcase-body {
+  display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.featured-book-cover-col {
+  width: 170px;
+  flex-shrink: 0;
+}
+
+.featured-cover-img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  display: block;
+}
+
+.featured-book-card-wrap {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 2px solid rgba(255, 215, 0, 0.45);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.2);
+}
+
+.featured-book-foil-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), transparent 70%);
+}
+
+.featured-book-details-col {
+  flex: 1;
+  min-width: 280px;
+}
+
+.featured-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.featured-author {
+  font-size: 1rem;
+  color: #66c0f4;
+  margin-top: 0.25rem;
+}
+
+.featured-book-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.8rem;
+  margin: 1.2rem 0;
+}
+
+.featured-metric-item {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 0.72rem;
+  color: #8e9bb0;
+  text-transform: uppercase;
+}
+
+.metric-val {
+  font-size: 0.95rem;
+  color: #fff;
+  margin-top: 2px;
+}
+
+.featured-reader-quote-box {
+  background: rgba(0, 0, 0, 0.35);
+  border-left: 3px solid #ffd700;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.1rem;
+}
+
+.quote-header {
+  font-size: 0.76rem;
+  color: #ffd700;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.quote-content {
+  font-size: 0.92rem;
+  font-style: italic;
+  color: #e2e8f0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.rank-justification-mini-box {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+/* Rare Achievements Grid */
+.rare-achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  padding: 1.4rem;
+}
+
+.rare-achievement-card {
+  background: rgba(23, 26, 33, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.rare-achievement-card:hover {
+  transform: translateY(-4px);
+  border-color: #ffd700;
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.25);
+}
+
+.rare-ach-icon-wrap {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255, 215, 0, 0.12);
+  border: 2px solid #ffd700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.rare-ach-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.rare-ach-desc {
+  font-size: 0.78rem;
+  color: #8e9bb0;
+  line-height: 1.35;
+  margin-bottom: 0.8rem;
+}
+
+.rare-ach-footer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.72rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.6rem;
+}
+
+.rare-ach-pct {
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.rare-ach-xp {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+/* Bento Stats Grid 2.0 */
+.profile-bento-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.bento-stat-card {
+  background: rgba(18, 25, 38, 0.92);
+  border: 1px solid rgba(102, 192, 244, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  transition: all 0.2s ease;
+}
+
+.bento-stat-card:hover {
+  border-color: #66c0f4;
+  box-shadow: 0 8px 24px rgba(102, 192, 244, 0.25);
+  transform: translateY(-2px);
+}
+
+.bento-card-icon {
+  font-size: 1.8rem;
+  padding: 0.6rem;
+  background: rgba(102, 192, 244, 0.1);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(102, 192, 244, 0.25);
+  line-height: 1;
+}
+
+.bento-card-data {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-label {
+  font-size: 0.76rem;
+  color: #8e9bb0;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.bento-val {
+  font-size: 1.45rem;
+  font-weight: 800;
+  margin-top: 0.2rem;
+  display: block;
+}
+
+.bento-sub {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.bento-mini-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 0.4rem;
+  overflow: hidden;
+}
+
+.bento-mini-fill {
+  height: 100%;
+  background: var(--accent-cyan);
+  border-radius: 2px;
+}
+
+/* Tabbed Shelves Section */
+.profile-shelves-tabbed-container {
+  background: rgba(18, 25, 38, 0.95);
+  border: 1px solid rgba(102, 192, 244, 0.25);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.profile-shelves-tabs-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.8rem 1.25rem;
+  background: rgba(0, 0, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+}
+
+.profile-shelf-tab {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: #8e9bb0;
+  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.profile-shelf-tab:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.profile-shelf-tab.active {
+  background: rgba(102, 192, 244, 0.15);
+  border-color: #66c0f4;
+  color: #66c0f4;
+  font-weight: 700;
+}
+
+.profile-shelf-content {
+  padding: 1.5rem;
+}
+
+.profile-shelf-content:not(.active) {
+  display: none !important;
+}
+
+/* Badges Hall Header & Filter Pills */
+.badges-hall-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.badge-filter-pills {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.badge-pill-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-full);
+  color: #8e9bb0;
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.badge-pill-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.badge-pill-btn.active {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+/* Edit Modal Options */
+.profile-opt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #c6d4df;
+  transition: all 0.15s ease;
+}
+
+.profile-opt-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.profile-opt-pill input {
+  margin: 0;
+}
