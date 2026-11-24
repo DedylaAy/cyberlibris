@@ -766,13 +766,29 @@ class MiniGamesSuite {
     this.renderCurrentQuizQuestion();
   }
 
+  shuffleQuestionOptions(options, correctIdx = 0) {
+    const items = options.map((opt, i) => ({ opt, isCorrect: i === correctIdx }));
+    // Fisher-Yates uniform shuffle
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+    return {
+      options: items.map(it => it.opt),
+      correct: items.findIndex(it => it.isCorrect)
+    };
+  }
+
   renderCurrentQuizQuestion() {
-    const q = this.currentQuizQuestions[this.quizIdx];
-    if (!q) {
+    const qRaw = this.currentQuizQuestions[this.quizIdx];
+    if (!qRaw) {
       // Quiz completed!
       this.finishBookQuiz();
       return;
     }
+
+    // Uniformly shuffle options so correct answer is randomly distributed among A, B, C, D
+    const shuffled = this.shuffleQuestionOptions(qRaw.options, qRaw.correct);
 
     const qTextEl = document.getElementById('quiz-question-text');
     const qNumEl = document.getElementById('quiz-number-display');
@@ -783,12 +799,12 @@ class MiniGamesSuite {
     if (qNumEl) qNumEl.textContent = `Вопрос ${this.quizIdx + 1} из ${this.currentQuizQuestions.length}`;
     if (qScoreEl) qScoreEl.textContent = `${this.quizScore} ⬡`;
     if (qStreakEl) qStreakEl.textContent = `Серия: ${this.quizStreak} 🔥`;
-    if (qTextEl) qTextEl.textContent = q.question;
+    if (qTextEl) qTextEl.textContent = qRaw.question;
 
     if (!answersGrid) return;
     answersGrid.innerHTML = '';
 
-    q.options.forEach((opt, idx) => {
+    shuffled.options.forEach((opt, idx) => {
       const btn = document.createElement('button');
       btn.className = 'btn-quiz-answer';
       btn.innerHTML = `<span style="color:var(--accent-cyan); font-weight:900; margin-right:0.6rem;">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
@@ -798,7 +814,7 @@ class MiniGamesSuite {
         allBtns.forEach(b => b.disabled = true);
 
         try {
-          if (idx === q.correct) {
+          if (idx === shuffled.correct) {
             btn.style.background = 'rgba(0, 255, 136, 0.25)';
             btn.style.borderColor = 'var(--accent-green)';
             this.quizStreak += 1;
@@ -820,9 +836,9 @@ class MiniGamesSuite {
           } else {
             btn.style.background = 'rgba(255, 0, 127, 0.25)';
             btn.style.borderColor = 'var(--accent-magenta)';
-            if (allBtns[q.correct]) {
-              allBtns[q.correct].style.background = 'rgba(0, 255, 136, 0.25)';
-              allBtns[q.correct].style.borderColor = 'var(--accent-green)';
+            if (allBtns[shuffled.correct]) {
+              allBtns[shuffled.correct].style.background = 'rgba(0, 255, 136, 0.25)';
+              allBtns[shuffled.correct].style.borderColor = 'var(--accent-green)';
             }
             this.quizStreak = 0;
             window.app.showToast('Неверно! Правильный ответ подсвечен зелёным', 'error');
@@ -1223,23 +1239,26 @@ class MiniGamesSuite {
 
   renderSpeedReadQuestion(qIdx) {
     const excerpt = this.speedReadExcerpts[this.speedReadIdx];
-    const q = excerpt.questions[qIdx];
-    if (!q) {
+    const qRaw = excerpt.questions[qIdx];
+    if (!qRaw) {
       this.finishSpeedReadRound();
       return;
     }
+
+    // Uniformly shuffle options so correct answer is randomly distributed among A, B, C, D
+    const shuffled = this.shuffleQuestionOptions(qRaw.options, qRaw.correct);
 
     const qNumEl = document.getElementById('speedread-q-num');
     const qTextEl = document.getElementById('speedread-q-text');
     const optionsGrid = document.getElementById('speedread-q-options');
 
     if (qNumEl) qNumEl.textContent = `Вопрос ${qIdx + 1} из ${excerpt.questions.length}`;
-    if (qTextEl) qTextEl.textContent = q.q;
+    if (qTextEl) qTextEl.textContent = qRaw.q;
 
     if (!optionsGrid) return;
     optionsGrid.innerHTML = '';
 
-    q.options.forEach((opt, idx) => {
+    shuffled.options.forEach((opt, idx) => {
       const btn = document.createElement('button');
       btn.className = 'speedread-q-option';
       btn.innerHTML = `<span style="color:var(--accent-cyan); font-weight:800; margin-right:0.75rem;">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
@@ -1248,7 +1267,7 @@ class MiniGamesSuite {
         const all = optionsGrid.querySelectorAll('.speedread-q-option');
         all.forEach(b => b.disabled = true);
 
-        if (idx === q.correct) {
+        if (idx === shuffled.correct) {
           btn.style.background = 'rgba(0, 255, 136, 0.25)';
           btn.style.borderColor = 'var(--accent-green)';
           this.speedReadQuestionsCorrect++;
@@ -1256,8 +1275,10 @@ class MiniGamesSuite {
         } else {
           btn.style.background = 'rgba(255, 0, 127, 0.25)';
           btn.style.borderColor = 'var(--accent-magenta)';
-          all[q.correct].style.background = 'rgba(0, 255, 136, 0.25)';
-          all[q.correct].style.borderColor = 'var(--accent-green)';
+          if (all[shuffled.correct]) {
+            all[shuffled.correct].style.background = 'rgba(0, 255, 136, 0.25)';
+            all[shuffled.correct].style.borderColor = 'var(--accent-green)';
+          }
           if (window.soundEngine) window.soundEngine.playWrong();
         }
 
