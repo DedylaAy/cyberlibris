@@ -349,15 +349,16 @@
 .relay-live-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
-  background: rgba(0, 240, 255, 0.08);
-  border: 1px solid rgba(0, 240, 255, 0.3);
+  gap: 0.5rem;
+  padding: 0.4rem 0.95rem;
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.4);
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   color: #fff;
-  font-weight: 600;
-  margin-left: 0.5rem;
+  font-weight: 700;
+  margin-left: 0.6rem;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
 }
 
 .relay-live-badge a {
@@ -632,7 +633,7 @@
 }
 
 .tts-pulse-icon {
-  font-size: 1.4rem;
+  font-size: 1.65rem;
   animation: pulse 1.5s infinite;
 }
 

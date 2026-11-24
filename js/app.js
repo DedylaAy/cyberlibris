@@ -221,8 +221,8 @@ class AppController {
             <div class="carousel-badges-row">
               <span class="rarity-pill ${rarityPillClass}">${book.rarityLabel || 'ШЕДЕВР'}</span>
               <span class="book-genre-pill">${book.genre}</span>
-              <span style="color:#ffd700; font-weight:800; font-size:0.9rem;">⭐ ${book.rating}</span>
-              <span style="color:var(--text-dim); font-size:0.8rem;">(~${book.lengthPages} стр.)</span>
+              <span style="color:#ffd700; font-weight:800; font-size:1.05rem;">⭐ ${book.rating}</span>
+              <span style="color:var(--text-dim); font-size:0.92rem; font-weight:600;">(~${book.lengthPages} стр.)</span>
             </div>
             <h2 class="carousel-title">${book.title}</h2>
             <div class="carousel-author">✍ ${book.author} (${book.year})</div>
@@ -481,7 +481,7 @@ class AppController {
       const saved = window.readerEngine ? window.readerEngine.getSavedProgress(b.id) : null;
       const hasProgress = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
       const progressBadge = hasProgress 
-        ? `<span class="rarity-pill" style="background: rgba(0, 240, 255, 0.25); border: 1px solid var(--accent-cyan); color: #00f0ff; font-weight:700;">🔖 Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>`
+        ? `<span class="rarity-pill" style="background: rgba(0, 240, 255, 0.25); border: 1.5px solid var(--accent-cyan); color: #00f0ff; font-weight:800; font-size:0.88rem; padding: 6px 14px; box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);">🔖 Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>`
         : '';
       const buttonLabel = hasProgress
         ? `📖 Продолжить (Гл. ${saved.currentChapter + 1})`
@@ -1030,11 +1030,14 @@ class AppController {
         const has = user.badges?.includes(b.id);
         const el = document.createElement('div');
         el.className = `profile-badge-card ${has ? 'unlocked' : 'locked'}`;
+        const auraColor = has ? (b.color || '#00f0ff') : 'rgba(255, 255, 255, 0.2)';
         el.innerHTML = `
-          <div class="profile-badge-icon">${b.icon}</div>
+          <div class="profile-badge-icon-wrapper" style="box-shadow: 0 0 24px ${has ? auraColor + '40' : 'transparent'}; border-color: ${has ? auraColor + '60' : 'rgba(255,255,255,0.12)'};">
+            <div class="profile-badge-icon" style="filter: drop-shadow(0 0 16px ${has ? auraColor + '90' : 'rgba(0,0,0,0.6)'});">${b.icon}</div>
+          </div>
           <div class="profile-badge-name">${b.name}</div>
           <div class="profile-badge-desc">${b.description}</div>
-          <div class="profile-badge-status">${has ? '✓ ПОЛУЧЕНО' : '🔒 ЗАКРЫТО'}</div>
+          <div class="profile-badge-status">${has ? '✅ РАЗБЛОКИРОВАНО' : '🔒 ЗАБЛОКИРОВАНО'}</div>
         `;
         badgesGrid.appendChild(el);
       });

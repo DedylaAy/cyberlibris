@@ -275,15 +275,15 @@ body.theme-zen .bg-ambient-glow {
 }
 
 .logo-badge {
-  font-size: 0.65rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
-  padding: 2px 7px;
+  padding: 4px 10px;
   background: rgba(0, 240, 255, 0.15);
   border: 1px solid var(--accent-cyan);
-  border-radius: var(--radius-full);
+  border-radius: 6px;
   color: var(--accent-cyan);
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
 }
 
 .logo-sub {
@@ -321,7 +321,12 @@ body.theme-zen .bg-ambient-glow {
 }
 
 .nav-btn .icon {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-btn:hover .icon {
+  transform: scale(1.18);
 }
 
 .nav-btn:hover {
@@ -803,42 +808,45 @@ body.is-creator .github-status-pill {
   background: rgba(255, 170, 0, 0.25);
   border: 1px solid #ffaa00;
   color: #ffaa00;
-  padding: 3px 8px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.68rem;
+  font-size: 0.84rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  box-shadow: 0 0 12px rgba(255, 170, 0, 0.25);
 }
 
 .rarity-badge-epic {
   background: rgba(168, 85, 247, 0.25);
   border: 1px solid #a855f7;
   color: #c084fc;
-  padding: 3px 8px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.68rem;
+  font-size: 0.84rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
 }
 
 .rarity-badge-rare {
   background: rgba(0, 210, 255, 0.2);
   border: 1px solid #00d2ff;
   color: #00d2ff;
-  padding: 3px 8px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.68rem;
+  font-size: 0.84rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  box-shadow: 0 0 12px rgba(0, 210, 255, 0.25);
 }
 
 .rarity-badge-common {
   background: rgba(148, 163, 184, 0.15);
   border: 1px solid #94a3b8;
   color: #cbd5e1;
-  padding: 3px 8px;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.68rem;
+  font-size: 0.84rem;
   font-weight: 700;
 }
 
@@ -846,9 +854,9 @@ body.is-creator .github-status-pill {
   background: rgba(255, 0, 127, 0.2);
   border: 1px solid var(--accent-magenta);
   color: var(--accent-magenta);
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-size: 0.65rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
   font-weight: 800;
 }
 
@@ -860,20 +868,24 @@ body.is-creator .github-status-pill {
 }
 
 .steam-genre-name {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--text-dim);
   text-transform: uppercase;
   font-weight: 700;
 }
 
 .steam-xp-badge {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--accent-green);
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  padding: 2px 6px;
-  border-radius: 4px;
+  background: rgba(0, 255, 136, 0.14);
+  border: 1.5px solid rgba(0, 255, 136, 0.35);
+  padding: 4px 10px;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .steam-complexity-row {
@@ -886,11 +898,14 @@ body.is-creator .github-status-pill {
 
 .book-badges-overlay {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   display: flex;
-  gap: 0.4rem;
+  gap: 0.55rem;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  z-index: 2;
 }
 
 /* Rarity Filter Tabs (Steam Style) */
@@ -1448,13 +1463,29 @@ body.is-creator .github-status-pill {
 .rarity-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 4px 12px;
-  font-size: 0.75rem;
+  gap: 0.45rem;
+  padding: 6px 14px;
+  font-size: 0.88rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+
+.book-genre-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-full);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .rarity-pill-legendary {
@@ -2093,13 +2124,13 @@ body.is-creator .github-status-pill {
 }
 
 .remanga-chip {
-  padding: 0.42rem 0.95rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.52rem 1.15rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-full);
   color: var(--text-muted);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
