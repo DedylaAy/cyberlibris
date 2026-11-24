@@ -21,6 +21,14 @@ class AppController {
     this.activeSteamBookId = 'war_and_peace';
     this.steamLibFilter = 'all';
     this.steamLibSearchQuery = '';
+    this.steamLibSortMode = 'default';
+    this.previousView = 'steam-library';
+
+    // Command Palette State
+    this.cmdPaletteOpen = false;
+    this.cmdPaletteType = 'all';
+    this.cmdPaletteQuery = '';
+    this.cmdPaletteSelectedIndex = 0;
 
     // Steam Carousel State (Slower, 10s intervals for smooth relaxed viewing)
     this.carouselIndex = 0;
@@ -56,12 +64,16 @@ class AppController {
     this.bindBookDetailsModal();
     this.bindAdminRecommendations();
     this.bindOpenLibraryExplorer();
+    this.bindCommandPalette();
+    this.bindGlobalShortcuts();
+    this.bindScrollTopFAB();
 
     // 4. Initial Render
     this.initSteamCarousel();
     this.renderLibrary();
     this.renderDailyQuests();
     this.updateAudioButtonState();
+    this.updateHeaderResumePill();
 
     console.log('⚡ CyberLibris v4.5 (Multi-Chapter Books & ReManga Filter Hub) Ready.');
   }
@@ -107,6 +119,10 @@ class AppController {
       return;
     }
 
+    if (this.currentView && this.currentView !== 'reader') {
+      this.previousView = this.currentView;
+    }
+
     this.currentView = viewName;
 
     document.querySelectorAll('.nav-btn').forEach((btn) => {
@@ -141,7 +157,48 @@ class AppController {
     else if (viewName === 'profile') this.renderProfile();
     else if (viewName === 'admin') window.adminEngine.renderAdminView();
 
+    this.updateHeaderResumePill();
     if (window.soundEngine) window.soundEngine.playClick();
+  }
+
+  returnFromReader() {
+    const dest = (this.previousView && this.previousView !== 'reader') ? this.previousView : 'steam-library';
+    this.switchView(dest);
+  }
+
+  updateHeaderResumePill() {
+    const pill = document.getElementById('header-resume-pill');
+    const titleEl = document.getElementById('header-resume-title');
+    const metaEl = document.getElementById('header-resume-meta');
+    if (!pill) return;
+
+    let lastBookId = localStorage.getItem('cyberlibris_last_read_book');
+    const user = window.auth?.currentUser;
+    if (!lastBookId && user?.readingProgress) {
+      const keys = Object.keys(user.readingProgress);
+      if (keys.length > 0) lastBookId = keys[keys.length - 1];
+    }
+
+    if (!lastBookId) lastBookId = 'war_and_peace';
+
+    const prog = window.readerEngine?.getSavedProgress?.(lastBookId);
+    const book = window.bookRelay?.getBookById?.(lastBookId);
+
+    if (book) {
+      pill.classList.remove('hidden');
+      const bookTitle = book.title || 'Книга';
+      if (titleEl) titleEl.textContent = bookTitle;
+      const chNum = (prog && typeof prog.currentChapter === 'number') ? prog.currentChapter + 1 : 1;
+      const pct = (prog && typeof prog.progressPercent === 'number') ? prog.progressPercent : 0;
+      if (metaEl) metaEl.textContent = `Гл. ${chNum} (${pct}%)`;
+
+      pill.onclick = () => {
+        window.readerEngine.openBook(lastBookId, (prog && prog.currentChapter) || 0);
+        this.switchView('reader');
+      };
+    } else {
+      pill.classList.add('hidden');
+    }
   }
 
   // --- STEAM STOREFRONT CAROUSEL ---
@@ -575,7 +632,7 @@ class AppController {
     const filter = this.steamLibFilter || 'all';
     const query = (this.steamLibSearchQuery || '').toLowerCase().trim();
 
-    const filtered = allBooks.filter(b => {
+    let filtered = allBooks.filter(b => {
       if (filter === 'reading') {
         const saved = window.readerEngine?.getSavedProgress?.(b.id);
         if (!saved || typeof saved.currentChapter !== 'number' || saved.currentChapter <= 0) return false;
@@ -587,6 +644,33 @@ class AppController {
       }
       return true;
     });
+
+    // Apply sorting
+    const sortMode = this.steamLibSortMode || 'default';
+    if (sortMode === 'title') {
+      filtered.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+    } else if (sortMode === 'author') {
+      filtered.sort((a, b) => a.author.localeCompare(b.author, 'ru'));
+    } else if (sortMode === 'progress') {
+      filtered.sort((a, b) => {
+        const progA = window.readerEngine?.getSavedProgress?.(a.id)?.progressPercent || 0;
+        const progB = window.readerEngine?.getSavedProgress?.(b.id)?.progressPercent || 0;
+        return progB - progA;
+      });
+    } else if (sortMode === 'pages') {
+      filtered.sort((a, b) => (b.chapters?.length || 0) - (a.chapters?.length || 0));
+    }
+
+    // Bind sort selector
+    const sortSelect = document.getElementById('steam-lib-sort-select');
+    if (sortSelect && !sortSelect.dataset.bound) {
+      sortSelect.dataset.bound = 'true';
+      sortSelect.value = this.steamLibSortMode || 'default';
+      sortSelect.addEventListener('change', (e) => {
+        this.steamLibSortMode = e.target.value;
+        this.renderSteamLibrary(this.activeSteamBookId);
+      });
+    }
 
     listEl.innerHTML = '';
     if (filtered.length === 0) {
@@ -1972,6 +2056,469 @@ class AppController {
       toast.style.transition = 'all 0.3s ease';
       setTimeout(() => toast.remove(), 300);
     }, 3500);
+  }
+
+  // =========================================================================
+  // GLOBAL COMMAND PALETTE (CTRL+K SPOTLIGHT) & SHORTCUTS ENGINE
+  // =========================================================================
+
+  bindCommandPalette() {
+    const modal = document.getElementById('modal-command-palette');
+    const input = document.getElementById('cmd-palette-input');
+    const closeBtn = document.getElementById('btn-close-cmd-palette');
+    const triggerBtn = document.getElementById('btn-open-command-palette');
+    const resultsContainer = document.getElementById('cmd-palette-results');
+    const filterPills = document.querySelectorAll('.cmd-filter-pill');
+
+    if (!modal || !input || !resultsContainer) return;
+
+    const openPalette = () => {
+      modal.classList.add('active');
+      this.cmdPaletteOpen = true;
+      input.value = '';
+      this.cmdPaletteQuery = '';
+      this.cmdPaletteSelectedIndex = 0;
+      this.renderCommandPaletteResults();
+      setTimeout(() => input.focus(), 60);
+      if (window.soundEngine) window.soundEngine.playClick();
+    };
+
+    const closePalette = () => {
+      modal.classList.remove('active');
+      this.cmdPaletteOpen = false;
+      input.blur();
+    };
+
+    triggerBtn?.addEventListener('click', openPalette);
+    closeBtn?.addEventListener('click', closePalette);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closePalette();
+    });
+
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        this.cmdPaletteType = pill.dataset.cmdType || 'all';
+        this.cmdPaletteSelectedIndex = 0;
+        this.renderCommandPaletteResults();
+        input.focus();
+      });
+    });
+
+    input.addEventListener('input', (e) => {
+      this.cmdPaletteQuery = e.target.value;
+      this.cmdPaletteSelectedIndex = 0;
+      this.renderCommandPaletteResults();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const items = resultsContainer.querySelectorAll('.cmd-item');
+      if (items.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this.cmdPaletteSelectedIndex = (this.cmdPaletteSelectedIndex + 1) % items.length;
+        this.highlightCommandPaletteItem();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        this.cmdPaletteSelectedIndex = (this.cmdPaletteSelectedIndex - 1 + items.length) % items.length;
+        this.highlightCommandPaletteItem();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const selected = items[this.cmdPaletteSelectedIndex];
+        if (selected) selected.click();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closePalette();
+      }
+    });
+
+    this._openCommandPaletteFn = openPalette;
+    this._closeCommandPaletteFn = closePalette;
+  }
+
+  renderCommandPaletteResults() {
+    const resultsContainer = document.getElementById('cmd-palette-results');
+    if (!resultsContainer) return;
+
+    const query = (this.cmdPaletteQuery || '').toLowerCase().trim();
+    const typeFilter = this.cmdPaletteType || 'all';
+    const items = [];
+
+    // 1. Navigation sections
+    if (typeFilter === 'all' || typeFilter === 'nav') {
+      const navSections = [
+        { id: 'library', title: '🏪 Магазин (Каталог классики)', sub: 'Витрина, новинки, бестселлеры и рекомендации', icon: '🏪', type: 'nav' },
+        { id: 'steam-library', title: '📚 Библиотека Steam', sub: 'Двухпанельный хаб коллекции и прогресс', icon: '📚', type: 'nav' },
+        { id: 'community', title: '👥 Сообщество и обзоры', sub: 'Рецензии читателей, оценки и отзывы', icon: '👥', type: 'nav' },
+        { id: 'games', title: '🎮 Кибер-Игры и Викторины', sub: 'Мини-игры, тесты на эрудицию, фарм Люменов и XP', icon: '🎮', type: 'nav' },
+        { id: 'shop', title: '🛍️ Магазин предметов и рамок', sub: 'Косметические рамки аватарок за Люмены', icon: '🛍️', type: 'nav' },
+        { id: 'leaderboard', title: '🏆 Зал Славы (Топ схоластов)', sub: 'Рейтинг лучших читателей академии', icon: '🏆', type: 'nav' },
+        { id: 'profile', title: '👤 Профиль схоласта', sub: 'Личная статистика, полки и достижения', icon: '👤', type: 'nav' },
+        { id: 'admin', title: '⚡ Панель Администратора', sub: 'Управление каталогом и сброс базы', icon: '⚡', type: 'nav' }
+      ];
+
+      navSections.forEach(nav => {
+        if (!query || nav.title.toLowerCase().includes(query) || nav.sub.toLowerCase().includes(query)) {
+          items.push({
+            type: 'nav',
+            badgeClass: 'badge-nav',
+            badgeText: 'Раздел',
+            iconHtml: `<div class="cmd-item-icon">${nav.icon}</div>`,
+            title: nav.title,
+            sub: nav.sub,
+            hint: '↵ Перейти',
+            action: () => {
+              this._closeCommandPaletteFn?.();
+              this.switchView(nav.id);
+            }
+          });
+        }
+      });
+    }
+
+    // 2. Platform Actions & Controls
+    if (typeFilter === 'all' || typeFilter === 'action') {
+      const actions = [
+        {
+          title: '🎨 Сменить цветовую тему оформления',
+          sub: 'Переключить следующую палитру платформы (Steam, Неон, Космос, Янтарь...)',
+          icon: '🎨',
+          hint: 'T',
+          action: () => {
+            this._closeCommandPaletteFn?.();
+            this.cycleNextTheme();
+          }
+        },
+        {
+          title: '🔊 Переключить звуковые эффекты (SFX)',
+          sub: 'Включить или выключить звуки интерфейса и страниц',
+          icon: '🔊',
+          hint: 'M',
+          action: () => {
+            this._closeCommandPaletteFn?.();
+            const isMuted = window.soundEngine.toggleMute();
+            this.updateAudioButtonState();
+            this.showToast(isMuted ? '🔇 Звук выключен' : '🔊 Звуковые эффекты включены', 'info');
+          }
+        },
+        {
+          title: '🎧 Переключить атмосферный эмбиент',
+          sub: 'Фоновые звуки дождя, камина или космического дрона',
+          icon: '🎧',
+          hint: '',
+          action: () => {
+            this._closeCommandPaletteFn?.();
+            const current = window.soundEngine?.currentAmbientType || 'off';
+            const next = current === 'off' ? 'rain' : (current === 'rain' ? 'fire' : (current === 'fire' ? 'cyber' : 'off'));
+            window.soundEngine?.playAmbient?.(next);
+            const labels = { off: '🔇 Без звука', rain: '🌧️ Неоновый Дождь', fire: '🔥 Камин', cyber: '🌌 Космос' };
+            const lbl = document.getElementById('ambient-current-label');
+            if (lbl) lbl.textContent = `🎧 ${labels[next] || 'Эмбиент'}`;
+            this.showToast(`Фоновый звук: ${labels[next] || next}`, 'info');
+          }
+        },
+        {
+          title: '🔮 Кибер-Оракул: Мудрость классиков',
+          sub: 'Получить философское пророчество и +15 XP за эрудицию',
+          icon: '🔮',
+          hint: '',
+          action: () => {
+            this._closeCommandPaletteFn?.();
+            document.getElementById('cyber-oracle-box')?.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('btn-ask-oracle')?.click();
+          }
+        },
+        {
+          title: '⌨️ Шпаргалка по горячим клавишам',
+          sub: 'Просмотреть полный список шорткатов клавиатуры',
+          icon: '⌨️',
+          hint: '?',
+          action: () => {
+            this._closeCommandPaletteFn?.();
+            this.openModal('modal-shortcuts-help');
+          }
+        },
+        {
+          title: '📜 Переключить режим чтения (Лента / По главам)',
+          sub: 'Плавный манга-скролл или постраничный классический просмотр',
+          icon: '📜',
+          hint: '',
+          action: () => {
+            this._closeCommandPaletteFn?.();
+            window.readerEngine?.toggleReadingMode?.();
+          }
+        },
+        {
+          title: '🔝 Прокрутить страницу наверх',
+          sub: 'Мгновенный возврат к началу текущего экрана',
+          icon: '🔝',
+          hint: 'Home',
+          action: () => {
+            this._closeCommandPaletteFn?.();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+      ];
+
+      actions.forEach(act => {
+        if (!query || act.title.toLowerCase().includes(query) || act.sub.toLowerCase().includes(query)) {
+          items.push({
+            type: 'action',
+            badgeClass: 'badge-action',
+            badgeText: 'Действие',
+            iconHtml: `<div class="cmd-item-icon">${act.icon}</div>`,
+            title: act.title,
+            sub: act.sub,
+            hint: act.hint,
+            action: act.action
+          });
+        }
+      });
+    }
+
+    // 3. Books & Authors from Catalog
+    if (typeFilter === 'all' || typeFilter === 'book') {
+      const allBooks = window.bookRelay ? window.bookRelay.getAllBooks() : [];
+      allBooks.forEach(b => {
+        const matchTitle = b.title.toLowerCase().includes(query);
+        const matchAuthor = b.author.toLowerCase().includes(query);
+        const matchGenre = (b.genre || '').toLowerCase().includes(query);
+        if (!query || matchTitle || matchAuthor || matchGenre) {
+          const saved = window.readerEngine?.getSavedProgress?.(b.id);
+          const hasProg = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
+          const progText = hasProg ? ` • Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)` : '';
+
+          items.push({
+            type: 'book',
+            badgeClass: 'badge-book',
+            badgeText: 'Книга',
+            iconHtml: `<img src="${b.coverImage}" class="cmd-item-icon" onerror="this.src='https://covers.openlibrary.org/b/id/12818862-L.jpg'">`,
+            title: b.title,
+            sub: `${b.author} • ${b.genre || 'Классика'} • ${b.chapters?.length || 1} глав${progText}`,
+            hint: '▶ Читать',
+            action: () => {
+              this._closeCommandPaletteFn?.();
+              const chIdx = (saved && saved.currentChapter) || 0;
+              window.readerEngine.openBook(b.id, chIdx);
+              this.switchView('reader');
+            }
+          });
+        }
+      });
+    }
+
+    resultsContainer.innerHTML = '';
+    if (items.length === 0) {
+      resultsContainer.innerHTML = `
+        <div style="text-align: center; padding: 2.5rem 1rem; color: #64748b;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔍</div>
+          <div>По запросу «${this.cmdPaletteQuery}» ничего не найдено</div>
+          <small style="color: #475569;">Попробуйте поискать название книги, автора или раздел платформы</small>
+        </div>
+      `;
+      return;
+    }
+
+    items.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = `cmd-item ${idx === this.cmdPaletteSelectedIndex ? 'selected' : ''}`;
+      row.innerHTML = `
+        ${item.iconHtml}
+        <div class="cmd-item-content">
+          <div class="cmd-item-title">${item.title}</div>
+          <div class="cmd-item-sub">${item.sub}</div>
+        </div>
+        <span class="cmd-item-badge ${item.badgeClass}">${item.badgeText}</span>
+        ${item.hint ? `<span class="cmd-item-hint">${item.hint}</span>` : ''}
+      `;
+
+      row.addEventListener('click', () => {
+        if (window.soundEngine) window.soundEngine.playClick();
+        item.action();
+      });
+
+      row.addEventListener('mouseenter', () => {
+        this.cmdPaletteSelectedIndex = idx;
+        this.highlightCommandPaletteItem();
+      });
+
+      resultsContainer.appendChild(row);
+    });
+
+    this.highlightCommandPaletteItem();
+  }
+
+  highlightCommandPaletteItem() {
+    const resultsContainer = document.getElementById('cmd-palette-results');
+    if (!resultsContainer) return;
+    const items = resultsContainer.querySelectorAll('.cmd-item');
+    items.forEach((item, idx) => {
+      const isSel = idx === this.cmdPaletteSelectedIndex;
+      item.classList.toggle('selected', isSel);
+      if (isSel) {
+        item.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
+
+  // =========================================================================
+  // GLOBAL KEYBOARD SHORTCUTS
+  // =========================================================================
+
+  bindGlobalShortcuts() {
+    window.addEventListener('keydown', (e) => {
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable;
+
+      // 1. Ctrl + K / Cmd + K opens/closes Command Palette
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        if (this.cmdPaletteOpen) {
+          this._closeCommandPaletteFn?.();
+        } else {
+          this._openCommandPaletteFn?.();
+        }
+        return;
+      }
+
+      // 2. Escape: Closes open palette, modal, or returns from reader
+      if (e.key === 'Escape') {
+        if (this.cmdPaletteOpen) {
+          e.preventDefault();
+          this._closeCommandPaletteFn?.();
+          return;
+        }
+        const activeModal = document.querySelector('.modal-overlay.active, #level-up-modal.active');
+        if (activeModal) {
+          e.preventDefault();
+          this.closeAllModals();
+          return;
+        }
+        if (this.currentView === 'reader') {
+          e.preventDefault();
+          this.returnFromReader();
+          return;
+        }
+      }
+
+      // If user is inside an input/textarea/select, do not hijack typing keys
+      if (isInput) return;
+
+      // 3. Slash '/' opens Command Palette
+      if (e.key === '/') {
+        e.preventDefault();
+        this._openCommandPaletteFn?.();
+        return;
+      }
+
+      // 4. '?' opens shortcuts help modal
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        this.openModal('modal-shortcuts-help');
+        return;
+      }
+
+      // 5. 'T' cycles color theme
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        this.cycleNextTheme();
+        return;
+      }
+
+      // 6. 'M' toggles audio SFX
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        const isMuted = window.soundEngine.toggleMute();
+        this.updateAudioButtonState();
+        this.showToast(isMuted ? '🔇 Звук выключен' : '🔊 Звуковые эффекты включены', 'info');
+        return;
+      }
+
+      // 7. Home key scrolls to top
+      if (e.key === 'Home') {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      // 8. Number keys 1-7: Fast View switching
+      const numMap = {
+        '1': 'library',
+        '2': 'steam-library',
+        '3': 'community',
+        '4': 'games',
+        '5': 'shop',
+        '6': 'leaderboard',
+        '7': 'profile'
+      };
+      if (numMap[e.key] && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
+        this.switchView(numMap[e.key]);
+        return;
+      }
+
+      // 9. Reader specific keys
+      if (this.currentView === 'reader') {
+        if (e.key === ' ') {
+          e.preventDefault();
+          window.scrollBy({ top: window.innerHeight * 0.7, behavior: 'smooth' });
+          return;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+          e.preventDefault();
+          window.readerEngine?.nextPageOrChapter?.();
+          return;
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          window.readerEngine?.prevPageOrChapter?.();
+          return;
+        }
+      }
+    });
+
+    document.getElementById('btn-open-shortcuts-help')?.addEventListener('click', () => {
+      this.openModal('modal-shortcuts-help');
+    });
+  }
+
+  // =========================================================================
+  // FLOATING SCROLL-TO-TOP FAB WITH PERCENTAGE INDICATOR
+  // =========================================================================
+
+  bindScrollTopFAB() {
+    const fab = document.getElementById('btn-fab-scroll-top');
+    const percentEl = document.getElementById('fab-scroll-percent');
+    if (!fab) return;
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY || document.documentElement.scrollTop;
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          const percent = maxScroll > 0 ? Math.min(100, Math.max(0, Math.round((scrollY / maxScroll) * 100))) : 0;
+
+          if (percentEl) percentEl.textContent = `${percent}%`;
+
+          if (scrollY > 220) {
+            fab.classList.add('visible');
+          } else {
+            fab.classList.remove('visible');
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+
+    fab.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.soundEngine) window.soundEngine.playPageFlip();
+    });
   }
 }
 

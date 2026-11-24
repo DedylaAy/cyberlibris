@@ -515,6 +515,21 @@
 
       <!-- Header Controls: Theme Palette, Audio SFX, User Pill -->
       <div class="header-actions">
+        <!-- Quick Resume Book Pill -->
+        <button class="header-resume-pill magnetic-btn hidden" id="header-resume-pill" title="Продолжить чтение">
+          <span class="resume-pill-play">▶</span>
+          <div class="resume-pill-info">
+            <span class="resume-pill-title" id="header-resume-title">Продолжить</span>
+            <span class="resume-pill-meta" id="header-resume-meta">Гл. 1, 0%</span>
+          </div>
+        </button>
+
+        <!-- Command Palette Trigger Button -->
+        <button class="header-cmd-btn magnetic-btn" id="btn-open-command-palette" title="Командная строка и поиск (Ctrl+K)">
+          <span class="cmd-icon">🔍</span>
+          <span class="cmd-badge-key">Ctrl+K</span>
+        </button>
+
         <!-- Interactive Theme Palette Picker with Color Circles Preview -->
         <div class="theme-picker-container" id="theme-picker-container">
           <button class="theme-trigger-btn magnetic-btn" id="btn-theme-picker-trigger" title="Выбрать тему и цвет платформы">
@@ -608,8 +623,13 @@
         </div>
 
         <!-- Sound Synthesizer SFX Button -->
-        <button class="sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты">
+        <button class="sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты (M)">
           🔊
+        </button>
+
+        <!-- Keyboard Shortcuts Help Button -->
+        <button class="sfx-btn magnetic-btn" id="btn-open-shortcuts-help" title="Горячие клавиши (?)">
+          ⌨️
         </button>
 
         <!-- Current User Pill -->
@@ -842,6 +862,16 @@
                 <button class="steam-col-tab" data-steam-filter="reading">Читаю (<span id="steam-count-reading">0</span>)</button>
                 <button class="steam-col-tab" data-steam-filter="fav">Избранное (<span id="steam-count-fav">0</span>)</button>
               </div>
+              <div class="steam-sidebar-sort-bar">
+                <span class="steam-sort-label">Сортировка:</span>
+                <select id="steam-lib-sort-select" class="steam-sidebar-select">
+                  <option value="default">По умолчанию</option>
+                  <option value="title">По названию (А-Я)</option>
+                  <option value="author">По автору (А-Я)</option>
+                  <option value="progress">По прогрессу чтения</option>
+                  <option value="pages">По объёму глав</option>
+                </select>
+              </div>
             </div>
             <div class="steam-lib-list" id="steam-lib-list">
               <!-- Populated dynamically with book rows -->
@@ -901,8 +931,8 @@
           <!-- Sticky Reader Toolbar -->
           <div class="reader-toolbar">
             <div class="reader-tool-group">
-              <button class="tool-btn" id="btn-back-to-library" onclick="window.app.switchView('library')">
-                ← В библиотеку
+              <button class="tool-btn" id="btn-back-to-library" onclick="window.app.returnFromReader()" title="Вернуться назад (Esc)">
+                ← Назад (Esc)
               </button>
               <button class="tool-btn" id="btn-toggle-manga-mode" title="Переключить между постраничным чтением и непрерывной лентой">
                 📜 Режим: Лента (Манга-скролл)
@@ -2144,6 +2174,98 @@
       </div>
     </div>
   </div>
+
+  <!-- Global Spotlight Command Palette (Ctrl+K) -->
+  <div class="modal-overlay cmd-palette-overlay" id="modal-command-palette">
+    <div class="cmd-palette-box">
+      <div class="cmd-palette-header">
+        <span class="cmd-palette-search-icon">🔍</span>
+        <input type="text" id="cmd-palette-input" class="cmd-palette-input" placeholder="Поиск книг, разделов, команд... (↑↓ для навигации)" autocomplete="off" spellcheck="false">
+        <button class="cmd-palette-close-btn" id="btn-close-cmd-palette">Esc</button>
+      </div>
+
+      <div class="cmd-palette-filters">
+        <button class="cmd-filter-pill active" data-cmd-type="all">Все</button>
+        <button class="cmd-filter-pill" data-cmd-type="book">Книги</button>
+        <button class="cmd-filter-pill" data-cmd-type="nav">Разделы</button>
+        <button class="cmd-filter-pill" data-cmd-type="action">Действия</button>
+      </div>
+
+      <div class="cmd-palette-results" id="cmd-palette-results">
+        <!-- Dynamically rendered result rows -->
+      </div>
+
+      <div class="cmd-palette-footer">
+        <div class="cmd-footer-hints">
+          <span><kbd class="kbd-pill">↑</kbd><kbd class="kbd-pill">↓</kbd> Навигация</span>
+          <span><kbd class="kbd-pill">↵</kbd> Выбрать</span>
+          <span><kbd class="kbd-pill">Esc</kbd> Закрыть</span>
+        </div>
+        <div class="cmd-footer-tag">⚡ CyberLibris Spotlight</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Shortcuts Help Modal (?) -->
+  <div class="modal-overlay" id="modal-shortcuts-help">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+          <span>⌨️</span> Горячие клавиши платформы
+        </h3>
+        <button class="modal-close-btn">✕</button>
+      </div>
+      <div class="shortcuts-modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+          Управляйте сайтом как профессиональным десктопным приложением с помощью клавиатуры:
+        </p>
+        <div class="shortcuts-grid">
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Командная строка и поиск</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">Ctrl</kbd> + <kbd class="kbd-pill">K</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Справка по горячим клавишам</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">?</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Быстрая смена цветовой темы</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">T</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Вкл / Выкл звуковые эффекты</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">M</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Назад из ридера / Закрыть окна</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">Esc</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Плавная прокрутка в книге</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">Пробел</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Предыдущая / Следующая глава</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">←</kbd> <kbd class="kbd-pill">→</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Наверх страницы</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">Home</kbd></span>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Переход по разделам (Магазин, Библиотека...)</span>
+            <span class="shortcut-keys"><kbd class="kbd-pill">1</kbd> .. <kbd class="kbd-pill">7</kbd></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Scroll To Top Button with Scroll Percentage -->
+  <button id="btn-fab-scroll-top" class="fab-scroll-top" title="Наверх страницы (Home)">
+    <span class="fab-scroll-icon">↑</span>
+    <span class="fab-scroll-percent" id="fab-scroll-percent">0%</span>
+  </button>
 
   <!-- Toast Container -->
   <div id="toast-container"></div>

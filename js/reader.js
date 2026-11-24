@@ -505,6 +505,9 @@ class ReaderEngine {
     if (user && window.bookRelay) {
       window.bookRelay.updateProgress(user.username, bookId, percent, chIdx);
     }
+
+    // 4. Update Header Quick Resume Pill
+    window.app?.updateHeaderResumePill?.();
   }
 
   getSavedProgress(bookId) {
@@ -769,6 +772,30 @@ class ReaderEngine {
         this.renderContent();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+    }
+  }
+
+  nextPageOrChapter() {
+    if (!this.currentBook) return;
+    const chapters = this.currentBook.chapters || [];
+    if (this.currentChapterIdx < chapters.length - 1) {
+      this.jumpToChapter(this.currentChapterIdx + 1);
+      window.app?.showToast?.(`Глава ${this.currentChapterIdx + 1}: ${chapters[this.currentChapterIdx]?.title || ''}`, 'info');
+      if (window.soundEngine) window.soundEngine.playPageFlip();
+    } else {
+      window.app?.showToast?.('Вы на последней главе этой книги', 'info');
+    }
+  }
+
+  prevPageOrChapter() {
+    if (!this.currentBook) return;
+    const chapters = this.currentBook.chapters || [];
+    if (this.currentChapterIdx > 0) {
+      this.jumpToChapter(this.currentChapterIdx - 1);
+      window.app?.showToast?.(`Глава ${this.currentChapterIdx + 1}: ${chapters[this.currentChapterIdx]?.title || ''}`, 'info');
+      if (window.soundEngine) window.soundEngine.playPageFlip();
+    } else {
+      window.app?.showToast?.('Вы на первой главе этой книги', 'info');
     }
   }
 
