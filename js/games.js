@@ -254,12 +254,284 @@ class MiniGamesSuite {
         ]
       }
     };
+
+    // ==========================================
+    // GAME 3: LITERARY MEMORY MATRIX (МЕМОРИ-КАРТЫ)
+    // ==========================================
+    this.memoryPairsData = [
+      {
+        pairId: "pair_crime",
+        cardA: { icon: "🪓", title: "Раскольников & Топор", type: "Персонаж / Символ", hint: "Бросил вызов обществу и морали" },
+        cardB: { icon: "📖", title: "«Преступление и наказание»", type: "Роман Ф.М. Достоевского", hint: "1866 год, Петербург" }
+      },
+      {
+        pairId: "pair_master",
+        cardA: { icon: "🐱", title: "Кот Бегемот с примусом", type: "Персонаж / Свита", hint: "«Не шалю, никого не трогаю...»" },
+        cardB: { icon: "✨", title: "«Мастер и Маргарита»", type: "Роман М.А. Булгакова", hint: "Рукописи не горят" }
+      },
+      {
+        pairId: "pair_1984",
+        cardA: { icon: "👁️", title: "Комната 101 & Большой Брат", type: "Антиутопия / Символ", hint: "«Война — это мир, свобода — это рабство»" },
+        cardB: { icon: "⏳", title: "«1984»", type: "Роман Джорджа Оруэлла", hint: "1949 год, Океания" }
+      },
+      {
+        pairId: "pair_prince",
+        cardA: { icon: "🌹", title: "Маленький принц и Роза", type: "Герой / Философия", hint: "«Зорко одно лишь сердце»" },
+        cardB: { icon: "⭐", title: "Антуан де Сент-Экзюпери", type: "Автор / Сказка", hint: "Астероид Б-612 и Лис" }
+      },
+      {
+        pairId: "pair_holmes",
+        cardA: { icon: "🔍", title: "Шерлок Холмс & 221Б", type: "Сыщик / Метод", hint: "Дедуктивный метод и скрипка" },
+        cardB: { icon: "🎩", title: "Артур Конан Дойл", type: "Автор / Детективы", hint: "Бейкер-стрит и доктор Ватсон" }
+      },
+      {
+        pairId: "pair_nemo",
+        cardA: { icon: "⚓", title: "Капитан Немо & «Наутилус»", type: "Капитан / Субмарина", hint: "Покоритель морских глубин" },
+        cardB: { icon: "🌊", title: "«20 000 лье под водой»", type: "Роман Жюля Верна", hint: "1870 год, странствия по океанам" }
+      },
+      {
+        pairId: "pair_tolstoy",
+        cardA: { icon: "☁️", title: "Небо Аустерлица & Болконский", type: "Эпизод / Герой", hint: "«Как тихо и спокойно... все пустое»" },
+        cardB: { icon: "📜", title: "«Война и мир»", type: "Эпопея Льва Толстого", hint: "1869 год, четыре тома" }
+      },
+      {
+        pairId: "pair_faust",
+        cardA: { icon: "🔮", title: "Доктор Фауст & Мефистофель", type: "Трагедия / Сделка", hint: "«Остановись, мгновенье! Ты прекрасно!»" },
+        cardB: { icon: "🏛️", title: "Иоганн Вольфганг Гёте", type: "Автор / Классика", hint: "Вечный спор о душе человека" }
+      },
+      {
+        pairId: "pair_dorian",
+        cardA: { icon: "🖼️", title: "Дориан Грей и его Портрет", type: "Мистика / Грех", hint: "Стареющий холст вместо юноши" },
+        cardB: { icon: "🥀", title: "Оскар Уайльд", type: "Автор / Роман", hint: "1890 год, эстетизм" }
+      },
+      {
+        pairId: "pair_oblomov",
+        cardA: { icon: "🛋️", title: "Илья Обломов & Диван", type: "Герой / Феномен", hint: "Чистая душа и лень Обломовки" },
+        cardB: { icon: "☕", title: "«Обломов» (Иван Гончаров)", type: "Русская классика", hint: "1859 год, противостояние Штольцу" }
+      },
+      {
+        pairId: "pair_silver",
+        cardA: { icon: "🏴‍☠️", title: "Джон Сильвер & «Испаньола»", type: "Пират / Охота", hint: "Пятнадцать человек на сундук мертвеца" },
+        cardB: { icon: "🗺️", title: "«Остров сокровищ»", type: "Роман Р.Л. Стивенсона", hint: "1883 год, золото Флинта" }
+      },
+      {
+        pairId: "pair_zarathustra",
+        cardA: { icon: "⛰️", title: "Заратустра & Сверхчеловек", type: "Философия / Гимн", hint: "«Человек — это канат над пропастью»" },
+        cardB: { icon: "⚡", title: "Фридрих Ницше", type: "Мыслитель / Трактат", hint: "1883 год, вечное возвращение" }
+      }
+    ];
+
+    this.memoryDifficulty = 8;
+    this.memoryCards = [];
+    this.memoryFlippedCards = [];
+    this.memoryMatchedCount = 0;
+    this.memoryMoves = 0;
+    this.memoryTimer = null;
+    this.memorySeconds = 0;
+    this.memoryIsBusy = false;
+    this.memoryGameActive = false;
+
+    // ==========================================
+    // GAME 4: SPEED READING & FLASH MEMORY (СКОРОЧТЕНИЕ)
+    // ==========================================
+    this.speedReadExcerpts = [
+      {
+        book: "Мастер и Маргарита",
+        author: "М.А. Булгаков",
+        wpmDefault: 300,
+        text: "В белый плащ с кровавым подбоем, шаркающей кавалерийской походкой, ранним утром четырнадцатого числа весеннего месяца нисана в крытую колоннаду между двумя крыльями дворца Ирода Великого вышел прокуратор Иудеи Понтий Пилат.",
+        questions: [
+          {
+            q: "Какого цвета был подбой у плаща прокуратора?",
+            options: ["Кровавый (алый)", "Золотой", "Черный", "Белый"],
+            correct: 0
+          },
+          {
+            q: "В какой весенний месяц происходило действие?",
+            options: ["Нисан", "Март", "Август", "Ияр"],
+            correct: 0
+          },
+          {
+            q: "Чьей походкой шёл Понтий Пилат?",
+            options: ["Шаркающей кавалерийской", "Лёгкой легионерской", "Бесшумной царственной", "Быстрой старческой"],
+            correct: 0
+          }
+        ]
+      },
+      {
+        book: "Преступление и наказание",
+        author: "Ф.М. Достоевский",
+        wpmDefault: 300,
+        text: "В начале июля, в чрезвычайно жаркое время, под вечер, один молодой человек вышел из своей каморки, которую нанимал от жильцов в С-м переулке, на улицу и медленно, как бы в нерешимости, отправился к К-ну мосту.",
+        questions: [
+          {
+            q: "В какое время года и суток герой покинул каморку?",
+            options: ["В начале июля, под вечер в чрезвычайную жару", "В конце августа, ранним утром", "В середине мая, в полночь", "Зимой в полдень"],
+            correct: 0
+          },
+          {
+            q: "К какому мосту направился молодой человек?",
+            options: ["К К-ну мосту", "К Аничкову мосту", "К Дворцовому мосту", "К Сенатскому мосту"],
+            correct: 0
+          },
+          {
+            q: "Как двигался герой при выходе на улицу?",
+            options: ["Медленно, как бы в нерешимости", "Стремительно и уверенно", "Озираясь и бегом", "Спокойно и насвистывая"],
+            correct: 0
+          }
+        ]
+      },
+      {
+        book: "1984",
+        author: "Джордж Оруэлл",
+        wpmDefault: 350,
+        text: "Был холодный ясный апрельский день, и часы пробили тринадцать. Уинстон Смит, прижав подбородок к груди, чтобы спастись от злого ветра, быстро скользнул в стеклянные двери жилого дома «Победа».",
+        questions: [
+          {
+            q: "Сколько ударов пробили часы в начале романа?",
+            options: ["Тринадцать", "Двенадцать", "Семь", "Одиннадцать"],
+            correct: 0
+          },
+          {
+            q: "Как назывался жилой дом, в который вошёл Уинстон?",
+            options: ["«Победа»", "«Океания»", "«Правда»", "«Ангсоц»"],
+            correct: 0
+          },
+          {
+            q: "Какой месяц стоял в день начала событий?",
+            options: ["Апрель", "Май", "Октябрь", "Январь"],
+            correct: 0
+          }
+        ]
+      },
+      {
+        book: "Маленький принц",
+        author: "Антуан де Сент-Экзюпери",
+        wpmDefault: 250,
+        text: "Вот мой секрет, он очень прост: зорко одно лишь сердце. Самого главного глазами не увидишь. Твоя роза так дорога тебе потому, что ты отдавал ей всю свою душу. Люди забыли эту истину, но ты не забывай: ты навсегда в ответе за всех, кого приручил.",
+        questions: [
+          {
+            q: "Что, по словам Лиса, зорко на самом деле?",
+            options: ["Одно лишь сердце", "Человеческий разум", "Детский взор", "Мудрая интуиция"],
+            correct: 0
+          },
+          {
+            q: "Почему роза была так дорога Маленькому принцу?",
+            options: ["Потому что он отдавал ей всю свою душу и время", "Потому что она была единственной во всей вселенной", "Потому что она пахла прекраснее всех", "Потому что её подарил Лис"],
+            correct: 0
+          },
+          {
+            q: "За кого человек навсегда остаётся в ответе?",
+            options: ["За всех, кого приручил", "За свои сокровенные мечты", "За родную планету", "За сказанные слова"],
+            correct: 0
+          }
+        ]
+      },
+      {
+        book: "Государство",
+        author: "Платон",
+        wpmDefault: 300,
+        text: "Посмотри на людей в подземном жилище наподобие пещеры: они с малых лет закованы в цепи и видят лишь тени на стене перед собой, принимая тени за подлинную сущность вещей, пока один из них не выйдет к свету солнца.",
+        questions: [
+          {
+            q: "Где находились закованные в цепи люди в знаменитом мифе Платона?",
+            options: ["В подземной пещере", "На вершине башни", "В лабиринте Минотавра", "На дне колодца"],
+            correct: 0
+          },
+          {
+            q: "Что именно узники принимали за подлинную сущность вещей?",
+            options: ["Тени на стене перед собой", "Звуки эха в темноте", "Свои сновидения", "Слова стражников"],
+            correct: 0
+          },
+          {
+            q: "К какому свету должен выйти освобождённый узник, чтобы познать истину?",
+            options: ["К свету солнца", "К пламени костра", "К сиянию звёзд", "К лунному свету"],
+            correct: 0
+          }
+        ]
+      }
+    ];
+
+    this.speedReadIdx = 0;
+    this.speedReadCurrentWpm = 300;
+    this.speedReadWords = [];
+    this.speedReadWordIdx = 0;
+    this.speedReadTimer = null;
+    this.speedReadIsRunning = false;
+    this.speedReadQuestionsAnswered = 0;
+    this.speedReadQuestionsCorrect = 0;
+
+    // ==========================================
+    // GAME 5: QUOTE MEMORY RECONSTRUCTOR (МНЕМО-ЦИТАТЫ)
+    // ==========================================
+    this.reconstructQuotes = [
+      {
+        quote: "Красота спасёт этот безумный мир",
+        author: "Фёдор Достоевский",
+        book: "«Идиот»",
+        decoys: ["вечный", "душу"]
+      },
+      {
+        quote: "Зорко одно лишь сердце самого главного глазами не увидишь",
+        author: "Антуан де Сент-Экзюпери",
+        book: "«Маленький принц»",
+        decoys: ["разум", "навсегда"]
+      },
+      {
+        quote: "Поверьте мне настоящие рукописи никогда не горят",
+        author: "Михаил Булгаков",
+        book: "«Мастер и Маргарита»",
+        decoys: ["слова", "правда"]
+      },
+      {
+        quote: "Все мысли которые имеют огромные последствия всегда просты",
+        author: "Лев Толстой",
+        book: "«Война и мир»",
+        decoys: ["сложны", "великие"]
+      },
+      {
+        quote: "Свобода это возможность сказать что дважды два четыре",
+        author: "Джордж Оруэлл",
+        book: "«1984»",
+        decoys: ["пять", "власть"]
+      },
+      {
+        quote: "Остановись мгновенье ты поистине прекрасно",
+        author: "Иоганн Гёте",
+        book: "«Фауст»",
+        decoys: ["вечность", "навсегда"]
+      },
+      {
+        quote: "Человек это канат натянутый между животным и Сверхчеловеком",
+        author: "Фридрих Ницше",
+        book: "«Так говорил Заратустра»",
+        decoys: ["мост", "землей"]
+      },
+      {
+        quote: "Лучшая победа это покорить врага без единого выстрела",
+        author: "Сунь-Цзы",
+        book: "«Искусство войны»",
+        decoys: ["боя", "быстро"]
+      }
+    ];
+
+    this.reconstructIdx = 0;
+    this.reconstructStreak = 0;
+    this.reconstructScore = 0;
+    this.reconstructTargetWords = [];
+    this.reconstructPlacedWords = [];
+    this.reconstructAvailableWords = [];
+    this.reconstructCountdown = 5;
+    this.reconstructTimer = null;
   }
 
   init() {
     this.bindNav();
     this.bindShopTabs();
     this.bindQuizBookSelector();
+    this.bindMemoryControls();
+    this.bindSpeedReadControls();
+    this.bindReconstructControls();
   }
 
   bindNav() {
@@ -290,6 +562,12 @@ class MiniGamesSuite {
       }
     } else if (gameId === 'quiz') {
       this.renderQuizBookSelector();
+    } else if (gameId === 'memory') {
+      this.initMemoryGame();
+    } else if (gameId === 'speedread') {
+      this.initSpeedReadGame();
+    } else if (gameId === 'reconstruct') {
+      this.initReconstructGame();
     }
 
     if (window.soundEngine) window.soundEngine.playCardFlip();
@@ -574,6 +852,677 @@ class MiniGamesSuite {
       });
     }
     if (window.soundEngine) window.soundEngine.playLevelUp();
+  }
+
+  // =========================================================================
+  // GAME 3: LITERARY MEMORY MATRIX (МЕМОРИ-КАРТЫ)
+  // =========================================================================
+
+  bindMemoryControls() {
+    document.getElementById('btn-memory-restart')?.addEventListener('click', () => {
+      this.initMemoryGame(this.memoryDifficulty);
+    });
+
+    document.getElementById('btn-memory-peek')?.addEventListener('click', () => {
+      this.peekMemoryCards();
+    });
+
+    document.querySelectorAll('.memory-diff-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.memory-diff-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        const pairs = parseInt(e.currentTarget.dataset.pairs, 10) || 8;
+        this.memoryDifficulty = pairs;
+        this.initMemoryGame(pairs);
+      });
+    });
+  }
+
+  initMemoryGame(numPairs = this.memoryDifficulty) {
+    if (this.memoryTimer) clearInterval(this.memoryTimer);
+
+    this.memoryDifficulty = numPairs;
+    this.memoryMatchedCount = 0;
+    this.memoryMoves = 0;
+    this.memorySeconds = 0;
+    this.memoryFlippedCards = [];
+    this.memoryIsBusy = false;
+    this.memoryGameActive = true;
+
+    // Reset HUD
+    const movesEl = document.getElementById('memory-moves-display');
+    const matchesEl = document.getElementById('memory-matches-display');
+    const timerEl = document.getElementById('memory-timer-display');
+    const scoreEl = document.getElementById('memory-score-display');
+
+    if (movesEl) movesEl.textContent = '0';
+    if (matchesEl) matchesEl.textContent = `0 / ${numPairs}`;
+    if (timerEl) timerEl.textContent = '00:00';
+    if (scoreEl) scoreEl.textContent = '0 ⬡';
+
+    // Pick pairs
+    const pool = [...this.memoryPairsData].sort(() => Math.random() - 0.5).slice(0, numPairs);
+    const cardList = [];
+
+    pool.forEach((p) => {
+      cardList.push({
+        id: `${p.pairId}_a`,
+        pairId: p.pairId,
+        icon: p.cardA.icon,
+        title: p.cardA.title,
+        type: p.cardA.type,
+        hint: p.cardA.hint,
+        matched: false
+      });
+      cardList.push({
+        id: `${p.pairId}_b`,
+        pairId: p.pairId,
+        icon: p.cardB.icon,
+        title: p.cardB.title,
+        type: p.cardB.type,
+        hint: p.cardB.hint,
+        matched: false
+      });
+    });
+
+    // Shuffle cards
+    this.memoryCards = cardList.sort(() => Math.random() - 0.5);
+
+    // Render grid
+    this.renderMemoryBoard();
+
+    // Start timer
+    this.memoryTimer = setInterval(() => {
+      this.memorySeconds++;
+      const mins = String(Math.floor(this.memorySeconds / 60)).padStart(2, '0');
+      const secs = String(this.memorySeconds % 60).padStart(2, '0');
+      const tEl = document.getElementById('memory-timer-display');
+      if (tEl) tEl.textContent = `${mins}:${secs}`;
+    }, 1000);
+  }
+
+  renderMemoryBoard() {
+    const grid = document.getElementById('literary-memory-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (this.memoryDifficulty === 12) {
+      grid.style.maxWidth = '980px';
+      grid.style.gridTemplateColumns = 'repeat(6, 1fr)';
+    } else {
+      grid.style.maxWidth = '840px';
+      grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    }
+
+    this.memoryCards.forEach((c) => {
+      const cardEl = document.createElement('div');
+      cardEl.className = 'literary-memory-card tilt-card';
+      cardEl.dataset.id = c.id;
+
+      cardEl.innerHTML = `
+        <div class="literary-card-face literary-card-front">
+          <div class="card-cyber-icon">🔮</div>
+          <div class="card-cyber-tag">CYBER•MEM</div>
+        </div>
+        <div class="literary-card-face literary-card-back">
+          <div class="card-badge">${c.type}</div>
+          <div class="card-title">${c.icon} ${c.title}</div>
+          <div class="card-hint">${c.hint}</div>
+        </div>
+      `;
+
+      cardEl.addEventListener('click', () => this.handleMemoryCardClick(c, cardEl));
+      grid.appendChild(cardEl);
+    });
+
+    if (window.app?.bindTiltEffect) window.app.bindTiltEffect();
+  }
+
+  handleMemoryCardClick(card, cardEl) {
+    if (!this.memoryGameActive || this.memoryIsBusy) return;
+    if (card.matched) return;
+    if (cardEl.classList.contains('flipped')) return;
+
+    // Flip card
+    cardEl.classList.add('flipped');
+    this.memoryFlippedCards.push({ card, el: cardEl });
+
+    if (window.soundEngine) window.soundEngine.playCardFlip();
+
+    if (this.memoryFlippedCards.length === 2) {
+      this.memoryMoves++;
+      const movesEl = document.getElementById('memory-moves-display');
+      if (movesEl) movesEl.textContent = this.memoryMoves;
+
+      const [first, second] = this.memoryFlippedCards;
+
+      if (first.card.pairId === second.card.pairId) {
+        // MATCH!
+        first.card.matched = true;
+        second.card.matched = true;
+        first.el.classList.add('matched');
+        second.el.classList.add('matched');
+        this.memoryMatchedCount++;
+
+        const matchesEl = document.getElementById('memory-matches-display');
+        if (matchesEl) matchesEl.textContent = `${this.memoryMatchedCount} / ${this.memoryDifficulty}`;
+
+        const scoreEl = document.getElementById('memory-score-display');
+        const currentPoints = this.memoryMatchedCount * 25;
+        if (scoreEl) scoreEl.textContent = `${currentPoints} ⬡`;
+
+        if (window.soundEngine) window.soundEngine.playCorrect();
+
+        this.memoryFlippedCards = [];
+
+        if (this.memoryMatchedCount === this.memoryDifficulty) {
+          setTimeout(() => this.endMemoryGame(), 450);
+        }
+      } else {
+        // WRONG PAIR
+        this.memoryIsBusy = true;
+        if (window.soundEngine) window.soundEngine.playWrong();
+
+        setTimeout(() => {
+          first.el.classList.remove('flipped');
+          second.el.classList.remove('flipped');
+          this.memoryFlippedCards = [];
+          this.memoryIsBusy = false;
+        }, 900);
+      }
+    }
+  }
+
+  peekMemoryCards() {
+    if (!this.memoryGameActive || this.memoryIsBusy) return;
+
+    this.memoryIsBusy = true;
+    const cards = document.querySelectorAll('.literary-memory-card:not(.matched)');
+    cards.forEach(c => c.classList.add('flipped'));
+
+    if (window.soundEngine) window.soundEngine.playHover();
+
+    setTimeout(() => {
+      cards.forEach(c => {
+        const id = c.dataset.id;
+        const isMatched = this.memoryCards.find(card => card.id === id)?.matched;
+        if (!isMatched) c.classList.remove('flipped');
+      });
+      this.memoryIsBusy = false;
+    }, 1500);
+  }
+
+  endMemoryGame() {
+    this.memoryGameActive = false;
+    if (this.memoryTimer) clearInterval(this.memoryTimer);
+
+    // Calculate reward based on time and moves
+    const timeSec = Math.max(1, this.memorySeconds);
+    const speedBonus = Math.max(10, 150 - timeSec);
+    const moveBonus = Math.max(10, (this.memoryDifficulty * 3 - this.memoryMoves) * 5);
+    const totalLumens = Math.round(50 + speedBonus + moveBonus);
+    const totalXp = totalLumens * 2;
+
+    if (window.auth) {
+      window.auth.addLumens(totalLumens);
+      window.auth.addXp(totalXp);
+      window.auth.updateStat('gamesWon', 1);
+    }
+
+    if (window.dbEngine) {
+      window.dbEngine.updateQuestProgress('quest_cryptor', 1);
+      if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+    }
+
+    const mins = Math.floor(timeSec / 60);
+    const secs = timeSec % 60;
+    const timeStr = mins > 0 ? `${mins}м ${secs}с` : `${secs}с`;
+
+    window.app.showToast(`🧠 Все пары найдены за ${timeStr}! Ходы: ${this.memoryMoves}. Награда: +${totalLumens} ⬡, +${totalXp} XP!`, 'reward');
+    if (window.soundEngine) window.soundEngine.playLevelUp();
+  }
+
+  // =========================================================================
+  // GAME 4: SPEED READING & FLASH MEMORY (СКОРОЧТЕНИЕ)
+  // =========================================================================
+
+  bindSpeedReadControls() {
+    document.getElementById('btn-speedread-start')?.addEventListener('click', () => {
+      this.startSpeedReading();
+    });
+
+    document.getElementById('btn-speedread-next-text')?.addEventListener('click', () => {
+      this.nextSpeedReadExcerpt();
+    });
+
+    document.querySelectorAll('.speedread-wpm-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.speedread-wpm-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        this.speedReadCurrentWpm = parseInt(e.currentTarget.dataset.wpm, 10) || 300;
+        const wpmDisplay = document.getElementById('speedread-wpm-display');
+        if (wpmDisplay) wpmDisplay.textContent = `${this.speedReadCurrentWpm} сл/мин`;
+      });
+    });
+  }
+
+  initSpeedReadGame() {
+    if (this.speedReadTimer) clearInterval(this.speedReadTimer);
+    this.speedReadIsRunning = false;
+
+    const excerpt = this.speedReadExcerpts[this.speedReadIdx] || this.speedReadExcerpts[0];
+
+    const titleEl = document.getElementById('speedread-book-title');
+    if (titleEl) titleEl.textContent = `«${excerpt.book}» (${excerpt.author})`;
+
+    const wpmDisplay = document.getElementById('speedread-wpm-display');
+    if (wpmDisplay) wpmDisplay.textContent = `${this.speedReadCurrentWpm} сл/мин`;
+
+    const activeWordEl = document.getElementById('speedread-active-word');
+    if (activeWordEl) activeWordEl.textContent = 'ГОТОВЫ К ЧТЕНИЮ?';
+
+    const fillEl = document.getElementById('speedread-progress-fill');
+    if (fillEl) fillEl.style.width = '0%';
+
+    const readingStage = document.getElementById('speedread-reading-stage');
+    const quizStage = document.getElementById('speedread-quiz-stage');
+    if (readingStage) readingStage.style.display = 'block';
+    if (quizStage) quizStage.style.display = 'none';
+
+    const startBtn = document.getElementById('btn-speedread-start');
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.textContent = '▶ Запустить чтение';
+    }
+  }
+
+  nextSpeedReadExcerpt() {
+    if (this.speedReadTimer) clearInterval(this.speedReadTimer);
+    this.speedReadIdx = (this.speedReadIdx + 1) % this.speedReadExcerpts.length;
+    this.initSpeedReadGame();
+  }
+
+  startSpeedReading() {
+    if (this.speedReadIsRunning) return;
+    this.speedReadIsRunning = true;
+
+    const excerpt = this.speedReadExcerpts[this.speedReadIdx];
+    this.speedReadWords = excerpt.text.split(/\s+/).filter(Boolean);
+    this.speedReadWordIdx = 0;
+
+    const startBtn = document.getElementById('btn-speedread-start');
+    if (startBtn) {
+      startBtn.disabled = true;
+      startBtn.textContent = '⏱ Чтение в процессе...';
+    }
+
+    const intervalMs = Math.round((60 / this.speedReadCurrentWpm) * 1000);
+    const activeWordEl = document.getElementById('speedread-active-word');
+    const fillEl = document.getElementById('speedread-progress-fill');
+
+    if (this.speedReadTimer) clearInterval(this.speedReadTimer);
+
+    this.speedReadTimer = setInterval(() => {
+      if (this.speedReadWordIdx >= this.speedReadWords.length) {
+        clearInterval(this.speedReadTimer);
+        this.speedReadIsRunning = false;
+        if (fillEl) fillEl.style.width = '100%';
+        if (activeWordEl) activeWordEl.textContent = '✓ ФРАГМЕНТ ПРОЧИТАН!';
+        if (window.soundEngine) window.soundEngine.playCorrect();
+
+        setTimeout(() => this.showSpeedReadQuiz(), 900);
+        return;
+      }
+
+      const word = this.speedReadWords[this.speedReadWordIdx];
+      // Optimal Recognition Point (middle letter highlighted)
+      const mid = Math.floor(word.length / 2);
+      const before = word.slice(0, mid);
+      const orp = word[mid] || '';
+      const after = word.slice(mid + 1);
+
+      if (activeWordEl) {
+        activeWordEl.innerHTML = `${before}<span class="speedread-orp-letter">${orp}</span>${after}`;
+      }
+
+      this.speedReadWordIdx++;
+      const pct = Math.round((this.speedReadWordIdx / this.speedReadWords.length) * 100);
+      if (fillEl) fillEl.style.width = `${pct}%`;
+    }, intervalMs);
+  }
+
+  showSpeedReadQuiz() {
+    const readingStage = document.getElementById('speedread-reading-stage');
+    const quizStage = document.getElementById('speedread-quiz-stage');
+    if (readingStage) readingStage.style.display = 'none';
+    if (quizStage) quizStage.style.display = 'block';
+
+    const excerpt = this.speedReadExcerpts[this.speedReadIdx];
+    this.speedReadQuestionsAnswered = 0;
+    this.speedReadQuestionsCorrect = 0;
+
+    this.renderSpeedReadQuestion(0);
+  }
+
+  renderSpeedReadQuestion(qIdx) {
+    const excerpt = this.speedReadExcerpts[this.speedReadIdx];
+    const q = excerpt.questions[qIdx];
+    if (!q) {
+      this.finishSpeedReadRound();
+      return;
+    }
+
+    const qNumEl = document.getElementById('speedread-q-num');
+    const qTextEl = document.getElementById('speedread-q-text');
+    const optionsGrid = document.getElementById('speedread-q-options');
+
+    if (qNumEl) qNumEl.textContent = `Вопрос ${qIdx + 1} из ${excerpt.questions.length}`;
+    if (qTextEl) qTextEl.textContent = q.q;
+
+    if (!optionsGrid) return;
+    optionsGrid.innerHTML = '';
+
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'speedread-q-option';
+      btn.innerHTML = `<span style="color:var(--accent-cyan); font-weight:800; margin-right:0.75rem;">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
+
+      btn.addEventListener('click', () => {
+        const all = optionsGrid.querySelectorAll('.speedread-q-option');
+        all.forEach(b => b.disabled = true);
+
+        if (idx === q.correct) {
+          btn.style.background = 'rgba(0, 255, 136, 0.25)';
+          btn.style.borderColor = 'var(--accent-green)';
+          this.speedReadQuestionsCorrect++;
+          if (window.soundEngine) window.soundEngine.playCorrect();
+        } else {
+          btn.style.background = 'rgba(255, 0, 127, 0.25)';
+          btn.style.borderColor = 'var(--accent-magenta)';
+          all[q.correct].style.background = 'rgba(0, 255, 136, 0.25)';
+          all[q.correct].style.borderColor = 'var(--accent-green)';
+          if (window.soundEngine) window.soundEngine.playWrong();
+        }
+
+        setTimeout(() => this.renderSpeedReadQuestion(qIdx + 1), 1300);
+      });
+
+      optionsGrid.appendChild(btn);
+    });
+  }
+
+  finishSpeedReadRound() {
+    const excerpt = this.speedReadExcerpts[this.speedReadIdx];
+    const total = excerpt.questions.length;
+    const accuracy = Math.round((this.speedReadQuestionsCorrect / total) * 100);
+
+    const accDisplay = document.getElementById('speedread-accuracy-display');
+    if (accDisplay) accDisplay.textContent = `${accuracy}%`;
+
+    const lumensEarned = Math.round(30 + accuracy * 0.7);
+    const xpEarned = lumensEarned * 2;
+
+    if (window.auth) {
+      window.auth.addLumens(lumensEarned);
+      window.auth.addXp(xpEarned);
+      window.auth.updateStat('gamesWon', 1);
+    }
+
+    if (window.dbEngine) {
+      window.dbEngine.updateQuestProgress('quest_speed_rush', 1);
+      if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+    }
+
+    const qTextEl = document.getElementById('speedread-q-text');
+    const optionsGrid = document.getElementById('speedread-q-options');
+
+    if (qTextEl) {
+      qTextEl.innerHTML = `
+        <div style="font-size:2rem; margin-bottom:0.4rem;">🎯</div>
+        <div style="color:var(--accent-gold); font-size:1.4rem;">Тест скорочтения завершен!</div>
+        <div style="font-size:1rem; color:#fff; margin-top:0.4rem;">
+          Темп: <strong>${this.speedReadCurrentWpm} сл/мин</strong> | Точность запоминания: <strong>${accuracy}%</strong> (${this.speedReadQuestionsCorrect} из ${total})
+        </div>
+      `;
+    }
+
+    if (optionsGrid) {
+      optionsGrid.innerHTML = `
+        <div style="text-align:center; margin-top:1.2rem;">
+          <button class="btn btn-primary" id="btn-speedread-repeat" style="padding:0.75rem 2rem;">
+            ← Следующий фрагмент
+          </button>
+        </div>
+      `;
+      optionsGrid.querySelector('#btn-speedread-repeat')?.addEventListener('click', () => {
+        this.nextSpeedReadExcerpt();
+      });
+    }
+
+    window.app.showToast(`👁️ Раунд скорочтения пройден! Точность: ${accuracy}%. Награда: +${lumensEarned} ⬡, +${xpEarned} XP!`, 'reward');
+    if (window.soundEngine) window.soundEngine.playLevelUp();
+  }
+
+  // =========================================================================
+  // GAME 5: QUOTE MEMORY RECONSTRUCTOR (МНЕМО-ЦИТАТЫ)
+  // =========================================================================
+
+  bindReconstructControls() {
+    document.getElementById('btn-reconstruct-skip-preview')?.addEventListener('click', () => {
+      this.startReconstructAssembly();
+    });
+
+    document.getElementById('btn-reconstruct-check')?.addEventListener('click', () => {
+      this.checkReconstructAssembly();
+    });
+
+    document.getElementById('btn-reconstruct-clear')?.addEventListener('click', () => {
+      this.clearReconstructAssembly();
+    });
+
+    document.getElementById('btn-reconstruct-hint')?.addEventListener('click', () => {
+      this.provideReconstructHint();
+    });
+  }
+
+  initReconstructGame() {
+    if (this.reconstructTimer) clearInterval(this.reconstructTimer);
+
+    const qItem = this.reconstructQuotes[this.reconstructIdx] || this.reconstructQuotes[0];
+
+    const numEl = document.getElementById('reconstruct-quote-num');
+    if (numEl) numEl.textContent = `Цитата ${this.reconstructIdx + 1} из ${this.reconstructQuotes.length}`;
+
+    const quoteEl = document.getElementById('reconstruct-preview-quote');
+    const authorEl = document.getElementById('reconstruct-preview-author');
+    if (quoteEl) quoteEl.textContent = `«${qItem.quote}»`;
+    if (authorEl) authorEl.textContent = `— ${qItem.author} (${qItem.book})`;
+
+    const previewStage = document.getElementById('reconstruct-stage-preview');
+    const assembleStage = document.getElementById('reconstruct-stage-assemble');
+    if (previewStage) previewStage.style.display = 'block';
+    if (assembleStage) assembleStage.style.display = 'none';
+
+    // Start 5-second countdown
+    this.reconstructCountdown = 5;
+    const fillEl = document.getElementById('reconstruct-timer-fill');
+    if (fillEl) fillEl.style.width = '100%';
+
+    let elapsed = 0;
+    const totalMs = 5000;
+    const stepMs = 50;
+
+    this.reconstructTimer = setInterval(() => {
+      elapsed += stepMs;
+      const remPct = Math.max(0, 100 - (elapsed / totalMs) * 100);
+      if (fillEl) fillEl.style.width = `${remPct}%`;
+
+      if (elapsed >= totalMs) {
+        clearInterval(this.reconstructTimer);
+        this.startReconstructAssembly();
+      }
+    }, stepMs);
+  }
+
+  startReconstructAssembly() {
+    if (this.reconstructTimer) clearInterval(this.reconstructTimer);
+
+    const previewStage = document.getElementById('reconstruct-stage-preview');
+    const assembleStage = document.getElementById('reconstruct-stage-assemble');
+    if (previewStage) previewStage.style.display = 'none';
+    if (assembleStage) assembleStage.style.display = 'block';
+
+    const qItem = this.reconstructQuotes[this.reconstructIdx];
+    this.reconstructTargetWords = qItem.quote.split(/\s+/).filter(Boolean);
+    this.reconstructPlacedWords = [];
+
+    // Words bank: target words + decoys shuffled
+    const allTokens = [...this.reconstructTargetWords, ...(qItem.decoys || [])];
+    this.reconstructAvailableWords = allTokens
+      .map((w, idx) => ({ id: `word_${idx}_${w}`, word: w, used: false }))
+      .sort(() => Math.random() - 0.5);
+
+    this.renderReconstructZones();
+  }
+
+  renderReconstructZones() {
+    const assemblyZone = document.getElementById('reconstruct-assembly-zone');
+    const bankZone = document.getElementById('reconstruct-bank-zone');
+
+    if (assemblyZone) {
+      assemblyZone.innerHTML = '';
+      if (this.reconstructPlacedWords.length === 0) {
+        assemblyZone.innerHTML = '<div class="reconstruct-assembly-placeholder">Нажимайте на слова внизу в правильном порядке</div>';
+      } else {
+        this.reconstructPlacedWords.forEach((item, pIdx) => {
+          const chip = document.createElement('button');
+          chip.className = 'reconstruct-word-chip placed';
+          chip.textContent = item.word;
+          chip.title = 'Нажмите, чтобы убрать слово';
+          chip.addEventListener('click', () => {
+            this.removeWordFromAssembly(pIdx);
+          });
+          assemblyZone.appendChild(chip);
+        });
+      }
+    }
+
+    if (bankZone) {
+      bankZone.innerHTML = '';
+      this.reconstructAvailableWords.forEach((item) => {
+        const chip = document.createElement('button');
+        chip.className = 'reconstruct-word-chip';
+        chip.textContent = item.word;
+        if (item.used) {
+          chip.style.opacity = '0.25';
+          chip.style.pointerEvents = 'none';
+        }
+
+        chip.addEventListener('click', () => {
+          if (!item.used) {
+            this.addWordToAssembly(item);
+          }
+        });
+
+        bankZone.appendChild(chip);
+      });
+    }
+  }
+
+  addWordToAssembly(item) {
+    item.used = true;
+    this.reconstructPlacedWords.push(item);
+    if (window.soundEngine) window.soundEngine.playClick();
+    this.renderReconstructZones();
+  }
+
+  removeWordFromAssembly(index) {
+    const item = this.reconstructPlacedWords.splice(index, 1)[0];
+    if (item) item.used = false;
+    if (window.soundEngine) window.soundEngine.playClick();
+    this.renderReconstructZones();
+  }
+
+  clearReconstructAssembly() {
+    this.reconstructPlacedWords = [];
+    this.reconstructAvailableWords.forEach(i => i.used = false);
+    if (window.soundEngine) window.soundEngine.playWrong();
+    this.renderReconstructZones();
+  }
+
+  provideReconstructHint() {
+    const nextIdx = this.reconstructPlacedWords.length;
+    if (nextIdx >= this.reconstructTargetWords.length) return;
+
+    const neededWord = this.reconstructTargetWords[nextIdx];
+    const candidate = this.reconstructAvailableWords.find(i => !i.used && i.word === neededWord);
+
+    if (candidate) {
+      this.addWordToAssembly(candidate);
+      window.app.showToast(`💡 Подсказка: «${neededWord}»`, 'info');
+    }
+  }
+
+  checkReconstructAssembly() {
+    const userString = this.reconstructPlacedWords.map(i => i.word).join(' ');
+    const targetString = this.reconstructTargetWords.join(' ');
+
+    const assemblyZone = document.getElementById('reconstruct-assembly-zone');
+
+    if (userString === targetString) {
+      // MATCH!
+      if (assemblyZone) {
+        assemblyZone.style.borderColor = 'var(--accent-green)';
+        assemblyZone.style.background = 'rgba(0, 255, 136, 0.15)';
+      }
+
+      this.reconstructStreak++;
+      const streakEl = document.getElementById('reconstruct-streak-display');
+      if (streakEl) streakEl.textContent = this.reconstructStreak;
+
+      const rewardLumens = 35 * Math.min(4, this.reconstructStreak);
+      const rewardXp = rewardLumens * 2;
+      this.reconstructScore += rewardLumens;
+
+      const scoreEl = document.getElementById('reconstruct-score-display');
+      if (scoreEl) scoreEl.textContent = `${this.reconstructScore} ⬡`;
+
+      if (window.auth) {
+        window.auth.addLumens(rewardLumens);
+        window.auth.addXp(rewardXp);
+        window.auth.updateStat('gamesWon', 1);
+      }
+
+      if (window.dbEngine) {
+        window.dbEngine.updateQuestProgress('quest_cryptor', 1);
+        if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
+      }
+
+      window.app.showToast(`✨ Идеально собрано по памяти! +${rewardLumens} ⬡, +${rewardXp} XP!`, 'reward');
+      if (window.soundEngine) window.soundEngine.playLevelUp();
+
+      setTimeout(() => {
+        this.reconstructIdx = (this.reconstructIdx + 1) % this.reconstructQuotes.length;
+        this.initReconstructGame();
+      }, 1400);
+    } else {
+      // MISMATCH
+      if (assemblyZone) {
+        assemblyZone.style.borderColor = 'var(--accent-magenta)';
+        assemblyZone.style.background = 'rgba(255, 0, 127, 0.15)';
+        setTimeout(() => {
+          assemblyZone.style.borderColor = 'rgba(0, 240, 255, 0.3)';
+          assemblyZone.style.background = 'rgba(0, 0, 0, 0.35)';
+        }, 800);
+      }
+
+      this.reconstructStreak = 0;
+      const streakEl = document.getElementById('reconstruct-streak-display');
+      if (streakEl) streakEl.textContent = '0';
+
+      if (window.soundEngine) window.soundEngine.playWrong();
+      window.app.showToast('Порядок слов не совпадает. Попробуйте переставить слова или использовать подсказку!', 'error');
+    }
   }
 
   // =========================================================================

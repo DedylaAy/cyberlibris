@@ -1197,10 +1197,19 @@
         <!-- Games Tab Selector -->
         <div class="games-nav">
           <button class="game-tab-btn active magnetic-btn" data-game="speed">
-            <span>⚡</span> Словесный Шторм (Цитаты Великих)
+            <span>⚡</span> Словесный Шторм
           </button>
           <button class="game-tab-btn magnetic-btn" data-game="quiz">
-            <span>🎓</span> Литературный Квиз Эрудита
+            <span>🎓</span> Квиз Эрудита
+          </button>
+          <button class="game-tab-btn magnetic-btn" data-game="memory">
+            <span>🧠</span> Мемори-Карты (Пары)
+          </button>
+          <button class="game-tab-btn magnetic-btn" data-game="speedread">
+            <span>👁️</span> Скорочтение & Фокус
+          </button>
+          <button class="game-tab-btn magnetic-btn" data-game="reconstruct">
+            <span>🧩</span> Мнемо-Цитаты
           </button>
         </div>
 
@@ -1287,6 +1296,186 @@
 
                 <div class="quiz-answers-grid" id="quiz-answers-grid">
                   <!-- 4 answer buttons -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GAME 3: LITERARY MEMORY MATRIX (МЕМОРИ-КАРТЫ) -->
+          <div class="game-arena-view" id="game-view-memory" style="display: none;">
+            <div class="game-arena-hud">
+              <div class="hud-stat-pill">
+                <span>⏱ Время:</span>
+                <span id="memory-timer-display" style="color: var(--accent-magenta);">00:00</span>
+              </div>
+              <div class="hud-stat-pill">
+                <span>🎯 Ходы:</span>
+                <span id="memory-moves-display" style="color: var(--accent-gold);">0</span>
+              </div>
+              <div class="hud-stat-pill">
+                <span>🧩 Найдено пар:</span>
+                <span id="memory-matches-display" style="color: var(--accent-cyan);">0 / 8</span>
+              </div>
+              <div class="hud-stat-pill">
+                <span>🏆 Награда:</span>
+                <span id="memory-score-display" style="color: var(--accent-green);">0 ⬡</span>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.8rem;">
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <span style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">Сложность:</span>
+                <button class="btn btn-secondary btn-sm memory-diff-btn active" data-pairs="8">8 пар (16 карт)</button>
+                <button class="btn btn-secondary btn-sm memory-diff-btn" data-pairs="12">12 пар (24 карты)</button>
+              </div>
+              <div style="display:flex; gap:0.6rem;">
+                <button class="btn btn-secondary btn-sm" id="btn-memory-peek">
+                  👁️ Подглядеть (1.5с)
+                </button>
+                <button class="btn btn-primary btn-sm" id="btn-memory-restart">
+                  🔄 Новый раунд
+                </button>
+              </div>
+            </div>
+
+            <div class="literary-memory-grid" id="literary-memory-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- GAME 4: SPEED READING & FLASH MEMORY (СКОРОЧТЕНИЕ) -->
+          <div class="game-arena-view" id="game-view-speedread" style="display: none;">
+            <div class="game-arena-hud">
+              <div class="hud-stat-pill">
+                <span>📖 Фрагмент:</span>
+                <span id="speedread-book-title" style="color: var(--accent-gold);">«Мастер и Маргарита»</span>
+              </div>
+              <div class="hud-stat-pill">
+                <span>⚡ Скорость:</span>
+                <span id="speedread-wpm-display" style="color: var(--accent-cyan);">300 сл/мин</span>
+              </div>
+              <div class="hud-stat-pill">
+                <span>🧠 Точность памяти:</span>
+                <span id="speedread-accuracy-display" style="color: var(--accent-green);">100%</span>
+              </div>
+            </div>
+
+            <div class="speedread-box">
+              <div class="speedread-wpm-bar">
+                <span style="font-size:0.85rem; color:var(--text-muted); font-weight:700; margin-right:0.5rem;">Темп чтения (WPM):</span>
+                <button class="speedread-wpm-btn" data-wpm="200">🐢 200 (Осознанное)</button>
+                <button class="speedread-wpm-btn active" data-wpm="300">⚡ 300 (Стандарт)</button>
+                <button class="speedread-wpm-btn" data-wpm="450">🚀 450 (Спринт)</button>
+                <button class="speedread-wpm-btn" data-wpm="600">💥 600 (Кибер-Фокус)</button>
+              </div>
+
+              <!-- Stage 1: RSVP Display -->
+              <div id="speedread-reading-stage">
+                <div class="speedread-viewport">
+                  <div class="speedread-active-word" id="speedread-active-word">
+                    ГОТОВЫ К ЧТЕНИЮ?
+                  </div>
+                  <div class="speedread-progress-track">
+                    <div class="speedread-progress-fill" id="speedread-progress-fill"></div>
+                  </div>
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:0.8rem; flex-wrap:wrap;">
+                  <button class="btn btn-primary magnetic-btn" id="btn-speedread-start" style="padding:0.8rem 2rem; font-size:1.05rem;">
+                    ▶ Запустить чтение
+                  </button>
+                  <button class="btn btn-secondary magnetic-btn" id="btn-speedread-next-text">
+                    ⏭ Другой фрагмент
+                  </button>
+                </div>
+              </div>
+
+              <!-- Stage 2: Memory & Comprehension Quiz -->
+              <div id="speedread-quiz-stage" style="display: none;">
+                <div class="speedread-questions-panel">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <div style="color:var(--accent-cyan); font-weight:800; font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">
+                      🧠 Проверка памяти и понимания
+                    </div>
+                    <div style="color:var(--text-dim); font-size:0.85rem;" id="speedread-q-num">
+                      Вопрос 1 из 3
+                    </div>
+                  </div>
+                  <h4 style="font-size:1.2rem; margin-bottom:1.2rem; color:#fff;" id="speedread-q-text">
+                    Какого цвета был подбой у плаща прокуратора?
+                  </h4>
+                  <div id="speedread-q-options">
+                    <!-- Options populated dynamically -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GAME 5: QUOTE MEMORY RECONSTRUCTOR (МНЕМО-ЦИТАТЫ) -->
+          <div class="game-arena-view" id="game-view-reconstruct" style="display: none;">
+            <div class="game-arena-hud">
+              <div class="hud-stat-pill">
+                <span id="reconstruct-quote-num">Цитата 1 из 8</span>
+              </div>
+              <div class="hud-stat-pill">
+                <span>🔥 Серия:</span>
+                <span id="reconstruct-streak-display" style="color: var(--accent-gold);">0</span>
+              </div>
+              <div class="hud-stat-pill">
+                <span>🏆 Счёт:</span>
+                <span id="reconstruct-score-display" style="color: var(--accent-cyan);">0 ⬡</span>
+              </div>
+            </div>
+
+            <div class="reconstruct-box">
+              <!-- Stage 1: Preview / Memorize -->
+              <div id="reconstruct-stage-preview">
+                <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.6rem; font-weight:800;">
+                  👁️ Запомните цитату (5 секунд)
+                </div>
+                <div class="reconstruct-preview-card">
+                  <div class="reconstruct-preview-quote" id="reconstruct-preview-quote">
+                    «Зорко одно лишь сердце. Самого главного глазами не увидишь.»
+                  </div>
+                  <div class="reconstruct-preview-author" id="reconstruct-preview-author">
+                    — Антуан де Сент-Экзюпери («Маленький принц»)
+                  </div>
+                  <div class="reconstruct-timer-track">
+                    <div class="reconstruct-timer-fill" id="reconstruct-timer-fill"></div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" id="btn-reconstruct-skip-preview">
+                  Я запомнил! Собрать сейчас →
+                </button>
+              </div>
+
+              <!-- Stage 2: Assemble from Memory -->
+              <div id="reconstruct-stage-assemble" style="display: none;">
+                <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.6rem; font-weight:800;">
+                  🧩 Восстановите цитату по памяти:
+                </div>
+                <div class="reconstruct-assembly-zone" id="reconstruct-assembly-zone">
+                  <div class="reconstruct-assembly-placeholder">Нажимайте на слова внизу в правильном порядке</div>
+                </div>
+
+                <div style="font-size:0.8rem; color:var(--accent-cyan); font-weight:700; margin-bottom:0.5rem;">
+                  Слова для сборки (включая дистракторы):
+                </div>
+                <div class="reconstruct-bank-zone" id="reconstruct-bank-zone">
+                  <!-- Word chips populated dynamically -->
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:0.8rem; flex-wrap:wrap;">
+                  <button class="btn btn-primary magnetic-btn" id="btn-reconstruct-check">
+                    ✓ Проверить сборку
+                  </button>
+                  <button class="btn btn-secondary magnetic-btn" id="btn-reconstruct-clear">
+                    ↺ Сброс
+                  </button>
+                  <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-reconstruct-hint">
+                    💡 Подсказка (-10 ⬡)
+                  </button>
                 </div>
               </div>
             </div>
