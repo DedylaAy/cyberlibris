@@ -1865,6 +1865,9 @@ class AppController {
       const bgRadio = form.querySelector(`input[name="edit-profile-bg"][value="${user.profileBg || 'bg-steam'}"]`);
       if (bgRadio) bgRadio.checked = true;
 
+      const shapeRadio = form.querySelector(`input[name="edit-particle-shape"][value="${user.particleShape || 'auto'}"]`);
+      if (shapeRadio) shapeRadio.checked = true;
+
       this.openModal('modal-edit-profile');
       if (window.soundEngine) window.soundEngine.playClick();
     });
@@ -1879,12 +1882,23 @@ class AppController {
       const newAvatar = form.querySelector('input[name="edit-avatar"]:checked')?.value;
       const newFrame = form.querySelector('input[name="edit-avatar-frame"]:checked')?.value;
       const newBg = form.querySelector('input[name="edit-profile-bg"]:checked')?.value;
+      const newParticleShape = form.querySelector('input[name="edit-particle-shape"]:checked')?.value;
 
       if (newName) user.displayName = newName;
       if (newMotto !== undefined) user.motto = newMotto;
       if (newAvatar) user.avatar = newAvatar;
       if (newFrame) user.avatarFrame = newFrame;
       if (newBg) user.profileBg = newBg;
+      if (newParticleShape) {
+        user.particleShape = newParticleShape;
+        if (window.reactiveBg) window.reactiveBg.setParticleShape(newParticleShape);
+        const badge = document.getElementById('current-particle-badge');
+        const shapeLabels = { auto: 'Авто', stars: 'Звёзды ✨', hearts: 'Сердца ❤️', pixels: 'Пиксели 👾', embers: 'Искры 🔥', petals: 'Лепестки 🍃', bubbles: 'Пузыри 🫧' };
+        if (badge) badge.textContent = shapeLabels[newParticleShape] || 'Авто';
+        document.querySelectorAll('.particle-shape-btn').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.shape === newParticleShape);
+        });
+      }
 
       window.auth.saveUser();
       window.auth.syncUserToUI();
@@ -1903,6 +1917,7 @@ class AppController {
     const dot = document.getElementById('current-theme-dot');
 
     const themeGradients = {
+      'theme-steam': 'linear-gradient(135deg, #1b2838, #66c0f4)',
       'theme-cyberpunk': 'linear-gradient(135deg, #00f0ff, #ff007f)',
       'theme-cosmic': 'linear-gradient(135deg, #7928ca, #4338ca)',
       'theme-amber': 'linear-gradient(135deg, #f59e0b, #d97706)',
@@ -1914,6 +1929,7 @@ class AppController {
     };
 
     const themeNames = {
+      'theme-steam': 'Steam',
       'theme-cyberpunk': 'Киберпанк',
       'theme-cosmic': 'Космос',
       'theme-amber': 'Янтарь',
@@ -1922,6 +1938,16 @@ class AppController {
       'theme-synthwave': 'Синтвейв',
       'theme-ocean': 'Океан',
       'theme-zen': 'Дзен'
+    };
+
+    const shapeLabels = {
+      auto: 'Авто',
+      stars: 'Звёзды ✨',
+      hearts: 'Сердца ❤️',
+      pixels: 'Пиксели 👾',
+      embers: 'Искры 🔥',
+      petals: 'Лепестки 🍃',
+      bubbles: 'Пузыри 🫧'
     };
 
     const updateActiveThemeUI = (themeId) => {
@@ -1937,9 +1963,26 @@ class AppController {
       });
     };
 
-    // Initialize UI with active theme
+    const updateActiveShapeUI = (shape) => {
+      const currentShape = shape || (window.reactiveBg ? window.reactiveBg.particleShape : 'auto');
+      const badge = document.getElementById('current-particle-badge');
+      if (badge) {
+        badge.textContent = shapeLabels[currentShape] || 'Авто';
+      }
+      document.querySelectorAll('.particle-shape-btn').forEach((btn) => {
+        if (btn.dataset.shape === currentShape) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    };
+
+    // Initialize UI with active theme & shape
     const activeTheme = window.reactiveBg ? window.reactiveBg.currentTheme : 'theme-cyberpunk';
     updateActiveThemeUI(activeTheme);
+    const activeShape = window.reactiveBg ? window.reactiveBg.particleShape : 'auto';
+    updateActiveShapeUI(activeShape);
 
     // Toggle dropdown
     if (triggerBtn && container) {
@@ -1974,12 +2017,35 @@ class AppController {
         }
 
         updateActiveThemeUI(themeId);
+        updateActiveShapeUI(window.reactiveBg ? window.reactiveBg.particleShape : 'auto');
         if (container) container.classList.remove('open');
 
         window.dbEngine.updateQuestProgress('quest_change_theme', 1);
         this.renderDailyQuests();
 
         this.showToast(`🎨 Выбрана атмосфера: ${themeNames[themeId] || themeId}`, 'info');
+        if (window.soundEngine) window.soundEngine.playCardFlip();
+      });
+    });
+
+    // Particle Shape Selector Buttons
+    document.querySelectorAll('.particle-shape-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const shape = btn.dataset.shape;
+        if (!shape) return;
+
+        if (window.reactiveBg) {
+          window.reactiveBg.setParticleShape(shape);
+        }
+        const user = window.auth.currentUser;
+        if (user) {
+          user.particleShape = shape;
+          window.auth.saveUser();
+        }
+
+        updateActiveShapeUI(shape);
+        this.showToast(`✨ Форма частиц: ${shapeLabels[shape] || shape}`, 'info');
         if (window.soundEngine) window.soundEngine.playCardFlip();
       });
     });

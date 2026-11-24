@@ -580,6 +580,43 @@
                 <span class="theme-swatch-name">Дзен</span>
               </button>
             </div>
+
+            <!-- Interactive Reactive Particle Shape Selector -->
+            <div class="particles-section-divider"></div>
+            <div class="theme-dropdown-header" style="margin-top: 0.65rem; margin-bottom: 0.45rem;">
+              <span>✨ Форма частиц</span>
+              <span class="particle-mode-badge" id="current-particle-badge">Авто</span>
+            </div>
+            <div class="particles-shape-grid" id="particles-shape-grid">
+              <button class="particle-shape-btn active" data-shape="auto" title="Автоматически по выбранной теме">
+                <span class="shape-icon">🔄</span>
+                <span class="shape-name">Авто</span>
+              </button>
+              <button class="particle-shape-btn" data-shape="stars" title="Мерцающие звёздочки и созвездия">
+                <span class="shape-icon">✨</span>
+                <span class="shape-name">Звёзды</span>
+              </button>
+              <button class="particle-shape-btn" data-shape="hearts" title="Неоновые пульсирующие сердечки">
+                <span class="shape-icon">❤️</span>
+                <span class="shape-name">Сердца</span>
+              </button>
+              <button class="particle-shape-btn" data-shape="pixels" title="Ретро 8-bit пиксели и кибер-код">
+                <span class="shape-icon">👾</span>
+                <span class="shape-name">Пиксели</span>
+              </button>
+              <button class="particle-shape-btn" data-shape="embers" title="Огненные искры и угольки">
+                <span class="shape-icon">🔥</span>
+                <span class="shape-name">Искры</span>
+              </button>
+              <button class="particle-shape-btn" data-shape="petals" title="Парящие золотые лепестки">
+                <span class="shape-icon">🍃</span>
+                <span class="shape-name">Лепестки</span>
+              </button>
+              <button class="particle-shape-btn" data-shape="bubbles" title="Биолюминесцентные пузырьки">
+                <span class="shape-icon">🫧</span>
+                <span class="shape-name">Пузыри</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -2030,6 +2067,40 @@
             <label class="profile-opt-pill">
               <input type="radio" name="edit-profile-bg" value="bg-matrix">
               <span>📟 Matrix Core</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Форма реагирующих частиц фона:</label>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.4rem;">
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-particle-shape" value="auto">
+              <span>🔄 Авто (по теме)</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-particle-shape" value="stars">
+              <span>✨ Звёздочки</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-particle-shape" value="hearts">
+              <span>❤️ Сердечки</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-particle-shape" value="pixels">
+              <span>👾 Пиксели</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-particle-shape" value="embers">
+              <span>🔥 Искры</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-particle-shape" value="petals">
+              <span>🍃 Лепестки</span>
+            </label>
+            <label class="profile-opt-pill">
+              <input type="radio" name="edit-particle-shape" value="bubbles">
+              <span>🫧 Пузырьки</span>
             </label>
           </div>
         </div>

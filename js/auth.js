@@ -321,6 +321,9 @@ class AuthManager {
     if (user?.customBg && window.reactiveBg) {
       window.reactiveBg.setTheme(user.customBg);
     }
+    if (user?.particleShape && window.reactiveBg) {
+      window.reactiveBg.setParticleShape(user.particleShape);
+    }
 
     // Update Header User Pill
     const pill = document.getElementById('user-pill-container');
