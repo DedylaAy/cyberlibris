@@ -76,14 +76,14 @@ body {
   position: relative;
 }
 
-/* Background Canvas Layer */
+/* Background Canvas Layer (Floating reactive particles above cards, below header/modals) */
 #bg-canvas {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0;
+  z-index: 50;
   pointer-events: none;
 }
 
