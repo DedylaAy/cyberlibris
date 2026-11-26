@@ -5,10 +5,15 @@
 #view-reader.active {
   animation: none !important;
   transform: none !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .reader-container {
   max-width: 860px;
+  width: 100%;
   margin: 0 auto;
   position: relative;
   transition: max-width 0.3s ease, margin 0.3s ease;
@@ -64,12 +69,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.55rem 1rem;
-  background: rgba(11, 16, 28, 0.88);
+  background: rgba(11, 16, 28, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(0, 240, 255, 0.2);
   border-radius: var(--radius-full);
-  margin-bottom: 2.2rem;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto 2.2rem auto;
+  box-sizing: border-box;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.08);
   gap: 0.75rem;
   transition: all 0.3s ease;
@@ -468,11 +476,12 @@
   align-items: center;
   margin-bottom: 3.2rem;
   padding: 2.5rem;
-  background: linear-gradient(135deg, rgba(20, 28, 48, 0.75), rgba(10, 14, 25, 0.85));
-  backdrop-filter: blur(16px);
+  background: linear-gradient(135deg, rgba(20, 28, 48, 0.96), rgba(10, 14, 25, 0.98)) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glow);
   border-radius: var(--radius-lg);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 240, 255, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(0, 240, 255, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -582,16 +591,17 @@
    THE BOOK CANVAS & TYPOGRAPHY (.reader-article)
    ========================================================================== */
 .reader-article {
-  background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
+  background: #0d1322 !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: var(--radius-lg);
-  padding: 4rem 4rem 5rem;
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5);
+  padding: 4rem 4rem 8.5rem;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.75);
   transition: all 0.3s ease;
   min-height: 75vh;
   position: relative;
+  z-index: 5;
 }
 
 .reader-chapter-header-box {

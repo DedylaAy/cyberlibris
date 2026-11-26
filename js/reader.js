@@ -930,13 +930,11 @@ class ReaderEngine {
     const selectEl = document.getElementById('reader-chapter-select');
     if (!selectEl || !this.currentBook) return;
     const chapters = this.currentBook.chapters || [];
+    selectEl.style.display = 'none';
     if (chapters.length > 1) {
-      selectEl.style.display = 'inline-block';
       selectEl.innerHTML = chapters.map((ch, idx) => `
         <option value="${idx}" ${idx === this.currentChapterIdx ? 'selected' : ''}>${ch.title}</option>
       `).join('');
-    } else {
-      selectEl.style.display = 'none';
     }
   }
 
