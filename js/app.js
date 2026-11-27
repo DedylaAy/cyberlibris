@@ -1092,7 +1092,7 @@ class AppController {
         <div>
           <div class="steam-section-heading">
             <span>🏆 ДОСТИЖЕНИЯ ЧИТАТЕЛЯ</span>
-            <span style="font-size: 0.85rem; color: #66c0f4;">4 из 6 разблокировано</span>
+            <span style="font-size: 0.85rem; color: #66c0f4;">4 из 6 получено</span>
           </div>
           <div class="steam-achievements-row">
             <div class="steam-ach-card">
@@ -2344,7 +2344,7 @@ class AppController {
           </div>
           <div class="profile-badge-name">${b.name}</div>
           <div class="profile-badge-desc">${b.description}</div>
-          <div class="profile-badge-status">${has ? '✅ РАЗБЛОКИРОВАНО' : '🔒 ЗАБЛОКИРОВАНО'}</div>
+          <div class="profile-badge-status">${has ? '✅ ПОЛУЧЕНО' : '🔒 В ПРОЦЕССЕ'}</div>
         `;
         badgesGrid.appendChild(el);
       });
