@@ -9,6 +9,90 @@
  * 6. Responsive Manga Scroll Reader Controls
  */
 
+const TITLES_REGISTRY = {
+  elder_thought: {
+    id: 'elder_thought',
+    title: '📜 Старейшина Мысли',
+    rarity: 'legendary',
+    rarityLabel: 'ЛЕГЕНДАРНЫЙ ТИТУЛ',
+    category: 'Философия & Классика',
+    lore: 'Присваивается за глубокое освоение фундаментальных философских трудов и классических романов человечества.',
+    criteria: 'Освоение произведений Фридриха Ницше («Так говорил Заратустра»), Иоганна Гёте («Фауст») или трудов классической философии.'
+  },
+  strategy_warlord: {
+    id: 'strategy_warlord',
+    title: '⚔️ Воевода Стратегии',
+    rarity: 'epic',
+    rarityLabel: 'ЭПИЧЕСКИЙ ТИТУЛ',
+    category: 'Военная Проза & Тактика',
+    lore: 'Присваивается полководцам мысли, познавшим искусство тактики, масштабных баталий и железной дисциплины.',
+    criteria: 'Прочтение военных шедевров: «Война и мир» Л.Н. Толстого, «Искусство войны» Сунь-Цзы.'
+  },
+  cyber_scholar: {
+    id: 'cyber_scholar',
+    title: '🔮 Схоласт Сети',
+    rarity: 'rare',
+    rarityLabel: 'РЕДКИЙ ТИТУЛ',
+    category: 'Киберпанк & Научпоп',
+    lore: 'Даруется исследователям цифровых горизонтов, нейросетей, кибернетики и антиутопических миров.',
+    criteria: 'Изучение научной фантастики: «Нейромант», «1984», трактатов по системному мышлению.'
+  },
+  magister_mind: {
+    id: 'magister_mind',
+    title: '🧠 Магистр Мысли',
+    rarity: 'epic',
+    rarityLabel: 'ЭПИЧЕСКИЙ ТИТУЛ',
+    category: 'Эрудиция & Интеллект',
+    lore: 'Присваивается читателям с высочайшим коэффициентом литературной эрудиции и аналитического анализа.',
+    criteria: 'Победы в интеллектуальных викторинах Литературного Квиза и скоростном анализе текстов.'
+  },
+  creator: {
+    id: 'creator',
+    title: '👑 Создатель Системы [CREATOR]',
+    rarity: 'mythic',
+    rarityLabel: 'МИФИЧЕСКИЙ РАНГ',
+    category: 'Архитектура CyberLibris',
+    lore: 'Абсолютный титул Архитектора платформы. Обладает правом трансформации матриц знаний и управления ядром.',
+    criteria: 'Права Верховного Создателя или статус основателя платформы.'
+  },
+  archivist: {
+    id: 'archivist',
+    title: '⚜️ Верховный Архивариус',
+    rarity: 'legendary',
+    rarityLabel: 'ЛЕГЕНДАРНЫЙ ТИТУЛ',
+    category: 'Хранение Знаний',
+    lore: 'Хранитель сокровенных фолиантов и вечных рукописей, неустанно систематизирующий книжное наследие.',
+    criteria: 'Формирование обширной персональной коллекции и каталогизация шедевров.'
+  },
+  speed_magister: {
+    id: 'speed_magister',
+    title: '⚡ Магистр Скорочтения',
+    rarity: 'rare',
+    rarityLabel: 'РЕДКИЙ ТИТУЛ',
+    category: 'Мастерство Чтения',
+    lore: 'Даруется мастерам, способным мгновенно поглощать огромные массивы информации без потери глубинного смысла.',
+    criteria: 'Достижение скорости чтения свыше 400 слов в минуту в тренажере скорочтения.'
+  },
+  book_dragon: {
+    id: 'book_dragon',
+    title: '🐉 Дракон Фолиантов',
+    rarity: 'legendary',
+    rarityLabel: 'ЛЕГЕНДАРНЫЙ ТИТУЛ',
+    category: 'Коллекционирование',
+    lore: 'Дремлет на горах прочитанных томов и ревностно оберегает редчайшие литературные сокровища.',
+    criteria: 'Собрание более 15 завершенных книг на полках библиотеки.'
+  },
+  novice: {
+    id: 'novice',
+    title: '🌱 Новичок Библиотеки',
+    rarity: 'starter',
+    rarityLabel: 'НАЧАЛЬНЫЙ РАНГ',
+    category: 'Старт Пути',
+    lore: 'Первые робкие шаги в безграничном океане мировой литературы. Главные открытия еще впереди.',
+    criteria: 'Стартовый ранг каждого новоприбывшего читателя CyberLibris.'
+  }
+};
+
 class AppController {
   constructor() {
     this.currentView = 'library';
@@ -70,6 +154,7 @@ class AppController {
     this.bindBookDetailsModal();
     this.bindEditProfileModal();
     this.bindProfileStudio();
+    this.bindLeaderboardSearch();
     this.bindAdminRecommendations();
     this.bindOpenLibraryExplorer();
     this.bindCommandPalette();
@@ -1293,7 +1378,7 @@ class AppController {
       card.className = 'steam-review-card';
       card.innerHTML = `
         <div class="steam-rev-author-bar">
-          <div class="steam-rev-user">
+          <div class="steam-rev-user clickable-user-card" onclick="window.app.viewUserProfile('${r.username || r.author}')" title="Открыть публичный профиль автора">
             <div class="steam-rev-avatar">${r.avatar || '👤'}</div>
             <div>
               <div class="steam-rev-name">${r.author || 'Схоласт'}</div>
@@ -1716,7 +1801,7 @@ class AppController {
       const rankBadge = rank === 1 ? '👑 ТОП 1' : (rank === 2 ? '🥈 ТОП 2' : '🥉 ТОП 3');
 
       return `
-        <div class="podium-column rank-${rank} tilt-card" title="Пользователь @${u.username}">
+        <div class="podium-column rank-${rank} tilt-card clickable-user-card" onclick="window.app.viewUserProfile('${u.username}')" title="Нажмите, чтобы открыть профиль @${u.username}">
           <div class="podium-rank-badge">${rankBadge}</div>
           <div class="steam-avatar-holder ${frameClass}" style="width: 68px; height: 68px; margin: 1rem auto 0.5rem; font-size: 2.1rem; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0;">
             ${u.avatar || '📖'}
@@ -1767,7 +1852,7 @@ class AppController {
       const rowHighlight = isCur ? 'style="background: rgba(0, 240, 255, 0.08);"' : '';
 
       return `
-        <tr ${rowHighlight}>
+        <tr ${rowHighlight} class="clickable-user-row" onclick="window.app.viewUserProfile('${u.username}')" title="Нажмите, чтобы открыть профиль @${u.username}">
           <td>
             <span style="font-weight: 900; font-size: 1.05rem; color: ${rankNum === 1 ? 'var(--accent-gold)' : rankNum === 2 ? 'var(--accent-cyan)' : rankNum === 3 ? '#cd7f32' : 'inherit'};">
               ${rankIcon}
@@ -1801,14 +1886,171 @@ class AppController {
       `;
     }).join('');
 
+    this.bindLeaderboardSearch();
     if (this.bindTiltEffect) this.bindTiltEffect();
   }
 
-  renderProfile() {
-    const user = window.auth.currentUser;
+  getTitleInfo(titleNameOrId) {
+    if (!titleNameOrId) return TITLES_REGISTRY.novice;
+    const clean = titleNameOrId.toString().toLowerCase();
+    for (const key of Object.keys(TITLES_REGISTRY)) {
+      const item = TITLES_REGISTRY[key];
+      if (item.id.toLowerCase() === clean || item.title.toLowerCase().includes(clean) || clean.includes(item.id.toLowerCase())) {
+        return item;
+      }
+    }
+    if (clean.includes('старейшина') || clean.includes('мысли')) return TITLES_REGISTRY.elder_thought;
+    if (clean.includes('воевода') || clean.includes('стратег')) return TITLES_REGISTRY.strategy_warlord;
+    if (clean.includes('создатель') || clean.includes('creator')) return TITLES_REGISTRY.creator;
+    if (clean.includes('архивариус')) return TITLES_REGISTRY.archivist;
+    if (clean.includes('схоласт')) return TITLES_REGISTRY.cyber_scholar;
+    if (clean.includes('магистр')) return TITLES_REGISTRY.magister_mind;
+    if (clean.includes('дракон')) return TITLES_REGISTRY.book_dragon;
+    if (clean.includes('скорочтен')) return TITLES_REGISTRY.speed_magister;
+    if (clean.includes('новичок') || clean.includes('любитель')) return TITLES_REGISTRY.novice;
+
+    return {
+      id: 'custom_title',
+      title: titleNameOrId,
+      rarity: 'legendary',
+      rarityLabel: 'ПОЧЁТНЫЙ ТИТУЛ',
+      category: 'Особое Достижение',
+      lore: 'Индивидуальное звание читателя, присвоенное за особый вклад в сообщество и литературные успехи.',
+      criteria: 'Получено за активную деятельность в экосистеме CyberLibris.'
+    };
+  }
+
+  viewUserProfile(query) {
+    if (!query) return;
+    const clean = query.toString().replace('@', '').trim().toLowerCase();
+    const users = window.dbEngine?.getUsers() || [];
+    let target = users.find(u => u.username.toLowerCase() === clean || u.id === clean);
+    if (!target) {
+      target = users.find(u => u.displayName && u.displayName.toLowerCase().includes(clean));
+    }
+    if (!target) {
+      this.showToast(`Читатель «${query}» не найден в базе`, 'info');
+      return;
+    }
+
+    this.switchView('profile');
+    this.renderProfile(target);
+    this.showToast(`Открыт профиль читателя: ${target.displayName} (@${target.username})`, 'info');
+  }
+
+  bindProfileTitlePopover() {
+    const titleTagEl = document.getElementById('profile-title-tag');
+    const popover = document.getElementById('profile-title-popover');
+    if (!titleTagEl || !popover) return;
+
+    let hoverTimer = null;
+    titleTagEl.onmouseenter = () => {
+      clearTimeout(hoverTimer);
+      popover.classList.add('active');
+    };
+
+    titleTagEl.onmouseleave = () => {
+      hoverTimer = setTimeout(() => {
+        if (!popover.dataset.pinned) {
+          popover.classList.remove('active');
+        }
+      }, 250);
+    };
+
+    popover.onmouseenter = () => clearTimeout(hoverTimer);
+    popover.onmouseleave = () => {
+      hoverTimer = setTimeout(() => {
+        if (!popover.dataset.pinned) {
+          popover.classList.remove('active');
+        }
+      }, 250);
+    };
+
+    titleTagEl.onclick = (e) => {
+      e.stopPropagation();
+      const isPinned = popover.dataset.pinned === 'true';
+      if (isPinned) {
+        delete popover.dataset.pinned;
+        popover.classList.remove('active');
+      } else {
+        popover.dataset.pinned = 'true';
+        popover.classList.add('active');
+      }
+      if (popover.classList.contains('active') && window.soundEngine) {
+        window.soundEngine.playClick();
+      }
+    };
+
+    document.addEventListener('click', (e) => {
+      if (!titleTagEl.contains(e.target) && !popover.contains(e.target)) {
+        delete popover.dataset.pinned;
+        popover.classList.remove('active');
+      }
+    });
+  }
+
+  bindLeaderboardSearch() {
+    const searchInput = document.getElementById('leaderboard-user-search');
+    if (!searchInput || searchInput.dataset.bound) return;
+    searchInput.dataset.bound = 'true';
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#leaderboard-tbody tr');
+      rows.forEach(r => {
+        const text = r.textContent.toLowerCase();
+        r.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const q = e.target.value.trim();
+        if (q) this.viewUserProfile(q);
+      }
+    });
+  }
+
+  renderProfile(targetUser = null) {
+    const isOwnProfile = !targetUser || (window.auth.currentUser && targetUser.id === window.auth.currentUser.id);
+    const user = isOwnProfile ? window.auth.currentUser : targetUser;
     if (!user) {
       this.openModal('modal-auth');
       return;
+    }
+
+    // Visitor banner handling
+    const visitorBanner = document.getElementById('profile-visitor-banner');
+    const bannerText = document.getElementById('visitor-banner-text');
+    const btnEditProfile = document.getElementById('btn-open-edit-profile');
+    const btnRecoverCreator = document.getElementById('btn-profile-recover-creator');
+    const btnProfileLogout = document.getElementById('btn-profile-logout');
+
+    if (visitorBanner) {
+      if (!isOwnProfile) {
+        visitorBanner.style.display = 'flex';
+        if (bannerText) {
+          bannerText.innerHTML = `Вы просматриваете публичный профиль: <strong>${user.displayName}</strong> (@${user.username}) · Ур. ${user.level}`;
+        }
+        if (btnEditProfile) btnEditProfile.style.display = 'none';
+        if (btnRecoverCreator) btnRecoverCreator.style.display = 'none';
+        if (btnProfileLogout) btnProfileLogout.style.display = 'none';
+        if (window.reactiveBg) window.reactiveBg.setParticleShape(user.particleShape || 'dust');
+      } else {
+        visitorBanner.style.display = 'none';
+        if (btnEditProfile) btnEditProfile.style.display = 'inline-flex';
+        if (btnRecoverCreator) btnRecoverCreator.style.display = window.auth?.isCreator?.() ? 'inline-flex' : 'none';
+        if (btnProfileLogout) btnProfileLogout.style.display = 'inline-flex';
+        if (window.reactiveBg) window.reactiveBg.setParticleShape(user.particleShape || 'auto');
+      }
+    }
+
+    const returnBtn = document.getElementById('btn-return-my-profile');
+    if (returnBtn) {
+      returnBtn.onclick = () => {
+        this.renderProfile();
+        this.showToast('Вы вернулись к своему профилю', 'info');
+      };
     }
 
     const shelves = window.bookRelay.getUserShelves(user.username);
@@ -1816,14 +2058,14 @@ class AppController {
     // 1. Dynamic Profile Backdrop Theme
     const bgEl = document.getElementById('steam-profile-ambient-bg');
     if (bgEl) {
-      bgEl.className = `steam-profile-ambient-bg ${user.profileBg || 'bg-steam'}`;
+      bgEl.className = `steam-profile-ambient-bg ${user.profileBg || user.customBg || 'bg-starter'}`;
     }
 
     // 2. Avatar & Frame
     const wrap = document.getElementById('profile-avatar-wrap');
     if (wrap) {
-      wrap.className = `avatar-frame-wrap preview-avatar-large ${user.avatarFrame || 'frame-gold'}`;
-      wrap.innerHTML = `<div class="avatar-inner" id="profile-avatar-emoji">${user.avatar || '👑'}</div>`;
+      wrap.className = `avatar-frame-wrap preview-avatar-large ${user.avatarFrame || 'frame-default'}`;
+      wrap.innerHTML = `<div class="avatar-inner" id="profile-avatar-emoji">${user.avatar || '🌱'}</div>`;
     }
 
     // 3. User Identity
@@ -1871,7 +2113,7 @@ class AppController {
     const streakSubEl = document.getElementById('profile-streak-count-sub');
     if (streakSubEl) streakSubEl.textContent = '3 дня подряд';
 
-    // 7. Dynamic Genre Title & Justification
+    // 7. Dynamic Genre Title & Interactive Popover Justification
     const militaryCount = shelves.completed.filter(c => {
       const b = window.bookRelay.getBookById(c.id);
       return b && (b.genre.includes('Военная') || b.tags.includes('военная проза'));
@@ -1897,10 +2139,30 @@ class AppController {
       genreJustification = `Звание заслужено изучением бессмертных философских трактатов и классических романов.`;
     }
 
-    const chosenTitle = user.title || genreRankTitle;
+    const titleInfo = this.getTitleInfo(user.title || genreRankTitle);
     const titleTagEl = document.getElementById('profile-title-tag');
     if (titleTagEl) {
-      titleTagEl.innerHTML = `<span class="rarity-pill rarity-pill-legendary">${chosenTitle}</span>`;
+      titleTagEl.innerHTML = `
+        <span class="rarity-pill rarity-pill-${titleInfo.rarity}">${titleInfo.title}</span>
+        <span class="title-info-icon" title="Нажмите, чтобы узнать подробнее о звании">ℹ️</span>
+        <div class="profile-title-popover" id="profile-title-popover">
+          <div class="popover-title-header">
+            <span class="popover-title-name">${titleInfo.title}</span>
+            <span class="popover-title-rarity rarity-pill-${titleInfo.rarity}">${titleInfo.rarityLabel}</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--accent-cyan); margin-bottom: 0.5rem; font-weight: 700;">
+            Категория: ${titleInfo.category}
+          </div>
+          <div class="popover-title-lore">
+            <strong>Почему присвоено звание:</strong><br>${titleInfo.lore}
+          </div>
+          <div class="popover-title-criteria">
+            <strong>Критерии получения:</strong><br>${titleInfo.criteria}
+          </div>
+          ${isOwnProfile ? '<button type="button" class="popover-title-action-btn" onclick="window.app.switchView(\'profile-edit\')">🎨 Выбрать другое звание в Студии →</button>' : ''}
+        </div>
+      `;
+      this.bindProfileTitlePopover();
     }
 
     const justTextEl = document.getElementById('profile-rank-justification-text');
@@ -1934,15 +2196,23 @@ class AppController {
     }
     const mottoBubble = document.getElementById('profile-user-status');
     if (mottoBubble) {
-      mottoBubble.onclick = () => {
-        const next = prompt('Введите ваш статус / читательский девиз:', user.motto || '');
-        if (next !== null && next.trim()) {
-          user.motto = next.trim();
-          window.auth.saveUser();
-          if (mottoTextEl) mottoTextEl.textContent = user.motto;
-          this.showToast('Девиз профиля обновлен!', 'success');
-        }
-      };
+      if (isOwnProfile) {
+        mottoBubble.title = 'Нажмите, чтобы изменить читательский девиз';
+        mottoBubble.style.cursor = 'pointer';
+        mottoBubble.onclick = () => {
+          const next = prompt('Введите ваш статус / читательский девиз:', user.motto || '');
+          if (next !== null && next.trim()) {
+            user.motto = next.trim();
+            window.auth.saveUser();
+            if (mottoTextEl) mottoTextEl.textContent = user.motto;
+            this.showToast('Девиз профиля обновлен!', 'success');
+          }
+        };
+      } else {
+        mottoBubble.title = '';
+        mottoBubble.style.cursor = 'default';
+        mottoBubble.onclick = null;
+      }
     }
 
     // 9. Featured Masterpiece Showcase
@@ -2797,10 +3067,43 @@ class AppController {
     const mottoInput = document.getElementById('studio-input-motto');
     if (mottoInput) mottoInput.value = user.motto || '';
 
+    this.studioSelectedTitle = user.title || '👑 Создатель Системы [CREATOR]';
     const titleSelect = document.getElementById('studio-select-title');
     if (titleSelect) {
-      if (user.title) titleSelect.value = user.title;
-      else titleSelect.value = '👑 Создатель Системы [CREATOR]';
+      titleSelect.value = this.studioSelectedTitle;
+    }
+
+    // Render Customizable Titles Grid
+    const titlesGrid = document.getElementById('studio-titles-grid');
+    if (titlesGrid) {
+      titlesGrid.innerHTML = '';
+      Object.values(TITLES_REGISTRY).forEach(t => {
+        const card = document.createElement('div');
+        const isActive = (this.studioSelectedTitle === t.title || this.studioSelectedTitle === t.id);
+        card.className = `studio-title-card ${isActive ? 'active' : ''}`;
+        card.dataset.title = t.title;
+        card.innerHTML = `
+          <div class="studio-title-card-top">
+            <div class="studio-title-name">${t.title}</div>
+            <div class="studio-title-rarity rarity-pill-${t.rarity}">${t.rarityLabel}</div>
+          </div>
+          <div style="font-size: 0.7rem; color: var(--accent-cyan); margin-bottom: 0.3rem; font-weight: 700;">${t.category}</div>
+          <div class="studio-title-desc">${t.lore}</div>
+        `;
+
+        card.addEventListener('click', () => {
+          document.querySelectorAll('#studio-titles-grid .studio-title-card').forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
+          this.studioSelectedTitle = t.title;
+          const hiddenInput = document.getElementById('studio-select-title');
+          if (hiddenInput) hiddenInput.value = t.title;
+          const previewPill = document.getElementById('preview-studio-role-pill');
+          if (previewPill) previewPill.textContent = t.title;
+          if (window.soundEngine) window.soundEngine.playClick();
+        });
+
+        titlesGrid.appendChild(card);
+      });
     }
 
     // 2. Highlight Selection Buttons
@@ -2918,7 +3221,7 @@ class AppController {
 
     const nameVal = document.getElementById('studio-input-name')?.value.trim();
     const mottoVal = document.getElementById('studio-input-motto')?.value.trim();
-    const titleVal = document.getElementById('studio-select-title')?.value;
+    const titleVal = this.studioSelectedTitle || document.getElementById('studio-select-title')?.value;
 
     if (nameVal) user.displayName = nameVal;
     if (mottoVal !== undefined) user.motto = mottoVal;
@@ -2931,7 +3234,7 @@ class AppController {
       user.particleShape = this.studioSelectedParticleShape;
       window.reactiveBg?.setParticleShape?.(this.studioSelectedParticleShape);
       const badge = document.getElementById('current-particle-badge');
-      const shapeLabels = { auto: 'Авто', stars: 'Звёзды ✨', hearts: 'Сердца ❤️', pixels: 'Пиксели 👾', embers: 'Искры 🔥', petals: 'Лепестки 🍃', bubbles: 'Пузыри 🫧' };
+      const shapeLabels = { auto: 'Авто', stars: 'Звёзды ✨', hearts: 'Сердца ❤️', pixels: 'Пиксели 👾', embers: 'Искры 🔥', petals: 'Лепестки 🍃', bubbles: 'Пузыри 🫧', dust: 'Пылинки 🌫️' };
       if (badge) badge.textContent = shapeLabels[this.studioSelectedParticleShape] || 'Авто';
       document.querySelectorAll('.particle-shape-btn').forEach((btn) => {
         btn.classList.toggle('active', btn.dataset.shape === this.studioSelectedParticleShape);
@@ -3743,6 +4046,30 @@ class AppController {
             sub: act.sub,
             hint: act.hint,
             action: act.action
+          });
+        }
+      });
+    }
+
+    // 2.5 Readers & Profiles Search
+    if (typeFilter === 'all' || typeFilter === 'user') {
+      const allUsers = window.dbEngine?.getUsers ? window.dbEngine.getUsers() : [];
+      allUsers.forEach(u => {
+        const matchName = u.displayName && u.displayName.toLowerCase().includes(query);
+        const matchUser = u.username && u.username.toLowerCase().includes(query);
+        if (!query || matchName || matchUser) {
+          items.push({
+            type: 'user',
+            badgeClass: 'badge-nav',
+            badgeText: 'Читатель',
+            iconHtml: `<div class="cmd-item-icon">${u.avatar || '👤'}</div>`,
+            title: `👤 ${u.displayName} (@${u.username})`,
+            sub: `${u.title || u.role} · Ур. ${u.level || 1} · Профиль и витрина читателя`,
+            hint: 'Профиль',
+            action: () => {
+              this._closeCommandPaletteFn?.();
+              this.viewUserProfile(u.username);
+            }
           });
         }
       });

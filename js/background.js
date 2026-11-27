@@ -246,7 +246,7 @@ class ReactiveBackground {
   }
 
   setParticleShape(shape) {
-    const validShapes = ['auto', 'stars', 'hearts', 'pixels', 'embers', 'petals', 'bubbles'];
+    const validShapes = ['auto', 'stars', 'hearts', 'pixels', 'embers', 'petals', 'bubbles', 'dust'];
     this.particleShape = validShapes.includes(shape) ? shape : 'auto';
     localStorage.setItem('cyberlibris_particle_shape', this.particleShape);
     this.resume();
@@ -345,6 +345,10 @@ class ReactiveBackground {
         size = Math.random() * 9 + 10;
         vx = (Math.random() - 0.5) * 0.7 * cfg.speedMult;
         vy = (Math.random() * 0.8 + 0.3) * cfg.speedMult;
+      } else if (activeShape === 'dust') {
+        size = Math.random() * 1.8 + 1.2;
+        vx = (Math.random() - 0.5) * 0.25 * cfg.speedMult;
+        vy = (Math.random() - 0.5) * 0.25 * cfg.speedMult;
       } else {
         // bubbles
         size = Math.random() * 8 + 8;
@@ -360,8 +364,8 @@ class ReactiveBackground {
         baseVx: vx,
         baseVy: vy,
         size: size,
-        color: color,
-        alpha: Math.random() * 0.4 + 0.55,
+        color: activeShape === 'dust' ? '#64748b' : color,
+        alpha: activeShape === 'dust' ? Math.random() * 0.15 + 0.1 : Math.random() * 0.4 + 0.55,
         rot: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.03,
         pulse: Math.random() * Math.PI * 2,
@@ -567,12 +571,25 @@ class ReactiveBackground {
     ctx.restore();
   }
 
+  drawDust(ctx, x, y, size, color, alpha) {
+    if (size <= 0.1 || alpha <= 0) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(0.4, size), 0, Math.PI * 2);
+    ctx.fillStyle = '#64748b';
+    ctx.globalAlpha = Math.max(0, Math.min(0.25, alpha * 0.35));
+    ctx.fill();
+    ctx.restore();
+  }
+
   renderParticleShape(ctx, p, scalePulse = 1) {
     const shape = p.shape || this.getActiveShape();
     const effectiveScale = Math.max(0.01, scalePulse);
     const effectiveSize = Math.max(0.1, p.size * effectiveScale);
 
-    if (shape === 'hearts') {
+    if (shape === 'dust') {
+      this.drawDust(ctx, p.x, p.y, effectiveSize, p.color, p.alpha);
+    } else if (shape === 'hearts') {
       this.drawHeart(ctx, p.x, p.y, p.size, p.color, p.alpha, p.rot, effectiveScale);
     } else if (shape === 'stars') {
       this.drawStar(ctx, p.x, p.y, effectiveSize, p.color, p.alpha, p.rot, 4);
@@ -724,7 +741,7 @@ class ReactiveBackground {
 
     const activeShape = this.getActiveShape();
     const cfg = THEME_CONFIG[this.currentTheme] || THEME_CONFIG['theme-cyberpunk'];
-    const allowsConstellations = !this.isLowPower && (cfg.connectLines || activeShape === 'stars' || activeShape === 'pixels' || activeShape === 'bubbles');
+    const allowsConstellations = !this.isLowPower && activeShape !== 'dust' && (cfg.connectLines || activeShape === 'stars' || activeShape === 'pixels' || activeShape === 'bubbles');
 
     let linesDrawn = 0;
     const maxLinesPerFrame = 22; // Hard cap prevents O(N^2) stalls

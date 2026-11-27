@@ -171,10 +171,12 @@ class AuthManager {
       passwordHash: password,
       role: 'user', // strictly regular reader
       displayName: displayName?.trim() || username.trim(),
-      avatar: avatar,
+      avatar: '🌱',
       avatarFrame: 'frame-default',
-      customBg: 'theme-cyberpunk',
-      title: 'Любитель',
+      profileBg: 'bg-starter',
+      particleShape: 'dust',
+      title: '🌱 Новичок Библиотеки',
+      motto: 'Только начинаю путь в мире книг...',
       level: 1,
       xp: 0,
       lumens: 150,
@@ -187,11 +189,11 @@ class AuthManager {
         memoryFlips: 0,
         currentStreak: 1
       },
-      badges: ['book_worm'],
+      badges: ['book_first_page'],
       unlockedCosmetics: {
         frames: ['frame-default'],
-        backgrounds: ['theme-cyberpunk'],
-        titles: ['Любитель']
+        backgrounds: ['bg-starter'],
+        titles: ['🌱 Новичок Библиотеки']
       },
       readingProgress: {},
       bookmarks: []

@@ -216,25 +216,29 @@ const DEFAULT_DATABASE = {
     },
     {
       id: "usr_novice",
-      username: "reader_neo",
-      passwordHash: "read123",
+      username: "novice",
+      passwordHash: "novice123",
       role: "user",
-      displayName: "Неофит Сети",
+      displayName: "Новичок Артём",
       avatar: "🌱",
       avatarFrame: "frame-default",
-      customBg: "theme-zen",
-      title: "Любитель",
-      level: 4,
-      xp: 950,
-      lumens: 220,
-      stats: { booksRead: 2, readTimeMinutes: 45, gamesWon: 5, speedRecordWPM: 250, cryptorSolved: 3, memoryFlips: 10, currentStreak: 2 },
+      profileBg: "bg-starter",
+      particleShape: "dust",
+      title: "🌱 Новичок Библиотеки",
+      motto: "Только начинаю читать, пока тут всё темное...",
+      level: 2,
+      xp: 250,
+      lumens: 120,
+      stats: { booksRead: 1, readTimeMinutes: 25, gamesWon: 2, speedRecordWPM: 210, cryptorSolved: 1, memoryFlips: 5, currentStreak: 1 },
       badges: ["book_first_page"],
       unlockedCosmetics: {
         frames: ["frame-default"],
-        backgrounds: ["theme-cyberpunk", "theme-zen"],
-        titles: ["Любитель"]
+        backgrounds: ["bg-starter"],
+        titles: ["🌱 Новичок Библиотеки"]
       },
-      readingProgress: {},
+      readingProgress: {
+        relay_captains_daughter: { currentChapter: 0, progressPercent: 12 }
+      },
       bookmarks: []
     }
   ],

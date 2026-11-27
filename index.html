@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap">
   </noscript>
 
-  <!-- Core & Custom Stylesheets (with cache-busting v5.5.0) -->
-  <link rel="stylesheet" href="css/main.css?v=5.5.0">
-  <link rel="stylesheet" href="css/animations.css?v=5.5.0">
-  <link rel="stylesheet" href="css/reader.css?v=5.5.0">
-  <link rel="stylesheet" href="css/games.css?v=5.5.0">
+  <!-- Core & Custom Stylesheets (with cache-busting v5.6.1) -->
+  <link rel="stylesheet" href="css/main.css?v=5.6.1">
+  <link rel="stylesheet" href="css/animations.css?v=5.6.1">
+  <link rel="stylesheet" href="css/reader.css?v=5.6.1">
+  <link rel="stylesheet" href="css/games.css?v=5.6.1">
 
   <style>
     .books-grid {
@@ -1779,6 +1779,16 @@
           </div>
         </div>
 
+        <!-- Leaderboard Search & Exploration Toolbar -->
+        <div class="leaderboard-toolbar">
+          <div class="leaderboard-search-wrap">
+            <input type="text" id="leaderboard-user-search" class="form-input" placeholder="🔍 Найти читателя по никнейму или @логину...">
+          </div>
+          <div class="leaderboard-hint-badge">
+            💡 Нажмите на любого читателя в рейтинге, чтобы открыть его профиль и визуализацию
+          </div>
+        </div>
+
         <!-- Top 3 Podium -->
         <div class="podium-container" id="leaderboard-podium">
           <!-- Populated by app.js -->
@@ -1809,6 +1819,17 @@
            VIEW 6: PROFILE (STEAM-GRADE ЛИЧНЫЙ КАБИНЕТ & ХАБ СХОЛАСТА)
            =================================================================== -->
       <section id="view-profile" class="view-section">
+        <!-- Public Profile Visitor Banner (visible only when inspecting someone else's profile) -->
+        <div id="profile-visitor-banner" class="steam-visitor-banner" style="display: none;">
+          <div class="visitor-banner-info">
+            <span class="visitor-icon">👀</span>
+            <span id="visitor-banner-text">Вы просматриваете публичный профиль читателя</span>
+          </div>
+          <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-return-my-profile">
+            ← Вернуться к своему профилю
+          </button>
+        </div>
+
         <!-- Steam Profile Grand Header Card with Dynamic Backdrop -->
         <div class="steam-profile-hub-card" id="steam-profile-hub-card">
           <div class="steam-profile-ambient-bg" id="steam-profile-ambient-bg"></div>
@@ -1900,8 +1921,10 @@
                 <span class="steam-profile-sep">•</span>
                 <span class="steam-profile-guild">Нео-Александрийская Академия</span>
               </div>
-              <div id="profile-title-tag" class="steam-profile-title-tag">
-                <span class="rarity-pill rarity-pill-legendary">Воевода Стратегии</span>
+              <div id="profile-title-tag" class="steam-profile-title-tag interactive-title-pill" title="Нажмите или наведите, чтобы узнать историю и критерии звания">
+                <span class="rarity-pill rarity-pill-legendary" id="profile-title-pill-span">📜 Старейшина Мысли</span>
+                <span class="title-info-icon">ℹ️</span>
+                <div class="profile-title-popover" id="profile-title-popover"></div>
               </div>
 
               <!-- Motto Quote Bubble -->
@@ -2234,16 +2257,11 @@
               </div>
 
               <div class="form-group">
-                <label class="form-label">Почетный титул читателя</label>
-                <select id="studio-select-title" class="form-input remanga-select">
-                  <option value="Создатель Системы [CREATOR]">👑 Создатель Системы [CREATOR]</option>
-                  <option value="Верховный Архивариус">⚜️ Верховный Архивариус</option>
-                  <option value="Магистр Мысли">📜 Магистр Мысли</option>
-                  <option value="Старейшина Знаний">🕯️ Старейшина Знаний</option>
-                  <option value="Схоласт Сети">🔮 Схоласт Сети</option>
-                  <option value="Знаток Глав">🏛️ Знаток Глав</option>
-                  <option value="Любитель">🌱 Любитель</option>
-                </select>
+                <label class="form-label">Почётный титул читателя (Украшение профиля)</label>
+                <div class="studio-titles-grid" id="studio-titles-grid">
+                  <!-- Populated dynamically with rich title cards and lore -->
+                </div>
+                <input type="hidden" id="studio-select-title" value="👑 Создатель Системы [CREATOR]">
               </div>
             </div>
 
@@ -2354,6 +2372,11 @@
                   <div class="studio-opt-name">Zen Paper</div>
                   <div class="studio-opt-desc">Японский минимализм</div>
                 </button>
+                <button type="button" class="studio-opt-card" data-bg="bg-starter">
+                  <div class="studio-bg-swatch bg-starter-swatch"></div>
+                  <div class="studio-opt-name">Стартовый тусклый</div>
+                  <div class="studio-opt-desc">Базовый серый фон</div>
+                </button>
               </div>
             </div>
 
@@ -2429,6 +2452,7 @@
                 <button type="button" class="studio-particle-chip" data-shape="embers">Искры 🔥</button>
                 <button type="button" class="studio-particle-chip" data-shape="petals">Лепестки 🍃</button>
                 <button type="button" class="studio-particle-chip" data-shape="bubbles">Пузыри 🫧</button>
+                <button type="button" class="studio-particle-chip" data-shape="dust">Пылинки 🌫️ (Базовые)</button>
               </div>
             </div>
           </div>
@@ -3611,18 +3635,18 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- Scripts (with cache-busting v5.5.0) -->
-  <script src="js/audio.js?v=5.5.0"></script>
-  <script src="js/background.js?v=5.5.0"></script>
-  <script src="js/github.js?v=5.5.0"></script>
-  <script src="js/db.js?v=5.5.0"></script>
-  <script src="js/auth.js?v=5.5.0"></script>
-  <script src="js/bookRelay.js?v=5.5.0"></script>
-  <script src="js/recommendations.js?v=5.5.0"></script>
-  <script src="js/openlibrary.js?v=5.5.0"></script>
-  <script src="js/reader.js?v=5.5.0"></script>
-  <script src="js/games.js?v=5.5.0"></script>
-  <script src="js/admin.js?v=5.5.0"></script>
-  <script src="js/app.js?v=5.5.0"></script>
+  <!-- Scripts (with cache-busting v5.6.1) -->
+  <script src="js/audio.js?v=5.6.1"></script>
+  <script src="js/background.js?v=5.6.1"></script>
+  <script src="js/github.js?v=5.6.1"></script>
+  <script src="js/db.js?v=5.6.1"></script>
+  <script src="js/auth.js?v=5.6.1"></script>
+  <script src="js/bookRelay.js?v=5.6.1"></script>
+  <script src="js/recommendations.js?v=5.6.1"></script>
+  <script src="js/openlibrary.js?v=5.6.1"></script>
+  <script src="js/reader.js?v=5.6.1"></script>
+  <script src="js/games.js?v=5.6.1"></script>
+  <script src="js/admin.js?v=5.6.1"></script>
+  <script src="js/app.js?v=5.6.1"></script>
 </body>
 </html>
