@@ -16,35 +16,43 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap">
   </noscript>
 
-  <!-- Core & Custom Stylesheets (with cache-busting v5.6.1) -->
-  <link rel="stylesheet" href="css/main.css?v=5.6.1">
-  <link rel="stylesheet" href="css/animations.css?v=5.6.1">
-  <link rel="stylesheet" href="css/reader.css?v=5.6.1">
-  <link rel="stylesheet" href="css/games.css?v=5.6.1">
+  <!-- Core & Custom Stylesheets (with cache-busting v5.7.0) -->
+  <link rel="stylesheet" href="css/main.css?v=5.7.0">
+  <link rel="stylesheet" href="css/animations.css?v=5.7.0">
+  <link rel="stylesheet" href="css/reader.css?v=5.7.0">
+  <link rel="stylesheet" href="css/games.css?v=5.7.0">
 
   <style>
     .books-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1.8rem;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 1.6rem;
+      align-items: stretch;
     }
 
-    .book-card {
+    .steam-book-card {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
+      height: 460px;
+      min-height: 460px;
+      max-height: 460px;
       padding: 0;
       border-radius: var(--radius-lg);
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .book-cover-banner {
-      height: 140px;
+      height: 160px;
+      min-height: 160px;
+      max-height: 160px;
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       border-bottom: 1px solid var(--border-glass);
+      overflow: hidden;
+      flex-shrink: 0;
     }
 
     .book-cover-icon {
@@ -3635,18 +3643,18 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- Scripts (with cache-busting v5.6.1) -->
-  <script src="js/audio.js?v=5.6.1"></script>
-  <script src="js/background.js?v=5.6.1"></script>
-  <script src="js/github.js?v=5.6.1"></script>
-  <script src="js/db.js?v=5.6.1"></script>
-  <script src="js/auth.js?v=5.6.1"></script>
-  <script src="js/bookRelay.js?v=5.6.1"></script>
-  <script src="js/recommendations.js?v=5.6.1"></script>
-  <script src="js/openlibrary.js?v=5.6.1"></script>
-  <script src="js/reader.js?v=5.6.1"></script>
-  <script src="js/games.js?v=5.6.1"></script>
-  <script src="js/admin.js?v=5.6.1"></script>
-  <script src="js/app.js?v=5.6.1"></script>
+  <!-- Scripts (with cache-busting v5.7.0) -->
+  <script src="js/audio.js?v=5.7.0"></script>
+  <script src="js/background.js?v=5.7.0"></script>
+  <script src="js/github.js?v=5.7.0"></script>
+  <script src="js/db.js?v=5.7.0"></script>
+  <script src="js/auth.js?v=5.7.0"></script>
+  <script src="js/bookRelay.js?v=5.7.0"></script>
+  <script src="js/recommendations.js?v=5.7.0"></script>
+  <script src="js/openlibrary.js?v=5.7.0"></script>
+  <script src="js/reader.js?v=5.7.0"></script>
+  <script src="js/games.js?v=5.7.0"></script>
+  <script src="js/admin.js?v=5.7.0"></script>
+  <script src="js/app.js?v=5.7.0"></script>
 </body>
 </html>

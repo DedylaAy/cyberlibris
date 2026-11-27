@@ -855,7 +855,7 @@ class AppController {
       const saved = window.readerEngine ? window.readerEngine.getSavedProgress(b.id) : null;
       const hasProgress = saved && typeof saved.currentChapter === 'number' && saved.currentChapter > 0;
       const progressBadge = hasProgress 
-        ? `<span class="rarity-pill" style="background: rgba(0, 240, 255, 0.25); border: 1.5px solid var(--accent-cyan); color: #00f0ff; font-weight:800; font-size:0.88rem; padding: 6px 14px; box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);">Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>`
+        ? `<span class="book-progress-pill">Гл. ${saved.currentChapter + 1} (${saved.progressPercent || 0}%)</span>`
         : '';
       const buttonLabel = hasProgress
         ? `Продолжить (Гл. ${saved.currentChapter + 1})`
@@ -864,6 +864,11 @@ class AppController {
       const age = b.ageRating || '12+';
       const ageClass = age === '0+' ? 'age-0' : age === '6+' ? 'age-6' : age === '12+' ? 'age-12' : age === '16+' ? 'age-16' : 'age-18';
       const yearText = b.year < 0 ? `${Math.abs(b.year)} г. до н.э.` : `${b.year} г.`;
+
+      // Deduplicate genre and format if they are identical
+      const formatHtml = (b.format && b.format.toLowerCase() !== (b.genre || '').toLowerCase())
+        ? `<span class="book-format-pill">${b.format}</span>`
+        : '';
 
       const card = document.createElement('div');
       card.className = `steam-book-card rarity-${b.rarity} tilt-card`;
@@ -882,17 +887,17 @@ class AppController {
           <h3 class="steam-book-title" title="${b.title}">${b.title}</h3>
           <p class="steam-book-author">✍ ${b.author} • <span class="book-year-tag">${yearText}</span></p>
           <p class="steam-book-desc">${b.synopsis || b.quote}</p>
-          <div class="steam-book-meta" style="flex-wrap: wrap; gap: 0.4rem; justify-content: flex-start;">
+          <div class="steam-book-meta">
             <span class="book-genre-pill">${b.genre}</span>
-            <span class="book-format-pill">${b.format || 'Роман'}</span>
+            ${formatHtml}
             <span class="book-pages-pill">${b.lengthPages || 200} стр.</span>
-            <span style="color: #66c0f4; font-weight: 800; font-size: 0.84rem; margin-left: auto;">★ 98% Читателей</span>
+            <span class="book-rating-meta" title="98% положительных отзывов читателей">★ 98%</span>
           </div>
-          <div style="margin-top: 0.8rem; display: flex; gap: 0.4rem;">
-            <button class="btn btn-steam-play btn-sm btn-to-steam-lib" style="padding: 0.55rem 0.9rem; font-size: 0.82rem;" data-book-id="${b.id}">
+          <div class="steam-book-actions">
+            <button class="btn btn-steam-play btn-sm btn-to-steam-lib" data-book-id="${b.id}">
               В Библиотеку
             </button>
-            <button class="btn btn-secondary btn-sm btn-open-card" style="flex:1;" data-book-id="${b.id}">
+            <button class="btn btn-secondary btn-sm btn-open-card" data-book-id="${b.id}">
               ${buttonLabel}
             </button>
           </div>
@@ -1706,15 +1711,15 @@ class AppController {
           </div>
         </div>
         <div class="steam-book-info">
-          <h3 class="steam-book-title">${b.title}</h3>
+          <h3 class="steam-book-title" title="${b.title}">${b.title}</h3>
           <p class="steam-book-author">✍ ${b.author} (${b.year})</p>
           <p class="steam-book-desc">${b.synopsis}</p>
           <div class="steam-book-meta">
             <span class="book-genre-pill">${b.genre}</span>
-            <span class="book-read-time">~${b.lengthPages} стр.</span>
+            <span class="book-pages-pill">~${b.lengthPages} стр.</span>
           </div>
-          <div style="margin-top: 0.8rem;">
-            <button class="btn btn-primary btn-block btn-stream-read">
+          <div class="steam-book-actions">
+            <button class="btn btn-primary btn-block btn-stream-read" style="height: 38px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700;">
               📖 Читать ретрансляцию (Manga-Scroll)
             </button>
           </div>
@@ -2468,7 +2473,7 @@ class AppController {
                 <span>${b.author}</span>
                 <span style="color: ${pct > 0 ? '#00f0ff' : '#8e9bb0'}; font-weight: 700;">${pct > 0 ? `${pct}%` : '0%'}</span>
               </div>
-              <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
+              <div style="display:flex; gap:0.4rem; margin-top:auto; height:34px;">
                 <button class="btn btn-primary btn-sm btn-fav-read" data-book-id="${b.id}" style="flex:1;">
                   Читать →
                 </button>
@@ -2509,7 +2514,7 @@ class AppController {
               </div>
               <div class="shelf-book-title">${b.title}</div>
               <div style="font-size:0.75rem; color:var(--accent-green); font-weight: 700;">✓ Завершено (${item.completedDate})</div>
-              <button class="btn btn-outline btn-sm btn-re-read" data-book-id="${b.id}" style="margin-top:0.4rem;">
+              <button class="btn btn-outline btn-sm btn-re-read" data-book-id="${b.id}" style="margin-top:auto; height:34px;">
                 Читать снова ↻
               </button>
             `;

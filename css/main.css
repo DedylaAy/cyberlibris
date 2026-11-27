@@ -3564,9 +3564,10 @@ body.theme-steam {
 
 .steam-hero-backdrop {
   position: relative;
-  height: 380px;
+  min-height: 380px;
+  height: auto;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   padding: 2.2rem 2.5rem;
   overflow: hidden;
   background: #171a21;
@@ -7093,3 +7094,346 @@ body.eco-mode .steam-book-card::after {
   line-height: 1.4;
   margin-top: auto;
 }
+
+/* =========================================================================
+   STANDARDIZED STEAM BOOK CARDS & GRID
+   Uniform button-like dimensions, aligned baselines, zero jagged heights
+   ========================================================================= */
+
+.books-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)) !important;
+  gap: 1.6rem !important;
+  align-items: stretch !important;
+}
+
+.steam-book-card {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 460px !important;
+  min-height: 460px !important;
+  max-height: 460px !important;
+  background: rgba(14, 21, 34, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+  cursor: pointer;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 460px;
+}
+
+.steam-book-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: var(--accent-cyan) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 240, 255, 0.25) !important;
+}
+
+/* Fixed-size standardized cover banner */
+.book-cover-banner {
+  height: 160px !important;
+  min-height: 160px !important;
+  max-height: 160px !important;
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-bottom: 1px solid var(--border-glass) !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  background: #111827 !important;
+}
+
+.book-cover-real-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 25% !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease !important;
+  will-change: transform;
+}
+
+.steam-book-card:hover .book-cover-real-img {
+  transform: scale(1.06) !important;
+  filter: brightness(1.08) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.6)) !important;
+}
+
+/* Badges on cover: single row, fixed height, button-like pills, never higher or lower */
+.book-badges-overlay {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  left: 10px !important;
+  display: flex !important;
+  gap: 0.45rem !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+  height: 24px !important;
+}
+
+.book-badges-overlay .rarity-pill,
+.book-badges-overlay .age-badge-pill,
+.book-badges-overlay .book-progress-pill {
+  height: 24px !important;
+  line-height: 24px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  border-radius: 4px !important;
+  padding: 0 8px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+.book-badges-overlay .rarity-pill {
+  max-width: 170px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.book-badges-overlay .age-badge-pill {
+  min-width: 32px !important;
+  justify-content: center !important;
+}
+
+.book-badges-overlay .book-progress-pill {
+  background: rgba(0, 240, 255, 0.22) !important;
+  border: 1px solid var(--accent-cyan) !important;
+  color: #00f0ff !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.35) !important;
+}
+
+/* Standardized Card Body: flex column filling remainder of 460px */
+.steam-book-info {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  padding: 1rem 1.15rem !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Title: 2 lines clamped, strictly 2.7rem high */
+.steam-book-title {
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  color: #ffffff !important;
+  height: 2.7rem !important;
+  min-height: 2.7rem !important;
+  max-height: 2.7rem !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin: 0 0 0.35rem 0 !important;
+}
+
+/* Author: 1 line clamped, strictly 1.25rem high */
+.steam-book-author {
+  font-size: 0.82rem !important;
+  color: #8e9bb0 !important;
+  font-weight: 600 !important;
+  height: 1.25rem !important;
+  min-height: 1.25rem !important;
+  max-height: 1.25rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin: 0 0 0.45rem 0 !important;
+}
+
+/* Synopsis: 2 lines clamped, strictly 2.25rem high */
+.steam-book-desc {
+  font-size: 0.82rem !important;
+  color: #94a3b8 !important;
+  line-height: 1.35 !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  max-height: 2.25rem !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin: 0 0 0.55rem 0 !important;
+}
+
+/* Meta Pills: 1 line nowrap, strictly 1.5rem high */
+.steam-book-meta {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  height: 1.5rem !important;
+  min-height: 1.5rem !important;
+  max-height: 1.5rem !important;
+  overflow: hidden !important;
+  flex-wrap: nowrap !important;
+  margin-bottom: 0.6rem !important;
+}
+
+.steam-book-meta .book-genre-pill,
+.steam-book-meta .book-format-pill,
+.steam-book-meta .book-pages-pill {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  height: 20px !important;
+  line-height: 20px !important;
+  padding: 0 7px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.steam-book-meta .book-rating-meta {
+  margin-left: auto !important;
+  color: #66c0f4 !important;
+  font-weight: 800 !important;
+  font-size: 0.8rem !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* Standardized Actions pinned to the bottom */
+.steam-book-actions {
+  margin-top: auto !important;
+  display: flex !important;
+  gap: 0.45rem !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  align-items: stretch !important;
+}
+
+.steam-book-actions .btn-to-steam-lib {
+  height: 38px !important;
+  padding: 0 0.85rem !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  border-radius: var(--radius-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.steam-book-actions .btn-open-card {
+  flex: 1 !important;
+  height: 38px !important;
+  padding: 0 0.85rem !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  border-radius: var(--radius-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Standardized Profile Shelf Cards */
+.profile-shelf-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+  gap: 1.2rem !important;
+  align-items: stretch !important;
+}
+
+.shelf-book-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-glow) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.8rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 330px !important;
+  min-height: 330px !important;
+  max-height: 330px !important;
+  box-sizing: border-box !important;
+  transition: transform var(--transition-fast), border-color var(--transition-fast) !important;
+}
+
+.shelf-book-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: var(--accent-cyan) !important;
+}
+
+.shelf-book-cover-wrap {
+  width: 100% !important;
+  height: 160px !important;
+  min-height: 160px !important;
+  max-height: 160px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 4px !important;
+  flex-shrink: 0 !important;
+}
+
+.shelf-book-cover {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.shelf-book-title {
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin-top: 0.5rem !important;
+}
+
+.shelf-book-card .btn-continue-reading,
+.shelf-book-card .btn-shelf-action {
+  margin-top: auto !important;
+  height: 34px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Standardized Arcade Quiz Cards */
+.quiz-books-picker-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+  gap: 1.2rem !important;
+  align-items: stretch !important;
+}
+
+.quiz-book-pick-card {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 320px !important;
+  min-height: 320px !important;
+  max-height: 320px !important;
+  box-sizing: border-box !important;
+}
+
+.quiz-book-pick-card img {
+  width: 100% !important;
+  height: 160px !important;
+  min-height: 160px !important;
+  max-height: 160px !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+}
+
+.quiz-book-pick-card button {
+  margin-top: auto !important;
+  height: 34px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
