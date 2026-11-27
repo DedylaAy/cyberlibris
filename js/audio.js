@@ -198,6 +198,10 @@ class AudioEngine {
     });
   }
 
+  playCoins() {
+    return this.playCoin();
+  }
+
   playGameWin() {
     if (this.isMuted) return;
     this.init();

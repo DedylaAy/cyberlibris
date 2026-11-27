@@ -265,6 +265,29 @@ class AuthManager {
     this.syncUserToUI();
   }
 
+  rewardUserForHelpfulReview(username, xp = 25, lumens = 10) {
+    if (!username) return null;
+    const valXp = parseInt(xp, 10) || 25;
+    const valLumens = parseInt(lumens, 10) || 10;
+
+    // If the rewarded user is the currently active user
+    if (this.currentUser && (this.currentUser.username === username || this.currentUser.id === username)) {
+      this.addXp(valXp);
+      this.addLumens(valLumens);
+      return { isCurrent: true, user: this.currentUser };
+    }
+
+    // If it is another registered user in the database
+    const target = window.dbEngine?.getUser(username);
+    if (target) {
+      target.xp = (target.xp || 0) + valXp;
+      target.lumens = (target.lumens || 0) + valLumens;
+      window.dbEngine.saveUser(target);
+      return { isCurrent: false, user: target };
+    }
+    return null;
+  }
+
   switchUser(userId) {
     const user = window.dbEngine.getUser(userId);
     if (!user) return false;

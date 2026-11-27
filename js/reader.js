@@ -378,7 +378,7 @@ class ReaderEngine {
     // TTS Web Speech Narrator
     document.getElementById('btn-toggle-tts')?.addEventListener('click', () => this.toggleTTS());
     document.getElementById('btn-tts-play-toggle')?.addEventListener('click', () => this.toggleTTS());
-    document.getElementById('btn-tts-stop')?.addEventListener('click', () => this.stopTTS());
+    document.getElementById('btn-tts-stop')?.addEventListener('click', () => this.stopTTS(false));
     document.getElementById('tts-rate-select')?.addEventListener('change', (e) => {
       this.narrator?.setRate(parseFloat(e.target.value));
     });
@@ -498,13 +498,16 @@ class ReaderEngine {
     }
   }
 
-  stopTTS() {
+  stopTTS(silent = true) {
+    const isSpeaking = (this.narrator && this.narrator.isSpeaking) || window.speechSynthesis?.speaking;
     if (this.narrator) {
       this.narrator.stop();
     }
     const bar = document.getElementById('reader-tts-bar');
     if (bar) bar.style.display = 'none';
-    window.app.showToast('⏹ Кибер-Чтец остановлен', 'info');
+    if (!silent && isSpeaking) {
+      window.app?.showToast?.('⏹ Кибер-Чтец остановлен', 'info');
+    }
   }
 
   async openWordLexicon(rawWord) {
@@ -941,7 +944,7 @@ class ReaderEngine {
 
   jumpToChapter(idx) {
     if (!this.currentBook) return;
-    this.stopTTS();
+    this.stopTTS(true);
     const chapters = this.currentBook.chapters || [];
     if (idx >= 0 && idx < chapters.length) {
       this.currentChapterIdx = idx;
@@ -1088,7 +1091,7 @@ class ReaderEngine {
 
   nextChapter() {
     if (this.currentBook && this.currentChapterIdx < (this.currentBook.chapters?.length || 0) - 1) {
-      this.stopTTS();
+      this.stopTTS(true);
       this.currentChapterIdx += 1;
       this.saveProgress();
 
@@ -1122,7 +1125,7 @@ class ReaderEngine {
 
   prevChapter() {
     if (this.currentBook && this.currentChapterIdx > 0) {
-      this.stopTTS();
+      this.stopTTS(true);
       this.currentChapterIdx -= 1;
       this.saveProgress();
       this.renderContent();

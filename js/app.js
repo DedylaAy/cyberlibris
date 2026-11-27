@@ -1390,9 +1390,15 @@ class AppController {
               <div class="steam-rev-hours">В чтении: ${r.timeRead || '8.2 ч.'}</div>
             </div>
           </div>
-          <span class="steam-rev-badge-thumb ${r.recommended !== false ? 'steam-rev-thumb-up' : 'steam-rev-thumb-down'}">
-            ${r.recommended !== false ? 'РЕКОМЕНДУЮ' : 'НЕ РЕКОМЕНДУЮ'}
-          </span>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="steam-rev-badge-thumb ${r.recommended !== false ? 'steam-rev-thumb-up' : 'steam-rev-thumb-down'}">
+              ${r.recommended !== false ? 'РЕКОМЕНДУЮ' : 'НЕ РЕКОМЕНДУЮ'}
+            </span>
+            <div class="dossier-card-stars">
+              ${[1, 2, 3, 4, 5].map(s => `<span class="${s <= (r.rating || 5) ? 'star-active' : 'star-inactive'}">★</span>`).join('')}
+              <span class="star-num">${r.rating || 5}★</span>
+            </div>
+          </div>
         </div>
         <div class="steam-rev-book-title">
           Книга: <strong style="color: #66c0f4; cursor: pointer;" onclick="window.app.switchView('steam-library'); window.app.selectSteamBook('${r.bookId}')">${r.bookTitle}</strong>
@@ -1401,12 +1407,24 @@ class AppController {
         <div class="steam-rev-footer">
           <span>Опубликовано: ${r.date || 'Недавно'}</span>
           <div class="steam-rev-helpful-btns">
-            <button class="steam-rev-help-btn">Да (18)</button>
+            <button class="steam-rev-help-btn btn-comm-like">Да (18)</button>
             <button class="steam-rev-help-btn">Нет (0)</button>
-            <button class="steam-rev-help-btn">Наградить</button>
+            <button class="steam-rev-help-btn btn-comm-award">Наградить</button>
           </div>
         </div>
       `;
+
+      card.querySelector('.btn-comm-like')?.addEventListener('click', (e) => {
+        const btn = e.currentTarget;
+        if (btn.dataset.voted) return;
+        btn.dataset.voted = 'true';
+        const cur = parseInt(btn.textContent.match(/\d+/) || 0) + 1;
+        btn.textContent = `Да (${cur})`;
+        btn.style.borderColor = 'var(--accent-cyan)';
+        btn.style.color = 'var(--accent-cyan)';
+        window.auth.rewardUserForHelpfulReview(r.username, 25, 10);
+        this.showToast(`Вы оценили отзыв! Автору (@${r.author}) начислено +25 XP и +10 ⬡`, 'success');
+      });
       grid.appendChild(card);
     });
 
@@ -1472,7 +1490,81 @@ class AppController {
       });
     });
 
-    // Review submit
+    // Interactive Real Star Picker (from 3 to 5 stars)
+    const starPicker = document.getElementById('dossier-star-picker');
+    const starStatus = document.getElementById('star-picker-status-badge');
+    const ratingInput = document.getElementById('new-review-rating');
+
+    const updateStarUI = (ratingVal, isHover = false) => {
+      let val = parseInt(ratingVal) || 5;
+      if (val < 3) val = 3;
+      if (val > 5) val = 5;
+
+      const items = starPicker?.querySelectorAll('.star-picker-item') || [];
+      items.forEach(item => {
+        const starNum = parseInt(item.dataset.star) || 1;
+        if (starNum <= val) {
+          item.classList.add('filled');
+          if (isHover) item.classList.add('hovered');
+          else item.classList.remove('hovered');
+        } else {
+          item.classList.remove('filled');
+          item.classList.remove('hovered');
+        }
+      });
+
+      if (starStatus) {
+        let label = '★★★★★ 5 звёзд (Шедевр)';
+        if (val === 4) label = '★★★★ 4 звезды (Отлично)';
+        else if (val === 3) label = '★★★ 3 звезды (Хорошо)';
+        starStatus.textContent = label;
+      }
+    };
+
+    if (starPicker) {
+      const starItems = starPicker.querySelectorAll('.star-picker-item');
+      starItems.forEach(item => {
+        item.addEventListener('mouseenter', (e) => {
+          let s = parseInt(e.currentTarget.dataset.star) || 5;
+          if (s < 3) s = 3; // Minimum allowed is 3 stars
+          updateStarUI(s, true);
+        });
+
+        item.addEventListener('mouseleave', () => {
+          const current = parseInt(ratingInput?.value || 5);
+          updateStarUI(current, false);
+        });
+
+        item.addEventListener('click', (e) => {
+          let s = parseInt(e.currentTarget.dataset.star) || 5;
+          if (s < 3) {
+            s = 3;
+            this.showToast('Для признанных классических шедевров допустимо от 3 до 5 звёзд ★', 'info');
+          }
+          if (ratingInput) ratingInput.value = s;
+          starPicker.dataset.rating = s;
+          updateStarUI(s, false);
+          if (window.soundEngine) window.soundEngine.playClick();
+        });
+      });
+    }
+
+    // Recommendation Verdict buttons
+    const recToggle = document.getElementById('review-recommend-toggle');
+    const recInput = document.getElementById('new-review-recommended');
+    if (recToggle) {
+      recToggle.querySelectorAll('.recommend-choice-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          recToggle.querySelectorAll('.recommend-choice-btn').forEach(b => b.classList.remove('active'));
+          const target = e.currentTarget;
+          target.classList.add('active');
+          if (recInput) recInput.value = target.dataset.rec;
+          if (window.soundEngine) window.soundEngine.playClick();
+        });
+      });
+    }
+
+    // Review submit (No instant rewards on publish; rewards come exclusively from other readers' likes)
     const submitBtn = document.getElementById('btn-submit-review');
     if (submitBtn) {
       submitBtn.onclick = () => {
@@ -1488,29 +1580,62 @@ class AppController {
           return;
         }
 
+        let ratingVal = parseInt(ratingEl?.value || 5);
+        if (ratingVal < 3) ratingVal = 3;
+        if (ratingVal > 5) ratingVal = 5;
+
         const newReview = {
           id: 'rev_' + Date.now(),
           author: user.displayName || user.username,
           username: user.username,
           avatar: user.avatar || '📖',
           date: 'Только что',
-          rating: parseInt(ratingEl?.value || 5),
-          recommended: recEl?.value === 'true',
-          timeRead: '0.8 ч.',
-          helpfulCount: 1,
+          rating: ratingVal,
+          recommended: recEl?.value !== 'false',
+          timeRead: '1.4 ч.',
+          helpfulCount: 0,
+          voters: [],
           source: 'Читатель CyberLibris',
           text: text
         };
 
-        window.bookRelay.addReview(this.activeDossierBookId, newReview);
-        window.auth.addXp(30);
-        window.auth.addLumens(15);
-        this.showToast('Рецензия опубликована! +30 XP, +15 Люменов', 'reward');
+        const currentBookId = this.activeDossierBookId;
+        window.bookRelay.addReview(currentBookId, newReview);
+
+        // DO NOT grant instant XP or Lumens on publish!
+        this.showToast('Отзыв опубликован! За публикацию XP и монетки не даются — награда начисляется, когда другие читатели ставят лайки вашему отзыву 👍', 'info');
         if (textEl) textEl.value = '';
         const box = document.getElementById('add-review-box');
         if (box) box.style.display = 'none';
 
-        this.renderBookReviews(this.activeDossierBookId);
+        this.renderBookReviews(currentBookId);
+
+        // Schedule simulated reader appreciation from community readers
+        setTimeout(() => {
+          const communityReaders = [
+            { username: 'cyber_scholar', name: 'Кибер_Схоласт' },
+            { username: 'bookworm', name: 'Книжный_Червь' },
+            { username: 'philosopher_dmitry', name: 'Дмитрий_Философ' },
+            { username: 'oxana_antiutopia', name: 'Оксана_Антиутопия' },
+            { username: 'mikhail_arch', name: 'Михаил_Архитектор' }
+          ];
+          const liker = communityReaders[Math.floor(Math.random() * communityReaders.length)];
+          const bookObj = window.bookRelay.getBookById(currentBookId);
+          const bookTitle = bookObj ? bookObj.title : 'книге';
+
+          // Vote in bookRelay
+          window.bookRelay.voteReviewHelpful(currentBookId, newReview.id, liker.username);
+
+          // Reward current user for receiving a like on their review
+          const rewarded = window.auth.rewardUserForHelpfulReview(user.username, 25, 10);
+          if (rewarded) {
+            this.showToast(`👍 Читатель @${liker.name} отметил ваш отзыв к «${bookTitle}» полезным! Начислено: +25 XP, +10 ⬡`, 'reward');
+          }
+
+          if (this.activeDossierBookId === currentBookId) {
+            this.renderBookReviews(currentBookId);
+          }
+        }, 8000);
       };
     }
   }
@@ -1855,6 +1980,7 @@ class AppController {
           item.className = 'dossier-review-item-card';
           item.style.padding = '0.9rem 1.1rem';
           item.style.marginBottom = '0.6rem';
+          const teaserScore = Math.max(3, Math.min(5, parseInt(r.rating) || 5));
           item.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
               <div style="display:flex; align-items:center; gap:0.5rem; font-weight:800; color:#fff; font-size:0.88rem;">
@@ -1862,7 +1988,10 @@ class AppController {
                 <span>${r.author}</span>
                 <span style="font-size:0.72rem; color:var(--text-dim); font-weight:normal;">• ${r.date}</span>
               </div>
-              <div style="color:var(--accent-gold); font-size:0.85rem;">${'★'.repeat(r.rating || 5)}</div>
+              <div class="dossier-card-stars">
+                ${[1, 2, 3, 4, 5].map(s => `<span class="${s <= teaserScore ? 'star-active' : 'star-inactive'}">★</span>`).join('')}
+                <span class="star-num">${teaserScore}★</span>
+              </div>
             </div>
             <div style="font-size:0.84rem; color:#cbd5e1; line-height:1.45;">${r.text}</div>
           `;
@@ -1887,17 +2016,39 @@ class AppController {
       return;
     }
 
+    const curUser = window.auth?.currentUser;
+
     displayReviews.forEach((r, idx) => {
       const card = document.createElement('div');
       card.className = 'dossier-review-item-card';
       const username = r.username || (r.author.toLowerCase().replace(/[^a-z0-9_]/g, '_'));
+      const isOwnReview = curUser && (curUser.username === username || curUser.displayName === r.author);
+
+      // Real interactive star glyphs rendering (from 3 to 5 stars)
+      const score = Math.max(3, Math.min(5, parseInt(r.rating) || 5));
+      let starsHtml = '';
+      for (let s = 1; s <= 5; s++) {
+        starsHtml += `<span class="${s <= score ? 'star-active' : 'star-inactive'}">★</span>`;
+      }
+      const starsBadge = `
+        <div class="dossier-card-stars" title="Оценка читателя: ${score} из 5 звёзд">
+          ${starsHtml}
+          <span class="star-num">${score}★</span>
+        </div>
+      `;
+
+      const hasVoted = curUser && Array.isArray(r.voters) && r.voters.includes(curUser.username);
+      const likesCount = typeof r.helpfulCount === 'number' ? r.helpfulCount : (24 + idx * 7);
 
       card.innerHTML = `
         <div class="dossier-rev-user-row">
           <div class="dossier-rev-user-info" onclick="window.app.viewUserProfile('${username}')" title="Кликните, чтобы посмотреть публичный профиль автора">
             <div class="dossier-rev-avatar">${r.avatar || '👤'}</div>
             <div>
-              <div class="dossier-rev-name">${r.author}</div>
+              <div class="dossier-rev-name">
+                ${r.author}
+                ${isOwnReview ? '<span class="dossier-own-rev-badge">👤 Вы</span>' : ''}
+              </div>
               <div class="dossier-rev-time-read">В чтении: ${r.timeRead || '9.4 ч.'} • ${r.date}</div>
             </div>
           </div>
@@ -1906,30 +2057,70 @@ class AppController {
             <span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px; ${r.recommended !== false ? 'background:rgba(0,255,136,0.15); color:#00ff88; border:1px solid rgba(0,255,136,0.3);' : 'background:rgba(255,77,77,0.15); color:#ff4d4d; border:1px solid rgba(255,77,77,0.3);'}">
               ${r.recommended !== false ? '👍 РЕКОМЕНДУЕТ' : '👎 НЕ РЕКОМЕНДУЕТ'}
             </span>
-            <div style="color:var(--accent-gold); font-size:0.95rem; letter-spacing:1px;">${'★'.repeat(r.rating || 5)}</div>
+            ${starsBadge}
           </div>
         </div>
         <div class="dossier-rev-body">${r.text}</div>
         <div class="dossier-rev-footer">
-          <span>Был ли этот отзыв полезен?</span>
+          <span>${isOwnReview ? `Ваш отзыв • Одобрено читателями: <strong style="color:var(--accent-cyan);">${likesCount}</strong> 👍` : 'Был ли этот отзыв полезен?'}</span>
           <div class="dossier-rev-helpful">
-            <button class="dossier-rev-help-btn btn-vote-helpful" data-idx="${idx}">Да (${r.helpfulCount || (12 + idx * 3)})</button>
-            <button class="dossier-rev-help-btn btn-vote-unhelpful">Нет (0)</button>
-            <button class="dossier-rev-help-btn" onclick="window.app.showToast('Спасибо за оценку рецензии!', 'success')">❤️ Наградить</button>
+            <button class="dossier-rev-help-btn btn-vote-helpful ${hasVoted ? 'liked' : ''}" data-review-id="${r.id}" title="Поставить лайк за полезность рецензии">
+              👍 Полезно (${likesCount})
+            </button>
+            <button class="dossier-rev-help-btn btn-vote-unhelpful">👎 (0)</button>
+            <button class="dossier-rev-help-btn btn-vote-award" data-review-id="${r.id}" title="Вручить награду автору рецензии">❤️ Наградить</button>
           </div>
         </div>
       `;
 
+      // Like / Helpful button: rewards author only when liked by another reader!
       card.querySelector('.btn-vote-helpful')?.addEventListener('click', (e) => {
         const btn = e.currentTarget;
-        if (!btn.dataset.voted) {
-          btn.dataset.voted = 'true';
-          const cur = parseInt(btn.textContent.match(/\d+/) || 0) + 1;
-          btn.textContent = `Да (${cur})`;
-          btn.style.borderColor = 'var(--accent-cyan)';
-          btn.style.color = 'var(--accent-cyan)';
-          window.app.showToast('Ваш голос учтён!', 'info');
+        const currentActiveUser = window.auth?.currentUser;
+        if (!currentActiveUser) {
+          this.openModal('modal-auth');
+          return;
         }
+
+        if (isOwnReview) {
+          this.showToast('Нельзя лайкать собственный отзыв. Награды начисляются только за лайки других читателей!', 'warning');
+          return;
+        }
+
+        const voteRes = window.bookRelay.voteReviewHelpful(bookId, r.id, currentActiveUser.username);
+        if (!voteRes.success) {
+          if (voteRes.reason === 'already_voted') {
+            this.showToast('Вы уже отметили этот отзыв полезным ранее!', 'info');
+          } else if (voteRes.reason === 'self_vote') {
+            this.showToast('Нельзя лайкать собственный отзыв!', 'warning');
+          } else {
+            this.showToast('Голос не удалось зафиксировать', 'warning');
+          }
+          return;
+        }
+
+        btn.classList.add('liked');
+        btn.textContent = `👍 Полезно (${voteRes.helpfulCount})`;
+
+        // Reward the author of the review with XP and Lumens
+        window.auth.rewardUserForHelpfulReview(username, 25, 10);
+        this.showToast(`Вы оценили отзыв! Автору (@${r.author}) начислено +25 XP и +10 ⬡ за полезность`, 'success');
+        if (window.soundEngine?.playCoin) window.soundEngine.playCoin();
+      });
+
+      card.querySelector('.btn-vote-award')?.addEventListener('click', () => {
+        const currentActiveUser = window.auth?.currentUser;
+        if (!currentActiveUser) {
+          this.openModal('modal-auth');
+          return;
+        }
+        if (isOwnReview) {
+          this.showToast('Вы не можете наградить свой собственный отзыв!', 'warning');
+          return;
+        }
+        window.auth.rewardUserForHelpfulReview(username, 50, 20);
+        this.showToast(`Вы вручили литературную награду отзыву! Автору (@${r.author}) начислено +50 XP и +20 ⬡`, 'reward');
+        if (window.soundEngine) window.soundEngine.playLevelUp();
       });
 
       list.appendChild(card);
@@ -2970,7 +3161,7 @@ class AppController {
     const rankTitle = document.getElementById('profile-rank-title');
     const rankDesc = document.getElementById('profile-rank-desc');
     const rankBooksCount = document.getElementById('profile-rank-books-count');
-    const rankSpeedPill = document.getElementById('profile-rank-speed-pill');
+    const rankBadgePill = document.getElementById('profile-rank-badge-pill');
     const badgeRarity = document.getElementById('profile-competence-badge');
     const deckContainer = document.getElementById('profile-fanning-deck');
 
@@ -3023,7 +3214,7 @@ class AppController {
     if (rankTitle) rankTitle.textContent = rankName;
     if (rankDesc) rankDesc.textContent = desc;
     if (rankBooksCount) rankBooksCount.textContent = `📚 В колоде звания: ${count} ${count === 1 ? 'книга' : (count >= 2 && count <= 4) ? 'книги' : 'книг'}`;
-    if (rankSpeedPill) rankSpeedPill.textContent = `⚡ Скорость: ${user?.stats?.speedRecordWPM || 480} WPM`;
+    if (rankBadgePill) rankBadgePill.textContent = `🏆 Достижений: ${user?.badges?.length || 0}`;
     if (badgeRarity) badgeRarity.textContent = badgeText;
 
     // Render the interactive Fanning Card Deck

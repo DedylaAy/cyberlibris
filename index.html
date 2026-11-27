@@ -17,10 +17,10 @@
   </noscript>
 
   <!-- Core & Custom Stylesheets (with cache-busting v5.8.0) -->
-  <link rel="stylesheet" href="css/main.css?v=5.8.1">
-  <link rel="stylesheet" href="css/animations.css?v=5.8.1">
-  <link rel="stylesheet" href="css/reader.css?v=5.8.1">
-  <link rel="stylesheet" href="css/games.css?v=5.8.1">
+  <link rel="stylesheet" href="css/main.css?v=5.8.3">
+  <link rel="stylesheet" href="css/animations.css?v=5.8.3">
+  <link rel="stylesheet" href="css/reader.css?v=5.8.3">
+  <link rel="stylesheet" href="css/games.css?v=5.8.3">
 
   <style>
     .books-grid {
@@ -2082,14 +2082,6 @@
               <span class="bento-sub">Степень: Критик словесности</span>
             </div>
           </div>
-          <div class="bento-stat-card tilt-card">
-            <div class="bento-card-icon"><span class="bento-badge-tag">ТЕМП</span></div>
-            <div class="bento-card-data">
-              <span class="bento-label">Скорость чтения</span>
-              <strong class="bento-val" id="stat-wpm-val" style="color: #00ff88;">240 WPM</strong>
-              <span class="bento-sub">Слов в минуту (Комфорт)</span>
-            </div>
-          </div>
         </div>
 
         <!-- Weekly Reading Activity Heatmap -->
@@ -2134,7 +2126,7 @@
                 </div>
                 <div class="rank-stats-pills-row" id="profile-rank-pills">
                   <span class="rank-mini-pill" id="profile-rank-books-count">📚 Прочитано: 0 книг</span>
-                  <span class="rank-mini-pill" id="profile-rank-speed-pill">⚡ Скорость: 620 WPM</span>
+                  <span class="rank-mini-pill" id="profile-rank-badge-pill">🏆 Достижений: 0</span>
                 </div>
               </div>
             </div>
@@ -3393,32 +3385,59 @@
 
             <!-- Add Review Collapsible Form -->
             <div id="add-review-box" class="dossier-add-review-box" style="display: none;">
-              <h4 style="margin: 0 0 0.8rem 0; color: var(--accent-cyan);">Оставить свой читательский отзыв</h4>
+              <h4 style="margin: 0 0 0.8rem 0; color: var(--accent-cyan); display: flex; align-items: center; justify-content: space-between;">
+                <span>✍️ Оставить свой читательский отзыв</span>
+                <span style="font-size: 0.75rem; color: var(--accent-gold); font-weight: normal;">★ Оценка: от 3 до 5 звёзд</span>
+              </h4>
               <div class="add-rev-controls-row">
-                <div style="flex: 1; min-width: 200px;">
-                  <label class="form-label">Ваша оценка:</label>
-                  <select id="new-review-rating" class="form-select">
-                    <option value="5">⭐⭐⭐⭐⭐ 5 из 5 (Шедевр)</option>
-                    <option value="4">⭐⭐⭐⭐ 4 из 5 (Отлично)</option>
-                    <option value="3">⭐⭐⭐ 3 из 5 (Хорошо)</option>
-                    <option value="2">⭐⭐ 2 из 5 (На любителя)</option>
-                    <option value="1">⭐ 1 из 5 (Не понравилось)</option>
-                  </select>
+                <!-- Interactive Real Star Picker (from 3 to 5 stars) -->
+                <div class="star-rating-picker-box">
+                  <div class="star-picker-header">
+                    <label class="form-label" style="margin: 0; font-size: 0.84rem;">Ваша оценка:</label>
+                    <span class="star-picker-status" id="star-picker-status-badge">★★★★★ 5 звёзд (Шедевр)</span>
+                  </div>
+                  <div class="star-picker-container" id="dossier-star-picker" data-rating="5">
+                    <button type="button" class="star-picker-item filled active" data-star="1" aria-label="1 звезда" title="От 3 до 5 звёзд (базовый уровень)">★</button>
+                    <button type="button" class="star-picker-item filled active" data-star="2" aria-label="2 звезды" title="От 3 до 5 звёзд (базовый уровень)">★</button>
+                    <button type="button" class="star-picker-item filled active" data-star="3" aria-label="3 звезды" title="3 звезды — Хорошо (минимальный порог)">★</button>
+                    <button type="button" class="star-picker-item filled active" data-star="4" aria-label="4 звезды" title="4 звезды — Отлично">★</button>
+                    <button type="button" class="star-picker-item filled active" data-star="5" aria-label="5 звёзд" title="5 звёзд — Шедевр мирового уровня">★</button>
+                  </div>
+                  <div class="star-picker-legend">
+                    <span>★ Допустимо: <strong>от 3 до 5 звёзд</strong></span>
+                    <span style="color:var(--text-dim); font-size: 0.7rem;">Кликните по звёздам для выбора</span>
+                  </div>
+                  <input type="hidden" id="new-review-rating" value="5">
                 </div>
-                <div style="flex: 1; min-width: 200px;">
-                  <label class="form-label">Рекомендация:</label>
-                  <select id="new-review-recommended" class="form-select">
-                    <option value="true">👍 Рекомендую к прочтению</option>
-                    <option value="false">👎 Не рекомендую</option>
-                  </select>
+
+                <!-- Recommendation Verdict Buttons -->
+                <div class="review-rec-box" style="flex: 1; min-width: 220px; display: flex; flex-direction: column; justify-content: space-between;">
+                  <label class="form-label" style="margin-bottom: 0.4rem; font-size: 0.84rem;">Вердикт читателя:</label>
+                  <div class="review-recommend-toggle" id="review-recommend-toggle">
+                    <button type="button" class="recommend-choice-btn active" data-rec="true">
+                      <span class="rec-icon">👍</span> <span>Рекомендую</span>
+                    </button>
+                    <button type="button" class="recommend-choice-btn" data-rec="false">
+                      <span class="rec-icon">👎</span> <span>Не рекомендую</span>
+                    </button>
+                  </div>
+                  <input type="hidden" id="new-review-recommended" value="true">
                 </div>
               </div>
-              <div style="margin-top: 0.8rem;">
+
+              <div style="margin-top: 0.9rem;">
                 <textarea id="new-review-text" class="form-textarea" placeholder="Поделитесь вашими размышлениями, любимыми мыслями и впечатлениями от книги..." rows="4"></textarea>
               </div>
-              <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.8rem;">
-                <button class="btn btn-secondary btn-sm" id="btn-cancel-add-review">Отмена</button>
-                <button class="btn btn-primary btn-sm" id="btn-submit-review">Опубликовать отзыв (+30 XP, +15 ⬡)</button>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.9rem; flex-wrap: wrap; gap: 0.8rem;">
+                <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="color: var(--accent-gold); font-size: 0.95rem;">💡</span>
+                  <span>Награды (XP и Люмены) начисляются за <strong>лайки других читателей</strong> за ваш отзыв.</span>
+                </div>
+                <div style="display: flex; gap: 0.6rem;">
+                  <button class="btn btn-secondary btn-sm" id="btn-cancel-add-review">Отмена</button>
+                  <button class="btn btn-primary btn-sm" id="btn-submit-review">Опубликовать отзыв</button>
+                </div>
               </div>
             </div>
 
@@ -3829,17 +3848,17 @@
   <div id="toast-container"></div>
 
   <!-- Scripts (with cache-busting v5.8.0) -->
-  <script src="js/audio.js?v=5.8.1"></script>
-  <script src="js/background.js?v=5.8.1"></script>
-  <script src="js/github.js?v=5.8.1"></script>
-  <script src="js/db.js?v=5.8.1"></script>
-  <script src="js/auth.js?v=5.8.1"></script>
-  <script src="js/bookRelay.js?v=5.8.1"></script>
-  <script src="js/recommendations.js?v=5.8.1"></script>
-  <script src="js/openlibrary.js?v=5.8.1"></script>
-  <script src="js/reader.js?v=5.8.1"></script>
-  <script src="js/games.js?v=5.8.1"></script>
-  <script src="js/admin.js?v=5.8.1"></script>
-  <script src="js/app.js?v=5.8.1"></script>
+  <script src="js/audio.js?v=5.8.3"></script>
+  <script src="js/background.js?v=5.8.3"></script>
+  <script src="js/github.js?v=5.8.3"></script>
+  <script src="js/db.js?v=5.8.3"></script>
+  <script src="js/auth.js?v=5.8.3"></script>
+  <script src="js/bookRelay.js?v=5.8.3"></script>
+  <script src="js/recommendations.js?v=5.8.3"></script>
+  <script src="js/openlibrary.js?v=5.8.3"></script>
+  <script src="js/reader.js?v=5.8.3"></script>
+  <script src="js/games.js?v=5.8.3"></script>
+  <script src="js/admin.js?v=5.8.3"></script>
+  <script src="js/app.js?v=5.8.3"></script>
 </body>
 </html>

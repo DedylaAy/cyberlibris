@@ -2597,7 +2597,16 @@ class BookRelayService {
     };
 
     const curated = REAL_REVIEWS_BANK[normalizedId];
-    if (curated && curated.length > 0) return curated;
+    if (curated && curated.length > 0) {
+      return curated.map((r, idx) => ({
+        username: r.username || (r.author ? r.author.toLowerCase().replace(/[^a-z0-9_]/g, '_') : 'reader'),
+        recommended: r.recommended !== undefined ? r.recommended : true,
+        helpfulCount: r.helpfulCount !== undefined ? r.helpfulCount : (24 + (idx * 7)),
+        timeRead: r.timeRead || '8.5 ч.',
+        voters: r.voters || [],
+        ...r
+      }));
+    }
 
     // Intelligent Persona-based Community Reviews Generator for ANY book:
     const bookTitle = (book && book.title) || normalizedId;
@@ -2678,10 +2687,12 @@ class BookRelayService {
     try {
       const all = JSON.parse(localStorage.getItem(this.reviewsKey) || '{}');
       const userReviews = all[bookId] || [];
+      const userRevIds = new Set(userReviews.map(r => r.id));
 
       const normId = (bookId || '').replace(/^relay_/, '');
       const book = this.getBookById ? this.getBookById(bookId) : null;
-      const realNetworkReviews = this.getRealNetworkReviews(normId, book);
+      const realNetworkReviews = this.getRealNetworkReviews(normId, book)
+        .filter(r => !userRevIds.has(r.id));
 
       return [...userReviews, ...realNetworkReviews];
     } catch {
@@ -2692,12 +2703,61 @@ class BookRelayService {
   addReview(bookId, review) {
     try {
       const all = JSON.parse(localStorage.getItem(this.reviewsKey) || '{}');
-      if (!all[bookId]) all[bookId] = this.getReviews(bookId);
+      if (!all[bookId]) all[bookId] = [];
       all[bookId].unshift(review);
       localStorage.setItem(this.reviewsKey, JSON.stringify(all));
       return true;
     } catch {
       return false;
+    }
+  }
+
+  voteReviewHelpful(bookId, reviewId, voterUsername) {
+    try {
+      const all = JSON.parse(localStorage.getItem(this.reviewsKey) || '{}');
+      if (!all[bookId]) all[bookId] = [];
+
+      let target = all[bookId].find(r => r.id === reviewId);
+      if (!target) {
+        // If from dynamic network reviews, promote to persisted list
+        const normId = (bookId || '').replace(/^relay_/, '');
+        const book = this.getBookById ? this.getBookById(bookId) : null;
+        const netReviews = this.getRealNetworkReviews(normId, book);
+        const netRev = netReviews.find(r => r.id === reviewId);
+        if (netRev) {
+          target = { 
+            ...netRev,
+            helpfulCount: typeof netRev.helpfulCount === 'number' ? netRev.helpfulCount : 24,
+            voters: Array.isArray(netRev.voters) ? [...netRev.voters] : []
+          };
+          all[bookId].push(target);
+        }
+      }
+
+      if (!target) return { success: false, reason: 'not_found' };
+
+      if (!target.voters) target.voters = [];
+      if (voterUsername && target.voters.includes(voterUsername)) {
+        return { success: false, reason: 'already_voted', helpfulCount: target.helpfulCount };
+      }
+
+      if (voterUsername && target.username && voterUsername === target.username) {
+        return { success: false, reason: 'self_vote', helpfulCount: target.helpfulCount };
+      }
+
+      if (voterUsername) target.voters.push(voterUsername);
+      const base = typeof target.helpfulCount === 'number' ? target.helpfulCount : 24;
+      target.helpfulCount = base + 1;
+      localStorage.setItem(this.reviewsKey, JSON.stringify(all));
+
+      return {
+        success: true,
+        helpfulCount: target.helpfulCount,
+        authorUsername: target.username,
+        authorName: target.author
+      };
+    } catch {
+      return { success: false, reason: 'error' };
     }
   }
 
