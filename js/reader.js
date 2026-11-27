@@ -254,6 +254,37 @@ class ReaderEngine {
     this.focusGuideActive = localStorage.getItem('cyberlibris_reader_focus_guide') === 'true';
     this.isZenMode = false;
     this._focusGuideBound = false;
+
+    // Anti-Cheat Reading Timer & Validation
+    this.MIN_PAGE_READ_SECONDS = 20;
+    this.chapterReadingSeconds = 0;
+    this.legitimateChapters = new Set();
+  }
+
+  updateAntiCheatTimerUI() {
+    const timerPill = document.getElementById('reader-page-timer-pill');
+    const timerVal = document.getElementById('reader-page-timer-val');
+    const navTimerSec = document.getElementById('reader-nav-timer-sec');
+    const sec = this.chapterReadingSeconds || 0;
+    const req = this.MIN_PAGE_READ_SECONDS;
+    const isReady = sec >= req;
+
+    if (timerVal) {
+      timerVal.textContent = isReady ? `${sec}с ✓` : `${sec}/${req}с`;
+    }
+    if (timerPill) {
+      if (isReady) {
+        timerPill.classList.add('timer-ready');
+        timerPill.title = 'Осознанное чтение страницы подтверждено (+30 XP при перелистывании)';
+      } else {
+        timerPill.classList.remove('timer-ready');
+        timerPill.title = `Анти-чит таймер: прочитайте страницу ещё ${req - sec} сек. для зачёта опыта`;
+      }
+    }
+    if (navTimerSec) {
+      navTimerSec.textContent = isReady ? `${sec}с ✓ Готово к зачету (+30 XP)` : `${sec}/${req}с (нужно ещё ${req - sec}с)`;
+      navTimerSec.style.color = isReady ? '#00ff88' : '#ffaa00';
+    }
   }
 
   init() {
@@ -691,7 +722,13 @@ class ReaderEngine {
         if (entry.isIntersecting) {
           const idx = parseInt(entry.target.dataset.idx || entry.target.id.replace('chapter-block-', ''));
           if (!isNaN(idx) && idx !== this.currentChapterIdx) {
+            // Anti-cheat verification in manga mode: check if previous chapter had valid read time
+            if ((this.chapterReadingSeconds || 0) >= this.MIN_PAGE_READ_SECONDS) {
+              this.legitimateChapters.add(this.currentChapterIdx);
+            }
             this.currentChapterIdx = idx;
+            this.chapterReadingSeconds = 0;
+            this.updateAntiCheatTimerUI();
             const selectEl = document.getElementById('reader-chapter-select');
             if (selectEl) selectEl.value = idx;
             this.updateActiveChapterHeader();
@@ -752,6 +789,9 @@ class ReaderEngine {
     if (!book) return;
 
     this.currentBook = book;
+    this.chapterReadingSeconds = 0;
+    this.legitimateChapters = new Set();
+    this.updateAntiCheatTimerUI();
     window.app?.updateProfilePresence?.();
 
     // Retrieve saved reading progress for this book
@@ -948,6 +988,8 @@ class ReaderEngine {
     const chapters = this.currentBook.chapters || [];
     if (idx >= 0 && idx < chapters.length) {
       this.currentChapterIdx = idx;
+      this.chapterReadingSeconds = 0;
+      this.updateAntiCheatTimerUI();
       this.updateActiveChapterHeader();
       this.renderTocList();
       this.saveProgress();
@@ -1025,6 +1067,21 @@ class ReaderEngine {
         </div>
       `).join('');
 
+      // Also append completed celebration card at the end of manga feed
+      bodyEl.innerHTML += `
+        <div class="reader-book-completed-card" id="manga-completed-card">
+          <div class="reader-completed-trophy">🏆</div>
+          <h3 class="reader-completed-title">Финал произведения</h3>
+          <p class="reader-completed-desc">Вы дошли до конца книги «${this.currentBook.title}». Награда за честное прочтение: <strong>+150 ⬡ Люменов</strong> и <strong>+300 XP</strong>!</p>
+          <div class="reader-completed-actions" style="margin-top: 1rem; display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary magnetic-btn" id="btn-claim-manga-reward" onclick="window.readerEngine.awardBookCompletionReward(window.readerEngine.currentBook)">
+              🏆 Завершить чтение и забрать награду (+300 XP, +150 ⬡)
+            </button>
+            <button class="btn btn-secondary magnetic-btn" onclick="window.app.switchView('steam-library')">📚 В Библиотеку</button>
+          </div>
+        </div>
+      `;
+
       this.setupMangaChapterObserver();
     } else {
       if (navControls) navControls.style.display = 'flex';
@@ -1048,21 +1105,31 @@ class ReaderEngine {
         bodyEl.innerHTML += `
           <div class="reader-book-completed-card">
             <div class="reader-completed-trophy">🏆</div>
-            <h3 class="reader-completed-title">Произведение полностью прочитано!</h3>
-            <p class="reader-completed-desc">Вы завершили чтение «${this.currentBook.title}». Награда за книгу: <strong>+150 ⬡ Люменов</strong> и <strong>+300 XP</strong>!</p>
-            <div class="reader-completed-actions">
-              <button class="btn btn-primary magnetic-btn" onclick="window.app.switchView('games')">🎮 Сыграть в Аркаде на Люмены</button>
+            <h3 class="reader-completed-title">Финал произведения</h3>
+            <p class="reader-completed-desc">Вы дошли до заключительной главы «${this.currentBook.title}». Награда за честное прочтение книги: <strong>+150 ⬡ Люменов</strong> и <strong>+300 XP</strong>!</p>
+            <div class="reader-completed-actions" style="margin-top: 1rem; display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary magnetic-btn" id="btn-claim-book-reward" onclick="window.readerEngine.awardBookCompletionReward(window.readerEngine.currentBook)">
+                🏆 Завершить чтение и забрать награду (+300 XP, +150 ⬡)
+              </button>
               <button class="btn btn-secondary magnetic-btn" onclick="window.app.switchView('steam-library')">📚 В Библиотеку</button>
             </div>
           </div>
         `;
-        this.awardBookCompletionReward(this.currentBook);
       }
     }
   }
 
   awardBookCompletionReward(book) {
     if (!book || !window.auth) return;
+    const chaptersCount = book.chapters?.length || 1;
+    const minRequiredLegit = Math.min(2, chaptersCount);
+
+    // Anti-cheat verification: must have actively read with timer (min 40s total and at least 2 chapters read or 1 for short books)
+    if (this.readSeconds < 40 || (chaptersCount > 1 && this.legitimateChapters.size < minRequiredLegit)) {
+      window.app?.showToast?.(`⚠️ Слишком быстрый скролл сверху вниз! Это мухлёж, а не чтение (освоено глав с таймером: ${this.legitimateChapters.size} из ${minRequiredLegit}). Читайте страницы вдумчиво не менее ${this.MIN_PAGE_READ_SECONDS} секунд.`, 'warning');
+      return;
+    }
+
     const user = window.auth.currentUser;
     const username = user ? user.username : 'guest';
 
@@ -1079,44 +1146,68 @@ class ReaderEngine {
       window.auth.addLumens(150);
 
       if (window.app) {
-        window.app.showToast(`🎉 Произведение «${book.title}» прочитано! Награда: +150 ⬡ Люменов для игр в Аркаде и +300 XP!`, 'reward');
+        window.app.showToast(`🎉 Произведение «${book.title}» честно прочитано! Награда: +150 ⬡ Люменов и +300 XP!`, 'reward');
         if (window.miniGamesSuite) window.miniGamesSuite.updateEnergyUI();
       }
       if (window.soundEngine) {
         if (window.soundEngine.playCoin) window.soundEngine.playCoin();
         if (window.soundEngine.playGameWin) window.soundEngine.playGameWin();
       }
+
+      const claimBtn = document.getElementById('btn-claim-book-reward');
+      if (claimBtn) {
+        claimBtn.disabled = true;
+        claimBtn.textContent = '✓ Награда за книгу получена';
+      }
+      const claimMangaBtn = document.getElementById('btn-claim-manga-reward');
+      if (claimMangaBtn) {
+        claimMangaBtn.disabled = true;
+        claimMangaBtn.textContent = '✓ Награда за книгу получена';
+      }
+    } else {
+      window.app?.showToast?.('Награда за это произведение уже была получена ранее.', 'info');
     }
   }
 
   nextChapter() {
     if (this.currentBook && this.currentChapterIdx < (this.currentBook.chapters?.length || 0) - 1) {
+      const spentSec = this.chapterReadingSeconds || 0;
+      const isLegit = spentSec >= this.MIN_PAGE_READ_SECONDS;
+      const prevChIdx = this.currentChapterIdx;
+
       this.stopTTS(true);
       this.currentChapterIdx += 1;
       this.saveProgress();
 
-      // Reading progression rewards
-      if (window.auth) {
-        window.auth.addXp(30);
-        window.auth.addLumens(10);
-        window.auth.updateStat('chaptersRead', 1);
+      // Anti-cheat verification: Check time spent on the page/chapter
+      if (isLegit) {
+        if (!this.legitimateChapters.has(prevChIdx)) {
+          this.legitimateChapters.add(prevChIdx);
+          if (window.auth) {
+            window.auth.addXp(30);
+            window.auth.addLumens(10);
+            window.auth.updateStat('chaptersRead', 1);
 
-        const genre = (this.currentBook.genre || '').toLowerCase();
-        if (genre.includes('класс') || genre.includes('поэ')) {
-          window.auth.updateStat('classicChaptersRead', 1);
-        } else if (genre.includes('фантаст') || genre.includes('кибер')) {
-          window.auth.updateStat('scifiChaptersRead', 1);
-        } else if (genre.includes('воен') || genre.includes('стратег')) {
-          window.auth.updateStat('militaryChaptersRead', 1);
-        } else if (genre.includes('философ') || genre.includes('мысл')) {
-          window.auth.updateStat('philosophyChaptersRead', 1);
+            const genre = (this.currentBook.genre || '').toLowerCase();
+            if (genre.includes('класс') || genre.includes('поэ')) {
+              window.auth.updateStat('classicChaptersRead', 1);
+            } else if (genre.includes('фантаст') || genre.includes('кибер')) {
+              window.auth.updateStat('scifiChaptersRead', 1);
+            } else if (genre.includes('воен') || genre.includes('стратег')) {
+              window.auth.updateStat('militaryChaptersRead', 1);
+            } else if (genre.includes('философ') || genre.includes('мысл')) {
+              window.auth.updateStat('philosophyChaptersRead', 1);
+            }
+          }
+          window.app?.showToast?.(`📖 Глава ${prevChIdx + 1} внимательно прочитана: +30 XP, +10 ⬡`, 'reward');
         }
-
-        // Check if finished final chapter
-        if (this.currentChapterIdx === (this.currentBook.chapters?.length || 0) - 1) {
-          this.awardBookCompletionReward(this.currentBook);
-        }
+      } else {
+        window.app?.showToast?.(`⚠️ Слишком быстрое перелистывание (${spentSec} с из ${this.MIN_PAGE_READ_SECONDS} с)! Это мухлёж, а не чтение — опыт не начислен.`, 'warning');
       }
+
+      // Reset timer for the newly entered chapter
+      this.chapterReadingSeconds = 0;
+      this.updateAntiCheatTimerUI();
 
       this.renderContent();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1127,6 +1218,8 @@ class ReaderEngine {
     if (this.currentBook && this.currentChapterIdx > 0) {
       this.stopTTS(true);
       this.currentChapterIdx -= 1;
+      this.chapterReadingSeconds = 0;
+      this.updateAntiCheatTimerUI();
       this.saveProgress();
       this.renderContent();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1142,7 +1235,10 @@ class ReaderEngine {
         return;
       }
       this.readSeconds += 1;
-      // Award rewards every 60 seconds of active reading
+      this.chapterReadingSeconds = (this.chapterReadingSeconds || 0) + 1;
+      this.updateAntiCheatTimerUI();
+
+      // Award rewards every 60 seconds of continuous active reading
       if (this.readSeconds % 60 === 0) {
         window.auth.addLumens(5);
         window.auth.addXp(15);

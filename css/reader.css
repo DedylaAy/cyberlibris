@@ -905,6 +905,29 @@
   font-family: var(--font-mono);
 }
 
+.compass-timer-pill {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #ffaa00;
+  font-family: var(--font-mono);
+  background: rgba(255, 170, 0, 0.12);
+  border: 1px solid rgba(255, 170, 0, 0.35);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.compass-timer-pill.timer-ready {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.15);
+  border-color: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
 .compass-quick-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
