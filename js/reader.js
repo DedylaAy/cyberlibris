@@ -1080,7 +1080,7 @@ class ReaderEngine {
       }
       if (window.soundEngine) {
         if (window.soundEngine.playCoin) window.soundEngine.playCoin();
-        window.soundEngine.playLevelUp();
+        if (window.soundEngine.playGameWin) window.soundEngine.playGameWin();
       }
     }
   }

@@ -107,7 +107,7 @@ class AuthManager {
     this.saveUser();
     this.syncUserToUI();
     window.app.showToast('Верховные права Создателя успешно восстановлены', 'reward');
-    if (window.soundEngine) window.soundEngine.playLevelUp();
+    if (window.soundEngine?.playCorrect) window.soundEngine.playCorrect();
   }
 
   // --- AUTHENTICATION ---
@@ -199,13 +199,17 @@ class AuthManager {
   // --- REWARDS & PROGRESSION ---
 
   getXpNeededForNextLevel(level) {
-    const lvl = Math.max(1, level || 1);
-    return Math.floor(lvl * 1200 + Math.pow(lvl, 2) * 150);
+    const lvl = Math.max(1, parseInt(level, 10) || 1);
+    return Math.floor(lvl * 1500 + Math.pow(lvl, 2) * 200);
   }
 
   addXp(amount) {
     if (!this.currentUser) return;
-    this.currentUser.xp = (this.currentUser.xp || 0) + amount;
+    const val = parseInt(amount, 10);
+    if (isNaN(val) || val <= 0) return;
+
+    this.currentUser.level = Math.max(1, parseInt(this.currentUser.level, 10) || 1);
+    this.currentUser.xp = Math.max(0, parseInt(this.currentUser.xp, 10) || 0) + val;
 
     // Check level up with realistic RPG curve
     let needed = this.getXpNeededForNextLevel(this.currentUser.level);
@@ -467,6 +471,10 @@ class AuthManager {
           window.app?.openModal?.('modal-auth');
         });
       }
+    }
+
+    if (window.miniGames?.updateEnergyUI) {
+      window.miniGames.updateEnergyUI();
     }
   }
 

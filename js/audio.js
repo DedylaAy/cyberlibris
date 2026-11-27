@@ -198,6 +198,32 @@ class AudioEngine {
     });
   }
 
+  playGameWin() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    // Pleasant gentle victory chord (C major - G4, C5, E5) - distinct from level up fanfare
+    const chord = [392.00, 523.25, 659.25];
+    chord.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const now = this.ctx.currentTime + idx * 0.08;
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.14 * this.volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.4);
+    });
+  }
+
   playLevelUp() {
     if (this.isMuted) return;
     this.init();

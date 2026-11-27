@@ -666,8 +666,8 @@ class AppController {
       if (!allBooks || allBooks.length === 0) return;
       const randomBook = allBooks[Math.floor(Math.random() * allBooks.length)];
       if (randomBook) {
-        if (window.soundEngine) window.soundEngine.playLevelUp();
-        this.showToast(`Выбор Случайной Книги: «${randomBook.title}» (${randomBook.author})`, 'reward');
+        if (window.soundEngine?.playClick) window.soundEngine.playClick();
+        this.showToast(`Выбор Случайной Книги: «${randomBook.title}» (${randomBook.author})`, 'info');
         this.openBookDetails(randomBook.id);
       }
     });
@@ -1178,7 +1178,7 @@ class AppController {
 
       if (window.soundEngine) {
         if (window.soundEngine.playCoin) window.soundEngine.playCoin();
-        window.soundEngine.playLevelUp();
+        if (window.soundEngine.playGameWin) window.soundEngine.playGameWin();
       }
       this.showToast(`🎉 Произведение «${book.title}» завершено! Начислено: +150 ⬡ Люменов для игр в Аркаде и +300 XP!`, 'reward');
 
@@ -2310,8 +2310,8 @@ class AppController {
       window.auth.syncUserToUI();
       this.closeAllModals();
       this.renderProfile();
-      this.showToast('Профиль успешно обновлен и сохранен', 'reward');
-      if (window.soundEngine) window.soundEngine.playLevelUp();
+      this.showToast('Профиль успешно обновлен и сохранен', 'success');
+      if (window.soundEngine?.playCorrect) window.soundEngine.playCorrect();
     });
   }
 
@@ -2514,7 +2514,7 @@ class AppController {
             window.auth.addLumens(res.rewardLumens);
             window.auth.addXp(xp);
             this.showToast(`Цель достигнута! +${res.rewardLumens} ⬡, +${xp} XP`, 'reward');
-            if (window.soundEngine) window.soundEngine.playLevelUp();
+            if (window.soundEngine?.playCoin) window.soundEngine.playCoin();
             this.renderDailyQuests();
           }
         });

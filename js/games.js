@@ -977,7 +977,11 @@ class MiniGamesSuite {
     }
 
     window.app.showToast(`Раунд завершен! Счёт: ${this.speedScore}. Награда: +${lumensEarned} ⬡, +${xpEarned} XP`, 'reward');
-    if (window.soundEngine) window.soundEngine.playLevelUp();
+    if (window.soundEngine?.playGameWin) {
+      window.soundEngine.playGameWin();
+    } else if (window.soundEngine?.playCorrect) {
+      window.soundEngine.playCorrect();
+    }
   }
 
   // =========================================================================
@@ -1182,7 +1186,11 @@ class MiniGamesSuite {
         this.renderQuizBookSelector();
       });
     }
-    if (window.soundEngine) window.soundEngine.playLevelUp();
+    if (window.soundEngine?.playGameWin) {
+      window.soundEngine.playGameWin();
+    } else if (window.soundEngine?.playCorrect) {
+      window.soundEngine.playCorrect();
+    }
   }
 
   // =========================================================================
@@ -1378,10 +1386,10 @@ class MiniGamesSuite {
     if (this.memoryTimer) clearInterval(this.memoryTimer);
 
     const timeSec = Math.max(1, this.matchingSeconds);
-    const speedBonus = Math.max(10, 120 - timeSec);
-    const moveBonus = Math.max(10, (this.matchingTotalPairs * 2 - this.matchingMoves) * 5);
-    const totalLumens = Math.round(60 + speedBonus + moveBonus);
-    const totalXp = totalLumens * 2;
+    const speedBonus = Math.min(25, Math.max(5, Math.floor((120 - timeSec) / 4)));
+    const moveBonus = Math.min(25, Math.max(5, (this.matchingTotalPairs * 2 - this.matchingMoves) * 2));
+    const totalLumens = Math.round(30 + speedBonus + moveBonus);
+    const totalXp = Math.round(totalLumens * 0.75);
 
     if (window.auth) {
       window.auth.addLumens(totalLumens);
@@ -1399,7 +1407,11 @@ class MiniGamesSuite {
     const timeStr = mins > 0 ? `${mins}м ${secs}с` : `${secs}с`;
 
     window.app.showToast(`Все литературные пары сопоставлены за ${timeStr}! Награда: +${totalLumens} ⬡, +${totalXp} XP`, 'reward');
-    if (window.soundEngine) window.soundEngine.playLevelUp();
+    if (window.soundEngine?.playGameWin) {
+      window.soundEngine.playGameWin();
+    } else if (window.soundEngine?.playCorrect) {
+      window.soundEngine.playCorrect();
+    }
   }
 
   // =========================================================================
@@ -1663,7 +1675,11 @@ class MiniGamesSuite {
     }
 
     window.app.showToast(`Раунд скорочтения пройден! Точность: ${accuracy}%. Награда: +${lumensEarned} ⬡, +${xpEarned} XP`, 'reward');
-    if (window.soundEngine) window.soundEngine.playLevelUp();
+    if (window.soundEngine?.playGameWin) {
+      window.soundEngine.playGameWin();
+    } else if (window.soundEngine?.playCorrect) {
+      window.soundEngine.playCorrect();
+    }
   }
 
   // =========================================================================
@@ -1874,8 +1890,8 @@ class MiniGamesSuite {
       const streakEl = document.getElementById('reconstruct-streak-display');
       if (streakEl) streakEl.textContent = this.reconstructStreak;
 
-      const rewardLumens = 35 * Math.min(4, this.reconstructStreak);
-      const rewardXp = rewardLumens * 2;
+      const rewardLumens = 25 * Math.min(3, this.reconstructStreak);
+      const rewardXp = Math.round(rewardLumens * 0.75);
       this.reconstructScore += rewardLumens;
 
       const scoreEl = document.getElementById('reconstruct-score-display');
@@ -1893,7 +1909,11 @@ class MiniGamesSuite {
       }
 
       window.app.showToast(`Идеально собрано по памяти! +${rewardLumens} ⬡, +${rewardXp} XP`, 'reward');
-      if (window.soundEngine) window.soundEngine.playLevelUp();
+      if (window.soundEngine?.playGameWin) {
+        window.soundEngine.playGameWin();
+      } else if (window.soundEngine?.playCorrect) {
+        window.soundEngine.playCorrect();
+      }
 
       setTimeout(() => {
         this.reconstructIdx = (this.reconstructIdx + 1) % this.reconstructQuotes.length;
@@ -2047,7 +2067,11 @@ class MiniGamesSuite {
     window.auth.syncUserToUI();
 
     window.app.showToast(`Куплено: «${itemName}» (-${price} ⬡)`, 'reward');
-    if (window.soundEngine) window.soundEngine.playLevelUp();
+    if (window.soundEngine?.playCoin) {
+      window.soundEngine.playCoin();
+    } else if (window.soundEngine?.playCorrect) {
+      window.soundEngine.playCorrect();
+    }
 
     this.equipItem(category, itemId, itemName);
   }

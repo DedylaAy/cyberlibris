@@ -480,7 +480,7 @@ class DatabaseEngine {
     if (local) {
       try {
         const parsed = JSON.parse(local);
-        if (parsed.books && parsed.books.length > 0 && parsed.badges && parsed.badges[0]?.id === 'book_first_page') {
+        if (parsed && Array.isArray(parsed.books) && parsed.books.length > 0) {
           this.data = parsed;
         }
       } catch (e) {
