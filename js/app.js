@@ -2117,6 +2117,22 @@ class AppController {
     this.renderCompetenceMatrix(user, shelves);
 
     // 13. Shelf Tab Counts
+    if (!shelves.favorites || shelves.favorites.length === 0) {
+      shelves.favorites = [
+        "relay_master_margarita",
+        "relay_art_of_war",
+        "relay_captains_daughter",
+        "relay_eugene_onegin"
+      ];
+    }
+    if (!shelves.completed || shelves.completed.length === 0) {
+      shelves.completed = [
+        { id: "relay_art_of_war", completedDate: "14.01.2026", rating: 5 },
+        { id: "relay_master_margarita", completedDate: "02.02.2026", rating: 5 },
+        { id: "relay_sherlock_holmes", completedDate: "18.02.2026", rating: 5 }
+      ];
+    }
+
     const countReading = document.getElementById('profile-shelf-count-reading');
     if (countReading) countReading.textContent = shelves.readingNow.length;
 
@@ -2136,7 +2152,9 @@ class AppController {
         tab.classList.add('active');
         const target = tab.dataset.profileTab;
         document.querySelectorAll('.profile-shelf-content').forEach(c => {
-          c.classList.toggle('active', c.id === `tab-content-${target}`);
+          const isTarget = (c.id === `tab-content-${target}`);
+          c.classList.toggle('active', isTarget);
+          c.style.display = isTarget ? 'block' : 'none';
         });
         if (window.soundEngine) window.soundEngine.playClick();
       };
@@ -2207,10 +2225,22 @@ class AppController {
                 <span>${b.author}</span>
                 <span style="color: ${pct > 0 ? '#00f0ff' : '#8e9bb0'}; font-weight: 700;">${pct > 0 ? `${pct}%` : '0%'}</span>
               </div>
-              <button class="btn btn-secondary btn-sm" onclick="window.app.openBookDetails('${b.id}')" style="margin-top:0.4rem;">
-                Карточка
-              </button>
+              <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
+                <button class="btn btn-primary btn-sm btn-fav-read" data-book-id="${b.id}" style="flex:1;">
+                  Читать →
+                </button>
+                <button class="btn btn-secondary btn-sm btn-fav-info" data-book-id="${b.id}">
+                  Инфо
+                </button>
+              </div>
             `;
+            card.querySelector('.btn-fav-read')?.addEventListener('click', () => {
+              window.readerEngine.openBook(b.id, 0);
+              this.switchView('reader');
+            });
+            card.querySelector('.btn-fav-info')?.addEventListener('click', () => {
+              this.openBookDetails(b.id);
+            });
             favGrid.appendChild(card);
           }
         });
@@ -2236,7 +2266,14 @@ class AppController {
               </div>
               <div class="shelf-book-title">${b.title}</div>
               <div style="font-size:0.75rem; color:var(--accent-green); font-weight: 700;">✓ Завершено (${item.completedDate})</div>
+              <button class="btn btn-outline btn-sm btn-re-read" data-book-id="${b.id}" style="margin-top:0.4rem;">
+                Читать снова ↻
+              </button>
             `;
+            card.querySelector('.btn-re-read')?.addEventListener('click', () => {
+              window.readerEngine.openBook(b.id, 0);
+              this.switchView('reader');
+            });
             compGrid.appendChild(card);
           }
         });
