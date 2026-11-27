@@ -1418,11 +1418,124 @@ class AppController {
 
   // --- BOOK DOSSIER MODAL & REVIEWS ---
 
+  // --- FULL-WINDOW STEAM BOOK DOSSIER & REVIEWS HUB ---
+
   bindBookDetailsModal() {
-    document.getElementById('btn-toggle-add-review')?.addEventListener('click', () => {
-      const box = document.getElementById('add-review-box');
-      if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    // Tab switching inside the window
+    document.querySelectorAll('.dossier-nav-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const target = e.currentTarget.dataset.dossierTab;
+        this.switchDossierTab(target);
+      });
     });
+
+    // Quick navigation triggers between tabs
+    document.getElementById('btn-modal-go-reviews')?.addEventListener('click', () => {
+      this.switchDossierTab('reviews');
+    });
+    document.getElementById('btn-dossier-view-all-reviews')?.addEventListener('click', () => {
+      this.switchDossierTab('reviews');
+    });
+    document.getElementById('btn-dossier-view-all-chapters')?.addEventListener('click', () => {
+      this.switchDossierTab('toc');
+    });
+
+    // Toggle add review form
+    const toggleForm = () => {
+      const box = document.getElementById('add-review-box');
+      if (box) {
+        const isHidden = box.style.display === 'none';
+        box.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+          box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          document.getElementById('new-review-text')?.focus();
+        }
+      }
+    };
+
+    document.getElementById('btn-toggle-add-review')?.addEventListener('click', toggleForm);
+    document.getElementById('btn-toggle-add-review-top')?.addEventListener('click', toggleForm);
+    document.getElementById('btn-cancel-add-review')?.addEventListener('click', () => {
+      const box = document.getElementById('add-review-box');
+      if (box) box.style.display = 'none';
+    });
+
+    // Review filters
+    document.querySelectorAll('.dossier-filter-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        document.querySelectorAll('.dossier-filter-chip').forEach(c => c.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        this.currentDossierReviewFilter = e.currentTarget.dataset.revFilter;
+        if (this.activeDossierBookId) {
+          this.renderBookReviews(this.activeDossierBookId);
+        }
+      });
+    });
+
+    // Review submit
+    const submitBtn = document.getElementById('btn-submit-review');
+    if (submitBtn) {
+      submitBtn.onclick = () => {
+        const user = window.auth.currentUser;
+        if (!user) { this.openModal('modal-auth'); return; }
+
+        const textEl = document.getElementById('new-review-text');
+        const ratingEl = document.getElementById('new-review-rating');
+        const recEl = document.getElementById('new-review-recommended');
+        const text = textEl?.value.trim();
+        if (!text) {
+          this.showToast('Пожалуйста, напишите текст рецензии.', 'warning');
+          return;
+        }
+
+        const newReview = {
+          id: 'rev_' + Date.now(),
+          author: user.displayName || user.username,
+          username: user.username,
+          avatar: user.avatar || '📖',
+          date: 'Только что',
+          rating: parseInt(ratingEl?.value || 5),
+          recommended: recEl?.value === 'true',
+          timeRead: '0.8 ч.',
+          helpfulCount: 1,
+          source: 'Читатель CyberLibris',
+          text: text
+        };
+
+        window.bookRelay.addReview(this.activeDossierBookId, newReview);
+        window.auth.addXp(30);
+        window.auth.addLumens(15);
+        this.showToast('Рецензия опубликована! +30 XP, +15 Люменов', 'reward');
+        if (textEl) textEl.value = '';
+        const box = document.getElementById('add-review-box');
+        if (box) box.style.display = 'none';
+
+        this.renderBookReviews(this.activeDossierBookId);
+      };
+    }
+  }
+
+  switchDossierTab(tabName) {
+    const tabs = document.querySelectorAll('.dossier-nav-tab');
+    const panels = document.querySelectorAll('.dossier-tab-panel');
+
+    tabs.forEach(t => {
+      if (t.dataset.dossierTab === tabName) t.classList.add('active');
+      else t.classList.remove('active');
+    });
+
+    panels.forEach(p => {
+      if (p.id === `dossier-panel-${tabName}`) {
+        p.style.display = 'block';
+        p.classList.add('active');
+      } else {
+        p.style.display = 'none';
+        p.classList.remove('active');
+      }
+    });
+
+    const scrollBody = document.getElementById('dossier-window-scroll-body');
+    if (scrollBody) scrollBody.scrollTop = 0;
   }
 
   openBookDetails(bookId) {
@@ -1430,16 +1543,26 @@ class AppController {
     if (!book) return;
 
     this.activeDossierBookId = bookId;
+    this.currentDossierReviewFilter = 'all';
 
-    document.getElementById('book-modal-title').textContent = book.title;
-    document.getElementById('book-modal-cover').src = book.coverImage;
-    document.getElementById('book-modal-author').textContent = `Автор: ${book.author} (${book.year})`;
-    document.getElementById('book-modal-genre').textContent = book.genre;
-    document.getElementById('book-modal-rating').textContent = `${book.rating} / 5.0 (${book.ratingCount || 100}+ оценок)`;
-    document.getElementById('book-modal-pages').textContent = `~${book.lengthPages} стр. (${book.wordsCount?.toLocaleString()} слов)`;
-    document.getElementById('book-modal-difficulty').textContent = book.difficulty;
-    document.getElementById('book-modal-year').textContent = book.year;
-    document.getElementById('book-modal-synopsis').textContent = book.synopsis;
+    // Reset to info tab
+    this.switchDossierTab('info');
+
+    // Backdrop & Title
+    const backdropEl = document.getElementById('book-modal-backdrop-img');
+    if (backdropEl) backdropEl.style.backgroundImage = `url('${book.coverImage}')`;
+
+    const titleEl = document.getElementById('book-modal-title');
+    if (titleEl) {
+      titleEl.textContent = book.title;
+      titleEl.title = book.title;
+    }
+
+    const coverEl = document.getElementById('book-modal-cover');
+    if (coverEl) {
+      coverEl.src = book.coverImage;
+      coverEl.onerror = () => { coverEl.src = 'https://covers.openlibrary.org/b/id/12818862-L.jpg'; };
+    }
 
     const rarityPill = document.getElementById('book-modal-rarity-pill');
     if (rarityPill) {
@@ -1447,49 +1570,88 @@ class AppController {
       rarityPill.textContent = book.rarityLabel || 'ШЕДЕВР';
     }
 
-    // Chapters Table of Contents
-    const tocEl = document.getElementById('book-modal-chapters-toc');
-    if (tocEl) {
-      const chapters = book.chapters || [];
-      if (chapters.length > 0) {
-        tocEl.innerHTML = `
-          <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 0.8rem 1rem;">
-            <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--accent-cyan); font-weight:800; margin-bottom:0.5rem; display:flex; justify-content:space-between;">
-              <span>Содержание произведения</span>
-              <span>${chapters.length} глав(ы)</span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:0.35rem; max-height:130px; overflow-y:auto; padding-right:0.3rem;">
-              ${chapters.map((ch, idx) => `
-                <div class="toc-chapter-item" data-chapter-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; padding:0.35rem 0.6rem; background:rgba(255,255,255,0.03); border-radius:4px; font-size:0.82rem; color:#ddd; cursor:pointer; transition:background 0.2s ease;">
-                  <span style="font-weight:600;">${ch.title}</span>
-                  <span style="font-size:0.72rem; color:var(--text-dim);">Гл. ${idx + 1} →</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-        tocEl.querySelectorAll('.toc-chapter-item').forEach(item => {
-          item.addEventListener('mouseenter', () => item.style.background = 'rgba(0, 240, 255, 0.12)');
-          item.addEventListener('mouseleave', () => item.style.background = 'rgba(255, 255, 255, 0.03)');
-          item.addEventListener('click', () => {
-            const chIdx = parseInt(item.dataset.chapterIdx) || 0;
-            this.closeAllModals();
-            window.readerEngine.openBook(book.id, chIdx, 'page');
-          });
-        });
-      } else {
-        const providerName = book.relaySource?.provider === 'archive' ? 'Internet Archive' : 'Викитека (Wikisource)';
-        tocEl.innerHTML = `
-          <div style="background: rgba(0,0,0,0.35); border: 1px dashed rgba(0, 240, 255, 0.3); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <div style="font-size:0.78rem; font-weight:700; color:var(--accent-cyan);">Живая потоковая ретрансляция</div>
-              <div style="font-size:0.74rem; color:var(--text-muted); margin-top:2px;">Подлинный текст подкачивается из <strong>${providerName}</strong> в память при чтении</div>
-            </div>
-            <span class="pulse-dot"></span>
-          </div>
-        `;
-      }
+    const agePill = document.getElementById('book-modal-age-pill');
+    if (agePill) {
+      const age = book.ageRating || '16+';
+      const ageClass = age === '0+' ? 'age-0' : age === '6+' ? 'age-6' : age === '12+' ? 'age-12' : age === '16+' ? 'age-16' : 'age-18';
+      agePill.className = `age-badge-pill ${ageClass}`;
+      agePill.textContent = age;
     }
+
+    // Author & Epoch
+    const authorEl = document.getElementById('book-modal-author');
+    if (authorEl) authorEl.textContent = `✍ ${book.author}`;
+
+    const epochEl = document.getElementById('book-modal-epoch-tag');
+    if (epochEl) {
+      const year = book.year;
+      const era = year < 0 ? `${Math.abs(year)} г. до н.э. (Античность)` : year < 1800 ? `${year} г. (До XIX в.)` : year < 1900 ? `${year} г. (Золотой век / XIX в.)` : year < 2000 ? `${year} г. (XX век)` : `${year} г. (XXI век)`;
+      epochEl.textContent = era;
+    }
+
+    // Rating & Score
+    const ratingVal = book.rating ? Number(book.rating).toFixed(1) : '4.9';
+    const ratingScoreEl = document.getElementById('book-modal-rating-score');
+    if (ratingScoreEl) ratingScoreEl.textContent = ratingVal;
+
+    const ratingCountEl = document.getElementById('book-modal-rating-count');
+    if (ratingCountEl) ratingCountEl.textContent = `98% положительных (${book.ratingCount || 2410}+ оценок)`;
+
+    // Specs Mega Grid
+    const genreEl = document.getElementById('book-modal-genre');
+    if (genreEl) genreEl.textContent = book.genre || 'Классика';
+
+    const formatEl = document.getElementById('book-modal-format');
+    if (formatEl) formatEl.textContent = book.format || (book.lengthPages > 500 ? 'Роман-эпопея / Фолиант' : 'Роман');
+
+    const wordsCount = Math.round((book.lengthPages || 200) * 270);
+    const pagesEl = document.getElementById('book-modal-pages');
+    if (pagesEl) pagesEl.textContent = `~${book.lengthPages || 200} стр. (${wordsCount.toLocaleString('ru-RU')} слов)`;
+
+    const readHours = Math.max(1, Math.round(wordsCount / 220 / 60));
+    const readingTimeEl = document.getElementById('book-modal-reading-time');
+    if (readingTimeEl) readingTimeEl.textContent = `~${readHours} ч. (при 220 сл/мин)`;
+
+    const diffEl = document.getElementById('book-modal-difficulty');
+    if (diffEl) diffEl.textContent = book.difficulty || (book.lengthPages > 500 ? 'Хардкор' : 'Средняя');
+
+    const yearEl = document.getElementById('book-modal-year');
+    if (yearEl) yearEl.textContent = book.year < 0 ? `${Math.abs(book.year)} г. до н.э.` : `${book.year} г.`;
+
+    const ageRatingEl = document.getElementById('book-modal-age-rating');
+    if (ageRatingEl) ageRatingEl.textContent = `${book.ageRating || '16+'} (Рекомендовано читательской коллегией)`;
+
+    const relaySourceEl = document.getElementById('book-modal-relay-source');
+    if (relaySourceEl) {
+      const srcName = book.relaySource?.provider === 'archive' ? 'Internet Archive Relay' : 'Викитека & Open Library';
+      relaySourceEl.textContent = `● ${srcName} (Подлинный текст)`;
+    }
+
+    // Philosophy Callout
+    const philBox = document.getElementById('book-modal-philosophy-box');
+    const philText = document.getElementById('book-modal-philosophy');
+    if (philBox && philText) {
+      let philStr = book.philosophy;
+      if (!philStr) {
+        if (book.genre === 'Философия') philStr = 'Глубокое исследование стоической невозмутимости, природы познания и гармонии разума с космосом.';
+        else if (book.genre === 'Военная проза') philStr = 'Осмысление истинного героизма, народной воли и иллюзорности единоличной власти над историческими судьбами.';
+        else if (book.genre === 'Фантастика') philStr = 'Предостережение человечеству о границах контроля, этике технологий и сохранении духа личности.';
+        else philStr = 'Исследование нравственного долга, совести и способности человека к внутреннему духовному перерождению.';
+      }
+      philText.textContent = philStr;
+    }
+
+    // Quote Box
+    const quoteBox = document.getElementById('book-modal-quote-box');
+    const quoteText = document.getElementById('book-modal-quote');
+    if (quoteBox && quoteText) {
+      const quoteStr = book.quote || '«Книга — это зеркало: и если в него смотрится обезьяна, то из него не может выглянуть апостол».';
+      quoteText.textContent = quoteStr;
+    }
+
+    // Synopsis
+    const synopsisEl = document.getElementById('book-modal-synopsis');
+    if (synopsisEl) synopsisEl.textContent = book.synopsis || 'Монументальное произведение мирового литературного наследия.';
 
     // Check saved progress
     const saved = window.readerEngine ? window.readerEngine.getSavedProgress(book.id) : null;
@@ -1502,7 +1664,7 @@ class AppController {
     if (readMangaBtn) {
       readMangaBtn.innerHTML = hasProgress 
         ? `Продолжить чтение (Гл. ${savedChNum})` 
-        : 'Читать в режиме ленты';
+        : '📖 Читать (Manga-лента)';
       readMangaBtn.title = hasProgress ? `Возобновить чтение: ${savedChTitle}` : 'Читать в режиме непрерывной ленты';
       readMangaBtn.onclick = () => {
         this.closeAllModals();
@@ -1514,7 +1676,7 @@ class AppController {
     if (readPageBtn) {
       readPageBtn.innerHTML = hasProgress 
         ? `Продолжить по главам (Гл. ${savedChNum})` 
-        : 'Читать по главам';
+        : '📄 Читать по главам';
       readPageBtn.title = hasProgress ? `Возобновить чтение: ${savedChTitle}` : 'Читать по главам';
       readPageBtn.onclick = () => {
         this.closeAllModals();
@@ -1522,78 +1684,254 @@ class AppController {
       };
     }
 
+    // Quiz Button
+    const quizBtn = document.getElementById('btn-modal-open-quiz');
+    if (quizBtn) {
+      quizBtn.onclick = () => {
+        this.closeAllModals();
+        this.switchView('games');
+        if (window.arcadeGames?.startQuizForBook) {
+          window.arcadeGames.startQuizForBook(book.id);
+        }
+      };
+    }
+
+    // Favorite Button
     const favBtn = document.getElementById('btn-modal-toggle-fav');
     if (favBtn) {
+      const user = window.auth?.currentUser;
+      const isFav = user?.shelves?.favorites?.includes(book.id) || false;
+      favBtn.textContent = isFav ? '✓ В избранном' : '⭐ В избранное';
       favBtn.onclick = () => {
-        const user = window.auth.currentUser;
-        if (!user) { this.openModal('modal-auth'); return; }
-        const isFav = window.bookRelay.toggleFavorite(user.username, book.id);
-        favBtn.textContent = isFav ? 'В избранном' : 'В избранное';
-        this.showToast(isFav ? 'Добавлено в избранное!' : 'Удалено из избранного', 'info');
+        const u = window.auth.currentUser;
+        if (!u) { this.openModal('modal-auth'); return; }
+        const fav = window.bookRelay.toggleFavorite(u.username, book.id);
+        favBtn.textContent = fav ? '✓ В избранном' : '⭐ В избранное';
+        this.showToast(fav ? 'Добавлено в избранное!' : 'Удалено из избранного', 'info');
       };
     }
 
-    // Review submit
-    const submitBtn = document.getElementById('btn-submit-review');
-    if (submitBtn) {
-      submitBtn.onclick = () => {
-        const user = window.auth.currentUser;
-        if (!user) { this.openModal('modal-auth'); return; }
+    // Chapters TOC Preview and Full TOC
+    this.renderDossierChapters(book, saved);
 
-        const textEl = document.getElementById('new-review-text');
-        const ratingEl = document.getElementById('new-review-rating');
-        const text = textEl?.value.trim();
-        if (!text) return;
-
-        const newReview = {
-          id: 'rev_' + Date.now(),
-          author: user.displayName || user.username,
-          avatar: user.avatar || '📖',
-          date: 'Только что',
-          rating: parseInt(ratingEl.value),
-          text: text
-        };
-
-        window.bookRelay.addReview(book.id, newReview);
-        window.auth.addXp(30);
-        window.auth.addLumens(15);
-        this.showToast('Рецензия опубликована! +30 XP, +15 Люменов', 'reward');
-        if (textEl) textEl.value = '';
-        document.getElementById('add-review-box').style.display = 'none';
-        this.renderBookReviews(book.id);
-      };
+    // If chapters are not streamed yet, pre-stream in background to populate TOC immediately
+    if ((!book.chapters || book.chapters.length === 0) && window.bookRelay?.streamBook) {
+      window.bookRelay.streamBook(book.id).then(res => {
+        if (res && book.chapters && book.chapters.length > 0) {
+          this.renderDossierChapters(book, saved);
+        }
+      }).catch(() => {});
     }
 
+    // Reviews Hub
     this.renderBookReviews(book.id);
+
     this.openModal('modal-book-details');
+  }
+
+  renderDossierChapters(book, saved) {
+    const chapters = book.chapters || [];
+    const tocPreviewEl = document.getElementById('book-modal-chapters-toc');
+    const fullTocEl = document.getElementById('dossier-full-chapters-list');
+    const tocTabCount = document.getElementById('book-modal-toc-tab-count');
+    const progressInd = document.getElementById('dossier-toc-progress-indicator');
+
+    if (tocTabCount) tocTabCount.textContent = chapters.length;
+
+    if (progressInd) {
+      const pct = saved ? (saved.progressPercent || 0) : 0;
+      progressInd.textContent = pct > 0 ? `Прогресс: ${pct}% (Глава ${(saved?.currentChapter || 0) + 1} из ${chapters.length || 1})` : 'Ещё не начато';
+    }
+
+    if (chapters.length === 0) {
+      const fallbackMsg = `
+        <div style="background: rgba(0,0,0,0.35); border: 1px dashed rgba(0, 240, 255, 0.3); border-radius: var(--radius-md); padding: 0.9rem 1.2rem; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size:0.85rem; font-weight:700; color:var(--accent-cyan);">Живая потоковая ретрансляция текста</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">Главы подкачиваются в реальном времени из глобального репозитория при открытии читалки</div>
+          </div>
+          <span class="pulse-dot"></span>
+        </div>
+      `;
+      if (tocPreviewEl) tocPreviewEl.innerHTML = fallbackMsg;
+      if (fullTocEl) fullTocEl.innerHTML = fallbackMsg;
+      return;
+    }
+
+    // Preview in Tab 1 (first 4 chapters)
+    if (tocPreviewEl) {
+      const previewSlice = chapters.slice(0, 4);
+      tocPreviewEl.innerHTML = `
+        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 0.8rem 1rem;">
+          <div style="display:flex; flex-direction:column; gap:0.4rem;">
+            ${previewSlice.map((ch, idx) => `
+              <div class="toc-chapter-item" data-chapter-idx="${idx}" style="display:flex; justify-content:space-between; align-items:center; padding:0.45rem 0.75rem; background:rgba(255,255,255,0.03); border-radius:4px; font-size:0.84rem; color:#ddd; cursor:pointer; transition:all 0.2s ease;">
+                <span style="font-weight:600;"><span style="color:var(--accent-cyan); margin-right:6px;">Гл. ${idx + 1}:</span> ${ch.title}</span>
+                <span style="font-size:0.75rem; color:var(--accent-cyan);">Читать →</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      tocPreviewEl.querySelectorAll('.toc-chapter-item').forEach(item => {
+        item.addEventListener('mouseenter', () => item.style.background = 'rgba(0, 240, 255, 0.12)');
+        item.addEventListener('mouseleave', () => item.style.background = 'rgba(255, 255, 255, 0.03)');
+        item.addEventListener('click', () => {
+          const chIdx = parseInt(item.dataset.chapterIdx) || 0;
+          this.closeAllModals();
+          window.readerEngine.openBook(book.id, chIdx, 'page');
+        });
+      });
+    }
+
+    // Full TOC in Tab 3
+    if (fullTocEl) {
+      fullTocEl.innerHTML = chapters.map((ch, idx) => {
+        const isCurrent = saved && saved.currentChapter === idx;
+        return `
+          <div class="dossier-chapter-card ${isCurrent ? 'active' : ''}" data-chapter-idx="${idx}" style="${isCurrent ? 'border-color: var(--accent-cyan); background: rgba(0,240,255,0.08);' : ''}">
+            <div>
+              <div class="dossier-chapter-num">Глава ${idx + 1} ${isCurrent ? '• Вы здесь' : ''}</div>
+              <div class="dossier-chapter-title">${ch.title}</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="font-size:0.76rem; padding: 0.35rem 0.75rem;">
+              Читать →
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      fullTocEl.querySelectorAll('.dossier-chapter-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const chIdx = parseInt(card.dataset.chapterIdx) || 0;
+          this.closeAllModals();
+          window.readerEngine.openBook(book.id, chIdx, 'page');
+        });
+      });
+    }
   }
 
   renderBookReviews(bookId) {
     const list = document.getElementById('book-modal-reviews-list');
+    const teaserList = document.getElementById('book-modal-teaser-reviews-list');
+    const tabCountEl = document.getElementById('book-modal-reviews-tab-count');
+    const teaserCountBadges = document.querySelectorAll('.dossier-rev-count-badge');
+    const totalCountEl = document.getElementById('dossier-total-reviews-count');
+    const filterAllCount = document.getElementById('rev-filter-count-all');
+    const filterRecCount = document.getElementById('rev-filter-count-rec');
+
+    const reviews = window.bookRelay.getReviews(bookId);
+    const totalCount = reviews.length;
+
+    if (tabCountEl) tabCountEl.textContent = totalCount;
+    if (totalCountEl) totalCountEl.textContent = `Всего отзывов: ${totalCount}`;
+    if (filterAllCount) filterAllCount.textContent = totalCount;
+    teaserCountBadges.forEach(b => b.textContent = totalCount);
+
+    const recCount = reviews.filter(r => r.recommended !== false).length;
+    if (filterRecCount) filterRecCount.textContent = recCount;
+
+    // Filter reviews
+    let displayReviews = [...reviews];
+    const filter = this.currentDossierReviewFilter || 'all';
+    if (filter === 'recommended') {
+      displayReviews = displayReviews.filter(r => r.recommended !== false);
+    } else if (filter === 'experts') {
+      displayReviews = displayReviews.filter(r => (r.source && (r.source.includes('Критик') || r.source.includes('Схоласт') || r.source.includes('Verified'))));
+    } else if (filter === 'recent') {
+      // most recent first
+      displayReviews.reverse();
+    }
+
+    // Teaser preview in Tab 1 (top 2 reviews)
+    if (teaserList) {
+      teaserList.innerHTML = '';
+      const teaserSlice = reviews.slice(0, 2);
+      if (teaserSlice.length === 0) {
+        teaserList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:0.5rem 0;">Пока нет отзывов. Станьте первым!</div>';
+      } else {
+        teaserSlice.forEach(r => {
+          const item = document.createElement('div');
+          item.className = 'dossier-review-item-card';
+          item.style.padding = '0.9rem 1.1rem';
+          item.style.marginBottom = '0.6rem';
+          item.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem; font-weight:800; color:#fff; font-size:0.88rem;">
+                <span>${r.avatar || '📖'}</span>
+                <span>${r.author}</span>
+                <span style="font-size:0.72rem; color:var(--text-dim); font-weight:normal;">• ${r.date}</span>
+              </div>
+              <div style="color:var(--accent-gold); font-size:0.85rem;">${'★'.repeat(r.rating || 5)}</div>
+            </div>
+            <div style="font-size:0.84rem; color:#cbd5e1; line-height:1.45;">${r.text}</div>
+          `;
+          teaserList.appendChild(item);
+        });
+      }
+    }
+
+    // Full List in Tab 2
     if (!list) return;
     list.innerHTML = '';
 
-    const reviews = window.bookRelay.getReviews(bookId);
-    if (reviews.length === 0) {
-      list.innerHTML = '<div style="color:var(--text-muted); font-size:0.88rem; padding:1rem 0;">Пока нет отзывов. Будьте первым, кто поделится размышлениями!</div>';
+    if (displayReviews.length === 0) {
+      list.innerHTML = `
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted); background: rgba(0,0,0,0.3); border-radius: var(--radius-md); border: 1px dashed rgba(255,255,255,0.1);">
+          <div style="font-size: 2.2rem; margin-bottom: 0.6rem;">💬</div>
+          <h4 style="color:#fff; margin-bottom:0.4rem;">Отзывов в этой категории пока нет</h4>
+          <p style="font-size:0.88rem; max-width:400px; margin:0 auto 1rem;">Поделитесь своим мнением об этой книге первым!</p>
+          <button class="btn btn-primary btn-sm" onclick="document.getElementById('btn-toggle-add-review')?.click()">Оставить свой отзыв</button>
+        </div>
+      `;
       return;
     }
 
-    reviews.forEach(r => {
+    displayReviews.forEach((r, idx) => {
       const card = document.createElement('div');
-      card.className = 'review-card';
+      card.className = 'dossier-review-item-card';
+      const username = r.username || (r.author.toLowerCase().replace(/[^a-z0-9_]/g, '_'));
+
       card.innerHTML = `
-        <div class="review-author-row">
-          <div style="display:flex; align-items:center; gap:0.5rem; font-weight:700; color:#fff; flex-wrap:wrap;">
-            <span>${r.avatar || '📖'}</span>
-            <span>${r.author}</span>
-            <span style="font-size:0.75rem; color:var(--text-dim); font-weight:normal;">• ${r.date}</span>
-            ${r.source ? `<span style="font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; background:rgba(0, 240, 255, 0.12); color:#00f0ff; border:1px solid rgba(0, 240, 255, 0.25);">🌐 ${r.source}</span>` : ''}
+        <div class="dossier-rev-user-row">
+          <div class="dossier-rev-user-info" onclick="window.app.viewUserProfile('${username}')" title="Кликните, чтобы посмотреть публичный профиль автора">
+            <div class="dossier-rev-avatar">${r.avatar || '👤'}</div>
+            <div>
+              <div class="dossier-rev-name">${r.author}</div>
+              <div class="dossier-rev-time-read">В чтении: ${r.timeRead || '9.4 ч.'} • ${r.date}</div>
+            </div>
           </div>
-          <div class="review-stars">${'⭐'.repeat(r.rating || 5)}</div>
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            ${r.source ? `<span style="font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:4px; background:rgba(0, 240, 255, 0.12); color:#00f0ff; border:1px solid rgba(0, 240, 255, 0.25);">${r.source}</span>` : ''}
+            <span style="font-size:0.75rem; font-weight:800; padding:3px 8px; border-radius:4px; ${r.recommended !== false ? 'background:rgba(0,255,136,0.15); color:#00ff88; border:1px solid rgba(0,255,136,0.3);' : 'background:rgba(255,77,77,0.15); color:#ff4d4d; border:1px solid rgba(255,77,77,0.3);'}">
+              ${r.recommended !== false ? '👍 РЕКОМЕНДУЕТ' : '👎 НЕ РЕКОМЕНДУЕТ'}
+            </span>
+            <div style="color:var(--accent-gold); font-size:0.95rem; letter-spacing:1px;">${'★'.repeat(r.rating || 5)}</div>
+          </div>
         </div>
-        <div style="font-size:0.9rem; color:#ddd; line-height:1.5; margin-top:0.35rem;">${r.text}</div>
+        <div class="dossier-rev-body">${r.text}</div>
+        <div class="dossier-rev-footer">
+          <span>Был ли этот отзыв полезен?</span>
+          <div class="dossier-rev-helpful">
+            <button class="dossier-rev-help-btn btn-vote-helpful" data-idx="${idx}">Да (${r.helpfulCount || (12 + idx * 3)})</button>
+            <button class="dossier-rev-help-btn btn-vote-unhelpful">Нет (0)</button>
+            <button class="dossier-rev-help-btn" onclick="window.app.showToast('Спасибо за оценку рецензии!', 'success')">❤️ Наградить</button>
+          </div>
+        </div>
       `;
+
+      card.querySelector('.btn-vote-helpful')?.addEventListener('click', (e) => {
+        const btn = e.currentTarget;
+        if (!btn.dataset.voted) {
+          btn.dataset.voted = 'true';
+          const cur = parseInt(btn.textContent.match(/\d+/) || 0) + 1;
+          btn.textContent = `Да (${cur})`;
+          btn.style.borderColor = 'var(--accent-cyan)';
+          btn.style.color = 'var(--accent-cyan)';
+          window.app.showToast('Ваш голос учтён!', 'info');
+        }
+      });
+
       list.appendChild(card);
     });
   }

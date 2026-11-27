@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap">
   </noscript>
 
-  <!-- Core & Custom Stylesheets (with cache-busting v5.7.0) -->
-  <link rel="stylesheet" href="css/main.css?v=5.7.0">
-  <link rel="stylesheet" href="css/animations.css?v=5.7.0">
-  <link rel="stylesheet" href="css/reader.css?v=5.7.0">
-  <link rel="stylesheet" href="css/games.css?v=5.7.0">
+  <!-- Core & Custom Stylesheets (with cache-busting v5.8.0) -->
+  <link rel="stylesheet" href="css/main.css?v=5.8.1">
+  <link rel="stylesheet" href="css/animations.css?v=5.8.1">
+  <link rel="stylesheet" href="css/reader.css?v=5.8.1">
+  <link rel="stylesheet" href="css/games.css?v=5.8.1">
 
   <style>
     .books-grid {
@@ -3176,91 +3176,276 @@
   </div>
 
   <!-- ===================================================================
-       MODAL: BOOK DOSSIER & REVIEWS (ДЕТАЛИ И РЕЦЕНЗИИ)
+       FULL-WINDOW STEAM BOOK DOSSIER & REVIEWS HUB
+       (Полноразмерное отдельное окно книги со всеми отзывами и досье)
        =================================================================== -->
   <div class="modal-overlay" id="modal-book-details">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 id="book-modal-title" style="color: var(--accent-cyan);">Название Книги</h3>
-        <button class="modal-close-btn">✕</button>
-      </div>
+    <div class="modal-box modal-grand-book-dossier">
+      <!-- Ambient Backdrop Blur -->
+      <div class="dossier-hero-backdrop-img" id="book-modal-backdrop-img"></div>
+      <div class="dossier-hero-backdrop-tint"></div>
 
-      <div class="book-dossier-grid">
-        <div class="book-dossier-cover-wrap">
-          <img src="" id="book-modal-cover" class="book-dossier-cover" alt="Обложка">
+      <!-- Window Control Bar -->
+      <div class="dossier-window-bar">
+        <div class="dossier-window-bar-left">
+          <span class="dossier-app-pill">CYBERLIBRIS DOSSIER</span>
+          <span class="rarity-pill" id="book-modal-rarity-pill">ШЕДЕВР</span>
+          <span class="age-badge-pill" id="book-modal-age-pill">16+</span>
+          <h2 id="book-modal-title" class="dossier-window-title">Название Книги</h2>
         </div>
-        <div>
-          <div style="font-size: 1.1rem; color: #fff; font-weight: 700; margin-bottom: 0.3rem;" id="book-modal-author">
-            Автор
-          </div>
-          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
-            <span class="rarity-pill" id="book-modal-rarity-pill">ШЕДЕВР</span>
-            <span class="book-genre-pill" id="book-modal-genre">Жанр</span>
-            <span style="color: #ffd700; font-weight: 800; font-size: 0.9rem;" id="book-modal-rating">4.9 / 5.0</span>
-          </div>
-
-          <div class="book-specs-list">
-            <div class="book-spec-item">
-              <span class="spec-label">Объем издания:</span>
-              <span class="spec-val" id="book-modal-pages">~480 стр.</span>
-            </div>
-            <div class="book-spec-item">
-              <span class="spec-label">Сложность:</span>
-              <span class="spec-val" id="book-modal-difficulty">Легендарная</span>
-            </div>
-            <div class="book-spec-item">
-              <span class="spec-label">Год публикации:</span>
-              <span class="spec-val" id="book-modal-year">1869</span>
-            </div>
-            <div class="book-spec-item">
-              <span class="spec-label">Источник:</span>
-              <span class="spec-val" style="color: var(--accent-green);">Ретрансляция (Gutenberg / OL)</span>
-            </div>
-          </div>
-
-          <p id="book-modal-synopsis" style="color: #ccc; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.25rem;">
-            Описание книги...
-          </p>
-
-          <!-- Chapters Table of Contents -->
-          <div id="book-modal-chapters-toc" style="margin-bottom: 1.25rem;"></div>
-
-          <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-            <button class="btn btn-primary magnetic-btn" id="btn-modal-read-manga">
-              Читать в режиме ленты
-            </button>
-            <button class="btn btn-secondary magnetic-btn" id="btn-modal-read-page">
-              Читать по главам
-            </button>
-            <button class="btn btn-secondary magnetic-btn" id="btn-modal-toggle-fav">
-              В избранное
-            </button>
-          </div>
+        <div class="dossier-window-bar-right">
+          <button class="modal-close-btn" title="Закрыть окно (Esc)">✕</button>
         </div>
       </div>
 
-      <!-- Reviews Section -->
-      <div class="reviews-section-title">
-        <span>Рецензии и Комментарии Читателей:</span>
-        <button class="btn btn-secondary btn-sm" id="btn-toggle-add-review">Оставить свой отзыв</button>
+      <!-- Navigation Tabs Row inside the Window -->
+      <div class="dossier-nav-tabs-bar">
+        <button class="dossier-nav-tab active" data-dossier-tab="info" id="btn-dossier-tab-info">
+          📖 Полное Досье и Характеристики
+        </button>
+        <button class="dossier-nav-tab" data-dossier-tab="reviews" id="btn-dossier-tab-reviews">
+          💬 Все отзывы Читателей (<span id="book-modal-reviews-tab-count">0</span>)
+        </button>
+        <button class="dossier-nav-tab" data-dossier-tab="toc" id="btn-dossier-tab-toc">
+          📑 Оглавление и Главы (<span id="book-modal-toc-tab-count">0</span>)
+        </button>
       </div>
 
-      <!-- Add Review Form (collapsible) -->
-      <div id="add-review-box" style="display: none; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-        <div style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem; align-items: center;">
-          <span style="font-size: 0.85rem; color: var(--text-muted);">Ваша оценка:</span>
-          <select id="new-review-rating" class="form-select" style="width: auto; padding: 0.2rem 0.5rem;">
-            <option value="5">Оценка: 5 из 5 (Шедевр)</option>
-            <option value="4">Оценка: 4 из 5 (Отлично)</option>
-            <option value="3">Оценка: 3 из 5 (Хорошо)</option>
-          </select>
+      <!-- Main Scrollable Window Body -->
+      <div class="dossier-window-scroll-body" id="dossier-window-scroll-body">
+        
+        <!-- SECTION 1: DETAILED DOSSIER & PLOT (ACTIVE BY DEFAULT) -->
+        <div class="dossier-tab-panel active" id="dossier-panel-info">
+          <div class="book-dossier-layout">
+            
+            <!-- Left Column: Cover, Visuals & Launch Actions -->
+            <div class="dossier-left-col">
+              <div class="dossier-cover-container">
+                <img src="" id="book-modal-cover" class="book-dossier-cover-img" alt="Обложка">
+              </div>
+
+              <!-- Rating Banner -->
+              <div class="dossier-score-card">
+                <div class="dossier-score-header">
+                  <span class="dossier-score-val" id="book-modal-rating-score">4.9</span>
+                  <div class="dossier-stars-row" id="book-modal-stars-row">★★★★★</div>
+                </div>
+                <div class="dossier-score-sub" id="book-modal-rating-count">98% положительных (2,410+ оценок)</div>
+              </div>
+
+              <!-- Actions Stack -->
+              <div class="dossier-actions-stack">
+                <button class="btn btn-steam-play btn-block" id="btn-modal-read-manga" style="padding: 0.85rem 1rem; font-size: 0.95rem;">
+                  📖 Читать (Manga-лента)
+                </button>
+                <button class="btn btn-secondary btn-block" id="btn-modal-read-page" style="padding: 0.75rem 1rem;">
+                  📄 Читать по главам
+                </button>
+                <button class="btn btn-secondary btn-block" id="btn-modal-open-quiz" style="padding: 0.75rem 1rem; border-color: rgba(255, 0, 127, 0.4); color: #ff66b2;">
+                  🎯 Проверить эрудицию в Квизе
+                </button>
+                <button class="btn btn-outline btn-block" id="btn-modal-toggle-fav">
+                  ⭐ В избранное
+                </button>
+                <button class="btn btn-outline btn-block" id="btn-modal-go-reviews" style="border-color: rgba(0, 240, 255, 0.35); color: var(--accent-cyan);">
+                  💬 Перейти ко всем отзывам →
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Column: Exhaustive Detailed Information -->
+            <div class="dossier-right-col">
+              
+              <div class="dossier-author-row">
+                <span class="dossier-author-name" id="book-modal-author">Автор</span>
+                <span class="dossier-epoch-pill" id="book-modal-epoch-tag">Классика</span>
+              </div>
+
+              <!-- Detailed Specs Grid -->
+              <div class="dossier-specs-mega-grid">
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Жанр & Направление</span>
+                  <span class="spec-val" id="book-modal-genre">Классика</span>
+                </div>
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Формат произведения</span>
+                  <span class="spec-val" id="book-modal-format">Роман-эпопея</span>
+                </div>
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Объём текста</span>
+                  <span class="spec-val" id="book-modal-pages">~480 стр. (128,400 слов)</span>
+                </div>
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Время на чтение</span>
+                  <span class="spec-val" id="book-modal-reading-time">~7.5 ч. (при 250 сл/мин)</span>
+                </div>
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Сложность текста</span>
+                  <span class="spec-val" id="book-modal-difficulty" style="color: var(--accent-cyan);">Средняя</span>
+                </div>
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Год первой публикации</span>
+                  <span class="spec-val" id="book-modal-year">1869 г.</span>
+                </div>
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Возрастной рейтинг</span>
+                  <span class="spec-val" id="book-modal-age-rating">16+ (Для юношей и взрослых)</span>
+                </div>
+                <div class="dossier-spec-card">
+                  <span class="spec-label">Источник & Ретрансляция</span>
+                  <span class="spec-val" style="color: var(--accent-green);" id="book-modal-relay-source">● Викитека & Open Library</span>
+                </div>
+              </div>
+
+              <!-- Philosophical & Thematic Core -->
+              <div class="dossier-callout-box" id="book-modal-philosophy-box">
+                <div class="callout-title">🧠 Философская основа и главная идея:</div>
+                <div class="callout-body" id="book-modal-philosophy">
+                  Исследование природы человека, нравственного выбора и противостояния личности общественным догмам.
+                </div>
+              </div>
+
+              <!-- Famous Highlight Quote -->
+              <div class="dossier-quote-box" id="book-modal-quote-box">
+                <div class="quote-icon">“</div>
+                <div class="quote-text" id="book-modal-quote">
+                  «Цитата произведения...»
+                </div>
+              </div>
+
+              <!-- Comprehensive Synopsis Section -->
+              <div class="dossier-text-block">
+                <h4 class="dossier-subheading">📖 Полный литературный синопсис</h4>
+                <div class="dossier-synopsis-content" id="book-modal-synopsis">
+                  Описание произведения...
+                </div>
+              </div>
+
+              <!-- Chapter Table of Contents Preview -->
+              <div class="dossier-text-block">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                  <h4 class="dossier-subheading" style="margin: 0;">📑 Оглавление и главы произведения</h4>
+                  <button class="btn btn-outline btn-sm" id="btn-dossier-view-all-chapters" style="font-size: 0.78rem;">Все главы →</button>
+                </div>
+                <div id="book-modal-chapters-toc"></div>
+              </div>
+
+              <!-- Community Reviews Quick Teaser -->
+              <div class="dossier-text-block">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                  <h4 class="dossier-subheading" style="margin: 0;">💬 Рецензии и мнения читателей</h4>
+                  <button class="btn btn-primary btn-sm" id="btn-dossier-view-all-reviews" style="font-size: 0.78rem;">Смотреть все отзывы (<span class="dossier-rev-count-badge">0</span>) →</button>
+                </div>
+                <div id="book-modal-teaser-reviews-list"></div>
+              </div>
+
+            </div>
+          </div>
         </div>
-        <textarea id="new-review-text" class="form-input" placeholder="Напишите вашу рецензию или размышление о книге..." rows="3" style="width: 100%; margin-bottom: 0.5rem;"></textarea>
-        <button class="btn btn-primary btn-sm" id="btn-submit-review">Опубликовать отзыв (+30 XP, +15 ⬡)</button>
-      </div>
 
-      <div id="book-modal-reviews-list">
-        <!-- Filled dynamically -->
+        <!-- SECTION 2: ALL REVIEWS OF ALL PEOPLE (ПОЛНЫЙ ХАБ ВСЕХ РЕЦЕНЗИЙ) -->
+        <div class="dossier-tab-panel" id="dossier-panel-reviews" style="display: none;">
+          <div class="dossier-reviews-hub-container">
+            
+            <!-- Steam-Style Overall Rating Summary Banner -->
+            <div class="dossier-reviews-summary-banner">
+              <div class="summary-score-col">
+                <div class="summary-sentiment-badge" id="dossier-sentiment-badge">👍 КРАЙНЕ ПОЛОЖИТЕЛЬНЫЕ</div>
+                <div class="summary-sentiment-sub" id="dossier-sentiment-sub">98% из всех читателей рекомендуют эту книгу</div>
+                <div class="summary-total-count" id="dossier-total-reviews-count">Всего отзывов: 12</div>
+              </div>
+              <div class="summary-bars-col">
+                <div class="score-bar-row">
+                  <span>5 ★ (Шедевр)</span>
+                  <div class="score-bar-track"><div class="score-bar-fill" style="width: 86%;"></div></div>
+                  <span>86%</span>
+                </div>
+                <div class="score-bar-row">
+                  <span>4 ★ (Отлично)</span>
+                  <div class="score-bar-track"><div class="score-bar-fill" style="width: 12%;"></div></div>
+                  <span>12%</span>
+                </div>
+                <div class="score-bar-row">
+                  <span>3 ★ (Хорошо)</span>
+                  <div class="score-bar-track"><div class="score-bar-fill" style="width: 2%;"></div></div>
+                  <span>2%</span>
+                </div>
+              </div>
+              <div class="summary-btn-col">
+                <button class="btn btn-primary magnetic-btn" id="btn-toggle-add-review-top">
+                  ✍️ Написать свой отзыв
+                </button>
+              </div>
+            </div>
+
+            <!-- Review Filter Pills Toolbar -->
+            <div class="dossier-reviews-toolbar">
+              <div class="dossier-filter-chips">
+                <button class="dossier-filter-chip active" data-rev-filter="all">Все отзывы (<span id="rev-filter-count-all">0</span>)</button>
+                <button class="dossier-filter-chip" data-rev-filter="recommended">Рекомендуют 👍 (<span id="rev-filter-count-rec">0</span>)</button>
+                <button class="dossier-filter-chip" data-rev-filter="experts">Критики & Схоласты 📜</button>
+                <button class="dossier-filter-chip" data-rev-filter="recent">Свежие 🕒</button>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-toggle-add-review">
+                + Добавить рецензию
+              </button>
+            </div>
+
+            <!-- Add Review Collapsible Form -->
+            <div id="add-review-box" class="dossier-add-review-box" style="display: none;">
+              <h4 style="margin: 0 0 0.8rem 0; color: var(--accent-cyan);">Оставить свой читательский отзыв</h4>
+              <div class="add-rev-controls-row">
+                <div style="flex: 1; min-width: 200px;">
+                  <label class="form-label">Ваша оценка:</label>
+                  <select id="new-review-rating" class="form-select">
+                    <option value="5">⭐⭐⭐⭐⭐ 5 из 5 (Шедевр)</option>
+                    <option value="4">⭐⭐⭐⭐ 4 из 5 (Отлично)</option>
+                    <option value="3">⭐⭐⭐ 3 из 5 (Хорошо)</option>
+                    <option value="2">⭐⭐ 2 из 5 (На любителя)</option>
+                    <option value="1">⭐ 1 из 5 (Не понравилось)</option>
+                  </select>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                  <label class="form-label">Рекомендация:</label>
+                  <select id="new-review-recommended" class="form-select">
+                    <option value="true">👍 Рекомендую к прочтению</option>
+                    <option value="false">👎 Не рекомендую</option>
+                  </select>
+                </div>
+              </div>
+              <div style="margin-top: 0.8rem;">
+                <textarea id="new-review-text" class="form-textarea" placeholder="Поделитесь вашими размышлениями, любимыми мыслями и впечатлениями от книги..." rows="4"></textarea>
+              </div>
+              <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.8rem;">
+                <button class="btn btn-secondary btn-sm" id="btn-cancel-add-review">Отмена</button>
+                <button class="btn btn-primary btn-sm" id="btn-submit-review">Опубликовать отзыв (+30 XP, +15 ⬡)</button>
+              </div>
+            </div>
+
+            <!-- The Comprehensive Reviews Grid/List -->
+            <div id="book-modal-reviews-list" class="dossier-all-reviews-grid">
+              <!-- Dynamically populated review cards -->
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECTION 3: FULL CHAPTERS TABLE OF CONTENTS -->
+        <div class="dossier-tab-panel" id="dossier-panel-toc" style="display: none;">
+          <div class="dossier-full-toc-container">
+            <div class="dossier-toc-header-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; background: rgba(255,255,255,0.03); padding: 1rem 1.4rem; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.07);">
+              <div>
+                <h3 style="color:#fff; margin:0 0 0.25rem 0; font-size: 1.2rem;">Полное содержание и навигация по главам</h3>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">Выберите любую главу для мгновенного перехода в читалку.</p>
+              </div>
+              <div id="dossier-toc-progress-indicator" style="color: var(--accent-cyan); font-weight: 700; font-size: 0.9rem;"></div>
+            </div>
+            <div id="dossier-full-chapters-list" class="dossier-chapters-grid">
+              <!-- Dynamically populated chapter items -->
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -3643,18 +3828,18 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- Scripts (with cache-busting v5.7.0) -->
-  <script src="js/audio.js?v=5.7.0"></script>
-  <script src="js/background.js?v=5.7.0"></script>
-  <script src="js/github.js?v=5.7.0"></script>
-  <script src="js/db.js?v=5.7.0"></script>
-  <script src="js/auth.js?v=5.7.0"></script>
-  <script src="js/bookRelay.js?v=5.7.0"></script>
-  <script src="js/recommendations.js?v=5.7.0"></script>
-  <script src="js/openlibrary.js?v=5.7.0"></script>
-  <script src="js/reader.js?v=5.7.0"></script>
-  <script src="js/games.js?v=5.7.0"></script>
-  <script src="js/admin.js?v=5.7.0"></script>
-  <script src="js/app.js?v=5.7.0"></script>
+  <!-- Scripts (with cache-busting v5.8.0) -->
+  <script src="js/audio.js?v=5.8.1"></script>
+  <script src="js/background.js?v=5.8.1"></script>
+  <script src="js/github.js?v=5.8.1"></script>
+  <script src="js/db.js?v=5.8.1"></script>
+  <script src="js/auth.js?v=5.8.1"></script>
+  <script src="js/bookRelay.js?v=5.8.1"></script>
+  <script src="js/recommendations.js?v=5.8.1"></script>
+  <script src="js/openlibrary.js?v=5.8.1"></script>
+  <script src="js/reader.js?v=5.8.1"></script>
+  <script src="js/games.js?v=5.8.1"></script>
+  <script src="js/admin.js?v=5.8.1"></script>
+  <script src="js/app.js?v=5.8.1"></script>
 </body>
 </html>

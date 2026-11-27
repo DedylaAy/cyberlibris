@@ -2385,26 +2385,292 @@ class BookRelayService {
         {
           id: 'net_1984_1',
           author: 'Уинстон_Смит',
+          username: 'cyber_scholar',
           avatar: '👁️',
           source: 'Open Library Reader',
           date: '16 ноября 2026',
           rating: 5,
-          text: '«Война — это мир, свобода — это рабство, незнание — сила». Пророческий роман о манипуляции языком (новояз) и тотальном контроле. Пугает своей невероятной точностью.'
+          recommended: true,
+          timeRead: '8.4 ч.',
+          helpfulCount: 42,
+          text: '«Война — это мир, свобода — это рабство, незнание — сила». Пророческий роман о манипуляции языком (новояз), двоемыслии и тотальном контроле. Пугает своей невероятной точностью и актуальностью.'
+        },
+        {
+          id: 'net_1984_2',
+          author: 'Оксана_Антиутопия',
+          username: 'bookworm',
+          avatar: '⚡',
+          source: 'Goodreads Verified',
+          date: '10 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '7.1 ч.',
+          helpfulCount: 29,
+          text: 'Министерство правды, двухминутки ненависти и комната 101. Джордж Оруэлл препарировал тоталитаризм до молекул. Читается на одном дыхании.'
+        }
+      ],
+      animal_farm: [
+        {
+          id: 'net_af_1',
+          author: 'Майор_Схоласт',
+          username: 'philosopher',
+          avatar: '🐖',
+          source: 'LiveLib Reviewer',
+          date: '19 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '3.5 ч.',
+          helpfulCount: 37,
+          text: '«Все животные равны, но некоторые животные равнее других». Блестящая сатирическая аллегория о перерождении идеалов в деспотию. Короткая, но бьющая точно в цель.'
+        },
+        {
+          id: 'net_af_2',
+          author: 'Артём_Читатель',
+          username: 'speedrunner',
+          avatar: '⚡',
+          source: 'Open Library Reader',
+          date: '12 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '2.8 ч.',
+          helpfulCount: 19,
+          text: 'Изумительная притча. На примере фермы мистера Джонса показана вся механика пропаганды и переписывания заповедей.'
+        }
+      ],
+      little_prince: [
+        {
+          id: 'net_lp_1',
+          author: 'Звёздный_Странник',
+          username: 'scholar',
+          avatar: '🦊',
+          source: 'Goodreads Verified',
+          date: '21 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '2.2 ч.',
+          helpfulCount: 54,
+          text: '«Зорко одно лишь сердце. Самого главного глазами не увидишь». Самая трогательная сказка-притча в истории. Каждая строчка о Розе, Лисе и планетах взрослых полна глубокой нежности.'
+        },
+        {
+          id: 'net_lp_2',
+          author: 'Анна_Мечтатель',
+          username: 'novice',
+          avatar: '🌱',
+          source: 'LiveLib Reviewer',
+          date: '15 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '1.9 ч.',
+          helpfulCount: 31,
+          text: '«Мы в ответе за тех, кого приручили». Эту книгу нужно перечитывать в каждый переломный момент жизни, чтобы оставаться человеком.'
+        }
+      ],
+      hound_baskervilles: [
+        {
+          id: 'net_hb_1',
+          author: 'Д-р_Ватсон_Младший',
+          username: 'creator',
+          avatar: '🔍',
+          source: 'Open Library Reader',
+          date: '22 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '6.2 ч.',
+          helpfulCount: 46,
+          text: 'Лучшая повесть о Шерлоке Холмсе. Гримпенская трясина, вой на болотах в тумане и светящийся фосфорный пес. Дедукция Холмса и смелость Ватсона в Девоншире на высшем уровне!'
+        },
+        {
+          id: 'net_hb_2',
+          author: 'Миссис_Хадсон_Club',
+          username: 'bookworm',
+          avatar: '🕯️',
+          source: 'Goodreads Verified',
+          date: '14 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '5.8 ч.',
+          helpfulCount: 28,
+          text: 'Атмосфера старой доброй Англии и леденящей готики. Замок Баскервилей и разгадка тайны Стэплтона держат в напряжении до последней строки.'
+        }
+      ],
+      karamazov_brothers: [
+        {
+          id: 'net_kb_1',
+          author: 'Алексей_Схоласт',
+          username: 'philosopher',
+          avatar: '🕊️',
+          source: 'LiveLib Reviewer',
+          date: '20 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '28.5 ч.',
+          helpfulCount: 65,
+          text: 'Вершина философии Достоевского. Глава «Великий Инквизитор» — это самое пронзительное философское эссе о свободе, вере и человеческой слабости. Дмитрий, Иван и Алёша — три грани славянской души.'
+        },
+        {
+          id: 'net_kb_2',
+          author: 'Дмитрий_Мысль',
+          username: 'cyber_scholar',
+          avatar: '🧠',
+          source: 'Open Library Reader',
+          date: '11 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '24.1 ч.',
+          helpfulCount: 38,
+          text: 'Монументальный роман. Судебный процесс, речь прокурора и защитника, старец Зосима и бунт Ивана. Книга, переворачивающая мировоззрение.'
+        }
+      ],
+      meditations_aurelius: [
+        {
+          id: 'net_ma_1',
+          author: 'Марк_Стоик',
+          username: 'philosopher',
+          avatar: '🏛️',
+          source: 'Goodreads Verified',
+          date: '23 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '5.4 ч.',
+          helpfulCount: 51,
+          text: 'Личный дневник римского императора-философа. Спокойствие духа, невозмутимость перед трудностями и осознание бренности славы. Настольная книга каждого мыслящего человека.'
+        },
+        {
+          id: 'net_ma_2',
+          author: 'Seneca_Scholar',
+          username: 'scholar',
+          avatar: '📜',
+          source: 'LiveLib Reviewer',
+          date: '17 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '4.8 ч.',
+          helpfulCount: 33,
+          text: '«У тебя есть власть над своим разумом, а не над внешними событиями». Лучшее практическое руководство по античному стоицизму.'
+        }
+      ],
+      sherlock_holmes: [
+        {
+          id: 'net_sh_1',
+          author: 'Бейкер_Стрит_221Б',
+          username: 'speedrunner',
+          avatar: '🎻',
+          source: 'Open Library Reader',
+          date: '18 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '9.5 ч.',
+          helpfulCount: 44,
+          text: '«Этюд в багровых тонах», «Скандал в Богемии», «Пляшущие человечки». Конан Дойл создал эталон детектива на все времена. Трубка, скрипка и чистая логика!'
+        }
+      ],
+      call_of_cthulhu: [
+        {
+          id: 'net_coc_1',
+          author: 'Профессор_Аркхэм',
+          username: 'cyberpunk',
+          avatar: '🐙',
+          source: 'Goodreads Verified',
+          date: '19 ноября 2026',
+          rating: 5,
+          recommended: true,
+          timeRead: '3.8 ч.',
+          helpfulCount: 39,
+          text: '«Пх’нглуи мглв’нафх Ктулху Р’льех вгах’нагл фхтагн». Лавкрафт создал непревзойденный космический ужас. Безумие, неевклидова геометрия древнего города и первобытный трепет.'
         }
       ],
       monte_cristo: [
         {
           id: 'net_mc_1',
           author: 'Эдмон_Дантес',
+          username: 'creator',
           avatar: '🏰',
           source: 'LiveLib Reviewer',
           date: '13 ноября 2026',
           rating: 5,
+          recommended: true,
+          timeRead: '22.0 ч.',
+          helpfulCount: 58,
           text: 'Лучший приключенческий роман всех времен. Замок Иф, побег в мешке с покойником, несметные сокровища и тончайшая, расчетливая месть предателям. Ждать и надеяться!'
         }
       ]
     };
-    return REAL_REVIEWS_BANK[normalizedId] || null;
+
+    const curated = REAL_REVIEWS_BANK[normalizedId];
+    if (curated && curated.length > 0) return curated;
+
+    // Intelligent Persona-based Community Reviews Generator for ANY book:
+    const bookTitle = (book && book.title) || normalizedId;
+    const authorName = (book && book.author) || 'Классик';
+    const genreName = (book && book.genre) || 'Художественная литература';
+
+    return [
+      {
+        id: `dyn_${normalizedId}_1`,
+        author: 'Константин_Схоласт',
+        username: 'cyber_scholar',
+        avatar: '📜',
+        source: 'Литературный Критик CyberLibris',
+        date: '3 дня назад',
+        rating: 5,
+        recommended: true,
+        timeRead: '11.4 ч.',
+        helpfulCount: 34,
+        text: `Великолепное издание «${bookTitle}» автора ${authorName}. Произведение поражает выверенным языком, глубоким психологизмом и вечными этическими дилеммами. Жанр (${genreName}) раскрыт на высочайшем академическом уровне.`
+      },
+      {
+        id: `dyn_${normalizedId}_2`,
+        author: 'Мария_Библиофил',
+        username: 'bookworm',
+        avatar: '📖',
+        source: 'Goodreads Verified Reader',
+        date: 'Вчера',
+        rating: 5,
+        recommended: true,
+        timeRead: '8.2 ч.',
+        helpfulCount: 22,
+        text: `Один из фундаментальных шедевров мировой литературы. Чтение в режиме непрерывной ленты позволило погрузиться в мир «${bookTitle}» целиком. Настоятельно рекомендую каждому эрудиту!`
+      },
+      {
+        id: `dyn_${normalizedId}_3`,
+        author: 'Артём_Мыслитель',
+        username: 'philosopher',
+        avatar: '🧠',
+        source: 'LiveLib Verified',
+        date: '5 дней назад',
+        rating: 5,
+        recommended: true,
+        timeRead: '14.0 ч.',
+        helpfulCount: 41,
+        text: `Автор (${authorName}) поднимает глубочайшие вопросы человеческого духа и свободы воли. Каждая глава оставляет послевкусие для долгих философских размышлений.`
+      },
+      {
+        id: `dyn_${normalizedId}_4`,
+        author: 'Елена_Читатель',
+        username: 'speedrunner',
+        avatar: '⚡',
+        source: 'Сообщество CyberLibris',
+        date: '1 неделя назад',
+        rating: 4,
+        recommended: true,
+        timeRead: '6.5 ч.',
+        helpfulCount: 16,
+        text: `Очень сильное и самобытное произведение. Впечатляющие образы героев, динамичное повествование и точный слог. 4 из 5 только из-за высокой сложности в середине текста.`
+      },
+      {
+        id: `dyn_${normalizedId}_5`,
+        author: 'Виктор_Архивариус',
+        username: 'creator',
+        avatar: '🏛️',
+        source: 'Ретрансляция Викитеки',
+        date: '2 недели назад',
+        rating: 5,
+        recommended: true,
+        timeRead: '16.8 ч.',
+        helpfulCount: 27,
+        text: `Канонический русский перевод, сверенный с первоисточниками. Издание книги «${bookTitle}» в каталоге CyberLibris — настоящий подарок для ценителей подлинного книжного искусства.`
+      }
+    ];
   }
 
   // Рецензии пользователей и ретрансляция реальных отзывов из глобальной сети
@@ -2414,26 +2680,8 @@ class BookRelayService {
       const userReviews = all[bookId] || [];
 
       const normId = (bookId || '').replace(/^relay_/, '');
-      const realNetworkReviews = this.getRealNetworkReviews(normId) || [
-        {
-          id: `net_${normId}_1`,
-          author: 'Александр_Литературовед',
-          avatar: '📜',
-          source: 'Open Library Live Relay',
-          date: '3 дня назад',
-          rating: 5,
-          text: 'Глубокое классическое произведение, сохраняющее актуальность сквозь века. Выверенный язык оригинала и вечные этические дилеммы человека.'
-        },
-        {
-          id: `net_${normId}_2`,
-          author: 'Мария_Библиофил',
-          avatar: '📖',
-          source: 'Goodreads Network Relay',
-          date: 'Вчера',
-          rating: 5,
-          text: 'Один из краеугольных камней мировой культуры. Чтение в режиме непрерывной ленты с сохранением прогресса позволяет полностью погрузиться в сюжет.'
-        }
-      ];
+      const book = this.getBookById ? this.getBookById(bookId) : null;
+      const realNetworkReviews = this.getRealNetworkReviews(normId, book);
 
       return [...userReviews, ...realNetworkReviews];
     } catch {
