@@ -1306,12 +1306,15 @@ class MiniGamesSuite {
             btn.style.background = 'rgba(0, 255, 136, 0.25)';
             btn.style.borderColor = 'var(--accent-green)';
             this.quizStreak += 1;
-            const reward = 30 * Math.min(3, this.quizStreak);
-            this.quizScore += reward;
+
+            // Balanced Quiz economy: Base 8 Lumens, gentle streak bonus (+2 up to 12 Lumens max per question)
+            const rewardLumens = 8 + Math.min(4, (this.quizStreak - 1) * 2);
+            const rewardXp = Math.round(rewardLumens * 0.9);
+            this.quizScore += rewardLumens;
 
             if (window.auth) {
-              window.auth.addLumens(reward);
-              window.auth.addXp(reward * 2);
+              window.auth.addLumens(rewardLumens);
+              window.auth.addXp(rewardXp);
             }
 
             if (window.dbEngine) {
@@ -1319,7 +1322,7 @@ class MiniGamesSuite {
               if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
             }
 
-            window.app.showToast(`Верно! +${reward} ⬡, +${reward * 2} XP`, 'reward');
+            window.app.showToast(`Верно! +${rewardLumens} ⬡, +${rewardXp} XP`, 'reward');
             if (window.soundEngine) window.soundEngine.playCorrect?.();
           } else {
             btn.style.background = 'rgba(255, 0, 127, 0.25)';
@@ -1347,6 +1350,10 @@ class MiniGamesSuite {
   }
 
   finishBookQuiz() {
+    if (window.auth) {
+      window.auth.updateStat('gamesWon', 1);
+    }
+
     const qTextEl = document.getElementById('quiz-question-text');
     const answersGrid = document.getElementById('quiz-answers-grid');
     if (qTextEl) {
@@ -1574,10 +1581,10 @@ class MiniGamesSuite {
     if (this.memoryTimer) clearInterval(this.memoryTimer);
 
     const timeSec = Math.max(1, this.matchingSeconds);
-    const speedBonus = Math.min(25, Math.max(5, Math.floor((120 - timeSec) / 4)));
-    const moveBonus = Math.min(25, Math.max(5, (this.matchingTotalPairs * 2 - this.matchingMoves) * 2));
-    const totalLumens = Math.round(30 + speedBonus + moveBonus);
-    const totalXp = Math.round(totalLumens * 0.75);
+    const speedBonus = Math.min(15, Math.max(0, Math.floor((120 - timeSec) / 6)));
+    const moveBonus = Math.min(15, Math.max(0, (this.matchingTotalPairs * 2 - this.matchingMoves)));
+    const totalLumens = Math.min(48, Math.max(18, Math.round(20 + speedBonus + moveBonus)));
+    const totalXp = Math.min(40, Math.max(15, Math.round(totalLumens * 0.8)));
 
     if (window.auth) {
       window.auth.addLumens(totalLumens);
@@ -1822,8 +1829,8 @@ class MiniGamesSuite {
     const accDisplay = document.getElementById('speedread-accuracy-display');
     if (accDisplay) accDisplay.textContent = `${accuracy}%`;
 
-    const lumensEarned = Math.round(30 + accuracy * 0.7);
-    const xpEarned = lumensEarned * 2;
+    const lumensEarned = Math.min(48, Math.max(12, Math.round(15 + (accuracy / 100) * 28)));
+    const xpEarned = Math.min(40, Math.max(10, Math.round(lumensEarned * 0.8)));
 
     if (window.auth) {
       window.auth.addLumens(lumensEarned);
@@ -2078,8 +2085,8 @@ class MiniGamesSuite {
       const streakEl = document.getElementById('reconstruct-streak-display');
       if (streakEl) streakEl.textContent = this.reconstructStreak;
 
-      const rewardLumens = 25 * Math.min(3, this.reconstructStreak);
-      const rewardXp = Math.round(rewardLumens * 0.75);
+      const rewardLumens = Math.min(40, 16 + Math.min(2, Math.max(0, this.reconstructStreak - 1)) * 8);
+      const rewardXp = Math.min(35, Math.round(rewardLumens * 0.8));
       this.reconstructScore += rewardLumens;
 
       const scoreEl = document.getElementById('reconstruct-score-display');
