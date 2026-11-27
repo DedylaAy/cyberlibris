@@ -1020,6 +1020,7 @@ class MiniGamesSuite {
 
   switchGame(gameId) {
     this.currentGame = gameId;
+    window.app?.updateProfilePresence?.();
     document.querySelectorAll('.game-tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.game === gameId));
     document.querySelectorAll('.game-arena-view').forEach((v) => v.style.display = 'none');
 

@@ -205,6 +205,7 @@ class AppController {
     else if (viewName === 'admin') window.adminEngine.renderAdminView();
 
     this.updateHeaderResumePill();
+    this.updateProfilePresence();
     if (window.soundEngine) window.soundEngine.playClick();
   }
 
@@ -1835,40 +1836,9 @@ class AppController {
       roleBadgeEl.innerHTML = window.auth.getRoleBadgeHTML(user.role, user.level);
     }
 
-    // 4. Online Status Indicator & Active Reading Context
-    let lastBookId = localStorage.getItem('cyberlibris_last_read_book');
-    if (!lastBookId && shelves.readingNow && shelves.readingNow.length > 0) {
-      lastBookId = shelves.readingNow[0].id;
-    }
-    if (!lastBookId && user.readingProgress) {
-      const keys = Object.keys(user.readingProgress);
-      if (keys.length > 0) lastBookId = keys[keys.length - 1];
-    }
-    if (!lastBookId) lastBookId = 'relay_war_and_peace';
-
-    const activeBook = window.bookRelay?.getBookById?.(lastBookId) ||
-                       window.bookRelay?.getBookById?.(lastBookId.replace('relay_', '')) ||
-                       window.bookRelay?.getBookById?.(`relay_${lastBookId}`);
-
-    const actId = activeBook ? activeBook.id : lastBookId;
-    const activeShelfItem = (shelves.readingNow || []).find(b => b.id === actId || b.id === actId.replace('relay_', '') || `relay_${b.id}` === actId);
-    const activeProg = window.readerEngine?.getSavedProgress?.(actId) ||
-                       window.readerEngine?.getSavedProgress?.(actId.replace('relay_', ''));
-
-    let curCh = 1;
-    let curPct = 0;
-    if (activeProg && typeof activeProg.currentChapter === 'number') {
-      curCh = activeProg.currentChapter + 1;
-      curPct = activeProg.progressPercent || 0;
-    } else if (activeShelfItem) {
-      curCh = (typeof activeShelfItem.chapterIdx === 'number') ? activeShelfItem.chapterIdx + 1 : 1;
-      curPct = activeShelfItem.progressPercent || 0;
-    }
-
-    const statusOnlineEl = document.getElementById('profile-status-online');
-    if (statusOnlineEl) {
-      statusOnlineEl.textContent = `В сети • Читает «${activeBook?.title || 'Шедевр'}» (Гл. ${curCh}, ${curPct}%)`;
-    }
+    // 4. Dynamic Online Status & Real-time Presence
+    this.updateProfilePresence();
+    this.bindProfilePresenceControls(user);
 
     // 5. Steam Level & XP Progress
     const levelNumEl = document.getElementById('profile-level-num');
@@ -2487,6 +2457,156 @@ class AppController {
           if (window.soundEngine) window.soundEngine.playCardFlip();
         };
       }
+    }
+  }
+
+  // --- DYNAMIC ACTIVITY & PRESENCE ENGINE ---
+
+  getCurrentUserActivity() {
+    const user = window.auth?.currentUser;
+    if (!user) return { status: 'offline', text: 'Не в сети', dotClass: 'dot-offline' };
+
+    const username = user.username;
+    const presenceState = localStorage.getItem('cyberlibris_presence_state_' + username) || 'online';
+    const customStatus = localStorage.getItem('cyberlibris_custom_status_' + username) || '';
+
+    if (presenceState === 'invisible') {
+      return { status: 'invisible', text: 'Невидимка (Офлайн)', dotClass: 'dot-offline' };
+    }
+    if (presenceState === 'away') {
+      return { status: 'away', text: customStatus ? `Отошёл • «${customStatus}»` : 'Отошёл (Не у терминала)', dotClass: 'dot-away' };
+    }
+    if (presenceState === 'dnd') {
+      return { status: 'dnd', text: customStatus ? `Не беспокоить • «${customStatus}»` : 'Не беспокоить • В глубоком фокусе', dotClass: 'dot-dnd' };
+    }
+
+    // Custom status override when online
+    if (customStatus) {
+      return { status: 'online', text: `В сети • «${customStatus}»`, dotClass: 'dot-online' };
+    }
+
+    // Dynamic presence based on actual real-time site view
+    if (this.currentView === 'reader' && window.readerEngine?.currentBook) {
+      const bTitle = window.readerEngine.currentBook.title || 'Книгу';
+      const chNum = (window.readerEngine.currentChapterIdx || 0) + 1;
+      return { status: 'reading', text: `В сети • Читает «${bTitle}» (Гл. ${chNum})`, dotClass: 'dot-reading' };
+    }
+
+    if (this.currentView === 'games' && window.miniGames) {
+      const gName = window.miniGames.gameNames?.[window.miniGames.currentGame] || 'Аркаду';
+      return { status: 'gaming', text: `В сети • В игре: «${gName}»`, dotClass: 'dot-gaming' };
+    }
+
+    if (this.currentView === 'leaderboard') {
+      return { status: 'online', text: 'В сети • Просматривает Зал Славы', dotClass: 'dot-online' };
+    }
+
+    if (this.currentView === 'community') {
+      return { status: 'online', text: 'В сети • Изучает Кибер-Эфир и Новости', dotClass: 'dot-online' };
+    }
+
+    if (this.currentView === 'shop') {
+      return { status: 'online', text: 'В сети • В Кибер-Гардеробе', dotClass: 'dot-online' };
+    }
+
+    if (this.currentView === 'admin') {
+      return { status: 'online', text: 'В сети • В панели управления Хабом', dotClass: 'dot-online' };
+    }
+
+    if (this.currentView === 'library' || this.currentView === 'steam-library') {
+      return { status: 'online', text: 'В сети • Изучает каталог произведений', dotClass: 'dot-online' };
+    }
+
+    return { status: 'online', text: 'В сети • В профиле читателя', dotClass: 'dot-online' };
+  }
+
+  updateProfilePresence() {
+    const act = this.getCurrentUserActivity();
+    const statusOnlineEl = document.getElementById('profile-status-online');
+    if (statusOnlineEl) {
+      statusOnlineEl.textContent = act.text;
+    }
+    const dotEl = document.getElementById('profile-online-pulse-dot');
+    if (dotEl) {
+      dotEl.className = `online-pulse-dot ${act.dotClass || 'dot-online'}`;
+    }
+  }
+
+  bindProfilePresenceControls(user) {
+    const badge = document.getElementById('profile-online-badge');
+    const popover = document.getElementById('profile-presence-popover');
+    if (!badge || !popover) return;
+
+    badge.onclick = (e) => {
+      e.stopPropagation();
+      const isClosed = popover.style.display === 'none' || !popover.style.display;
+      popover.style.display = isClosed ? 'block' : 'none';
+      if (isClosed && window.soundEngine) window.soundEngine.playClick();
+    };
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (popover && !popover.contains(e.target) && !badge.contains(e.target)) {
+        popover.style.display = 'none';
+      }
+    });
+
+    // Populate active presence state
+    const currentPresence = localStorage.getItem('cyberlibris_presence_state_' + user.username) || 'online';
+    const currentCustomText = localStorage.getItem('cyberlibris_custom_status_' + user.username) || '';
+
+    popover.querySelectorAll('.presence-opt-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.presence === currentPresence);
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const pState = btn.dataset.presence;
+        localStorage.setItem('cyberlibris_presence_state_' + user.username, pState);
+        popover.querySelectorAll('.presence-opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.updateProfilePresence();
+        this.showToast(`Сетевой статус: ${btn.querySelector('.presence-opt-title')?.textContent || pState}`, 'success');
+        if (window.soundEngine) window.soundEngine.playClick();
+        setTimeout(() => { popover.style.display = 'none'; }, 400);
+      };
+    });
+
+    const customInput = document.getElementById('input-custom-presence-text');
+    if (customInput) customInput.value = currentCustomText;
+
+    const btnSaveCustom = document.getElementById('btn-save-custom-presence');
+    if (btnSaveCustom && customInput) {
+      btnSaveCustom.onclick = (e) => {
+        e.stopPropagation();
+        const val = customInput.value.trim();
+        localStorage.setItem('cyberlibris_custom_status_' + user.username, val);
+        localStorage.setItem('cyberlibris_presence_state_' + user.username, 'online');
+        popover.querySelectorAll('.presence-opt-btn').forEach(b => b.classList.toggle('active', b.dataset.presence === 'online'));
+        this.updateProfilePresence();
+        this.showToast(val ? `Статус установлен: «${val}»` : 'Статус обновлен!', 'success');
+        if (window.soundEngine) window.soundEngine.playClick();
+        popover.style.display = 'none';
+      };
+      customInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          btnSaveCustom.click();
+        }
+      };
+    }
+
+    const btnReset = document.getElementById('btn-reset-custom-presence');
+    if (btnReset) {
+      btnReset.onclick = (e) => {
+        e.stopPropagation();
+        localStorage.removeItem('cyberlibris_custom_status_' + user.username);
+        localStorage.setItem('cyberlibris_presence_state_' + user.username, 'online');
+        if (customInput) customInput.value = '';
+        popover.querySelectorAll('.presence-opt-btn').forEach(b => b.classList.toggle('active', b.dataset.presence === 'online'));
+        this.updateProfilePresence();
+        this.showToast('Включен автоматический трекинг активности!', 'info');
+        if (window.soundEngine) window.soundEngine.playClick();
+        popover.style.display = 'none';
+      };
     }
   }
 

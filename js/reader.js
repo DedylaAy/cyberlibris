@@ -749,6 +749,7 @@ class ReaderEngine {
     if (!book) return;
 
     this.currentBook = book;
+    window.app?.updateProfilePresence?.();
 
     // Retrieve saved reading progress for this book
     const saved = this.getSavedProgress(bookId);
