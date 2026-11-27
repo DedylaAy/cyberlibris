@@ -854,9 +854,9 @@ class ReaderEngine {
     const modeBtn = document.getElementById('btn-toggle-manga-mode');
     const modeLabel = document.getElementById('reader-mode-label');
     if (modeLabel) {
-      modeLabel.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
+      modeLabel.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
     } else if (modeBtn) {
-      modeBtn.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
+      modeBtn.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
     }
 
     // Немедленно открываем экран читателя
@@ -1034,9 +1034,9 @@ class ReaderEngine {
     const modeBtn = document.getElementById('btn-toggle-manga-mode');
     const modeLabel = document.getElementById('reader-mode-label');
     if (modeLabel) {
-      modeLabel.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
+      modeLabel.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
     } else if (modeBtn) {
-      modeBtn.textContent = this.readingMode === 'manga' ? 'Режим: Лента' : 'Режим: По главам';
+      modeBtn.textContent = this.readingMode === 'manga' ? 'Лента' : 'По главам';
     }
     this.saveProgress();
     this.renderContent();

@@ -279,7 +279,7 @@ body.theme-zen .bg-ambient-glow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.45rem 1.25rem;
+  padding: 0.4rem 1.25rem;
   height: 64px;
   background: rgba(9, 13, 22, 0.98);
   backdrop-filter: blur(20px);
@@ -290,7 +290,24 @@ body.theme-zen .bg-ambient-glow {
   max-width: 100vw;
   box-sizing: border-box;
   flex-wrap: nowrap;
-  gap: 0.75rem;
+  gap: 0.65rem;
+  overflow: visible;
+}
+
+.app-header nav {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-header nav::-webkit-scrollbar {
+  display: none;
 }
 
 .logo-container {
@@ -358,27 +375,29 @@ body.theme-zen .bg-ambient-glow {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.2rem;
   list-style: none;
   flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-item {
   position: relative;
+  flex-shrink: 0;
 }
 
 .nav-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.42rem 0.85rem;
+  padding: 0.28rem 0.52rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   color: #a6b8cf;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -387,6 +406,7 @@ body.theme-zen .bg-ambient-glow {
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-btn::before {
@@ -475,13 +495,6 @@ body.is-creator .creator-only {
   flex-shrink: 0;
 }
 
-@media (max-width: 1400px) {
-  #btn-toggle-eco,
-  #btn-open-shortcuts-modal {
-    display: none !important;
-  }
-}
-
 /* GitHub Status Pill (strictly for Creator) */
 .github-status-pill {
   display: none;
@@ -536,8 +549,8 @@ body.is-creator .github-status-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  padding: 0.28rem 0.65rem;
+  gap: 0.3rem;
+  padding: 0.28rem 0.6rem;
   height: 32px;
   border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.05);
@@ -549,6 +562,15 @@ body.is-creator .github-status-pill {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   text-decoration: none;
+  box-sizing: border-box;
+}
+
+.header-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  line-height: 1;
 }
 
 .header-action-btn:hover,
@@ -569,6 +591,66 @@ body.is-creator .github-status-pill {
   border-color: rgba(0, 240, 255, 0.45);
   background: rgba(0, 240, 255, 0.1);
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+}
+
+/* Responsive Navigation Header Breakpoints */
+@media (max-width: 1440px) {
+  .logo-sub {
+    display: none !important;
+  }
+  .logo-container {
+    gap: 0.5rem;
+  }
+  .header-actions .header-btn-label {
+    display: none !important;
+  }
+  .header-cmd-btn .cmd-text {
+    display: none !important;
+  }
+  .cmd-badge-key {
+    display: none !important;
+  }
+  .header-resume-pill {
+    max-width: 140px !important;
+  }
+  .steam-pill-stats {
+    display: none !important;
+  }
+  .header-action-btn,
+  .sfx-btn,
+  .theme-trigger-btn,
+  .ambient-trigger-btn,
+  .header-cmd-btn {
+    padding: 0.28rem 0.5rem;
+    min-width: 32px;
+  }
+}
+
+@media (max-width: 1240px) {
+  .nav-btn {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.72rem;
+  }
+  #btn-toggle-eco,
+  #btn-open-shortcuts-help {
+    display: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .logo-text h1 span.logo-badge {
+    display: none !important;
+  }
+  .logo-text h1 {
+    font-size: 1.1rem;
+  }
+  .steam-pill-meta {
+    display: none !important;
+  }
+  .app-header {
+    padding: 0.4rem 0.65rem;
+    gap: 0.35rem;
+  }
 }
 
 /* User Quick Pill */

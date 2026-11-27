@@ -240,7 +240,7 @@ class AppController {
     if (!btn) return;
     const isEco = document.body.classList.contains('eco-mode');
     btn.classList.toggle('active', isEco);
-    btn.innerHTML = `<span>Турбо: ${isEco ? 'Вкл' : 'Выкл'}</span>`;
+    btn.innerHTML = `<span class="header-btn-icon">⚡</span><span class="header-btn-label">Турбо: ${isEco ? 'Вкл' : 'Выкл'}</span>`;
   }
 
   switchView(viewName) {
@@ -4351,8 +4351,9 @@ class AppController {
   updateAudioButtonState() {
     const btn = document.getElementById('btn-toggle-sfx');
     if (!btn) return;
-    btn.textContent = window.soundEngine.isMuted ? 'Звук: Выкл' : 'Звук: Вкл';
-    btn.classList.toggle('active', !window.soundEngine.isMuted);
+    const isMuted = !!window.soundEngine?.isMuted;
+    btn.innerHTML = `<span class="header-btn-icon">${isMuted ? '🔇' : '🔊'}</span><span class="header-btn-label">Звук: ${isMuted ? 'Выкл' : 'Вкл'}</span>`;
+    btn.classList.toggle('active', !isMuted);
   }
 
   showToast(message, type = 'info') {

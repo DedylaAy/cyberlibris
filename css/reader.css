@@ -68,19 +68,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.55rem 1rem;
+  padding: 0.45rem 0.85rem;
   background: rgba(11, 16, 28, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 240, 255, 0.2);
+  border: 1px solid rgba(0, 240, 255, 0.25);
   border-radius: var(--radius-full);
-  max-width: 1080px;
+  max-width: min(1200px, calc(100vw - 32px));
   width: 100%;
   margin: 0 auto 2.2rem auto;
   box-sizing: border-box;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.08);
-  gap: 0.75rem;
+  gap: 0.5rem;
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .reader-island-left,
@@ -88,23 +89,55 @@
 .reader-island-right {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
+}
+
+.reader-island-left {
+  flex-shrink: 0;
+}
+
+.reader-island-center {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  justify-content: center;
+}
+
+.reader-island-right {
+  flex-shrink: 0;
+}
+
+/* Secondary reader island tools are sleek icon buttons */
+#btn-start-rsvp .btn-text,
+#btn-open-bookmarks .btn-text,
+#btn-toggle-zen-mode .btn-text,
+#btn-toggle-fullscreen .btn-text {
+  display: none;
 }
 
 .reader-island-btn {
-  padding: 0.4rem 0.85rem;
+  padding: 0.32rem 0.65rem;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-full);
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.32rem;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.reader-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  line-height: 1;
 }
 
 .reader-island-btn:hover {
@@ -133,12 +166,14 @@
 .reader-island-book-pill {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.2rem 0.7rem 0.2rem 0.3rem;
+  gap: 0.45rem;
+  padding: 0.2rem 0.6rem 0.2rem 0.3rem;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-full);
-  max-width: 200px;
+  max-width: 160px;
+  overflow: hidden;
+  flex-shrink: 1;
 }
 
 .island-book-thumb {
@@ -176,6 +211,15 @@
   background: rgba(0, 240, 255, 0.12);
   border-color: rgba(0, 240, 255, 0.3);
   color: var(--accent-cyan);
+}
+
+#reader-active-chapter-name {
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .reader-chapter-pill .caret {
@@ -958,6 +1002,7 @@
   margin-top: 3.5rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border-glass);
+  gap: 1rem;
 }
 
 .btn-nav-chapter {
@@ -965,19 +1010,54 @@
   font-weight: 700;
   font-size: 0.95rem;
   border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT FOR READER ISLAND & CONTROLS
+   ========================================================================== */
+@media (max-width: 1440px) {
+  .reader-island-right .reader-island-btn .btn-text {
+    display: none;
+  }
+  .reader-island-right .reader-island-btn {
+    padding: 0.32rem 0.5rem;
+    min-width: 32px;
+    justify-content: center;
+  }
+  #reader-active-chapter-name {
+    max-width: 140px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .reader-island-book-pill {
+    display: none !important;
+  }
+  .reader-chapter-pill .btn-text {
+    display: none !important;
+  }
+  .reader-back-btn .kbd-hint {
+    display: none !important;
+  }
+  #reader-active-chapter-name {
+    max-width: 120px;
+  }
 }
 
 @media (max-width: 768px) {
   .reader-floating-island {
-    padding: 0.4rem 0.6rem;
+    padding: 0.35rem 0.5rem;
     top: 65px;
-  }
-  .reader-island-book-pill {
-    display: none;
+    gap: 0.25rem;
   }
   .reader-island-btn {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.28rem 0.42rem;
+    font-size: 0.72rem;
+    gap: 0.25rem;
+  }
+  #reader-active-chapter-name {
+    max-width: 95px;
   }
   .reader-book-hero-banner {
     flex-direction: column;
@@ -985,9 +1065,7 @@
     padding: 1.5rem;
     gap: 1.2rem;
   }
-  .reader-hero-author {
-    justify-content: center;
-  }
+  .reader-hero-author,
   .reader-hero-stats {
     justify-content: center;
   }
@@ -996,18 +1074,18 @@
   }
   .reader-popover {
     width: 290px;
-    right: -40px;
+    right: -20px;
   }
-}
-
-/* Chapter Navigation Footer */
-.reader-nav-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border-glass);
+  .reader-nav-footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+  .btn-nav-chapter {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
 }
 
 /* RSVP SPEED READER MODAL (СПРИНТЕР-ЧТЕНИЕ SPRITZ) */

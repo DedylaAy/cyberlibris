@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap">
   </noscript>
 
-  <!-- Core & Custom Stylesheets (with cache-busting v5.8.0) -->
-  <link rel="stylesheet" href="css/main.css?v=5.8.4">
-  <link rel="stylesheet" href="css/animations.css?v=5.8.4">
-  <link rel="stylesheet" href="css/reader.css?v=5.8.4">
-  <link rel="stylesheet" href="css/games.css?v=5.8.4">
+  <!-- Core & Custom Stylesheets (with cache-busting v5.8.7) -->
+  <link rel="stylesheet" href="css/main.css?v=5.8.7">
+  <link rel="stylesheet" href="css/animations.css?v=5.8.7">
+  <link rel="stylesheet" href="css/reader.css?v=5.8.7">
+  <link rel="stylesheet" href="css/games.css?v=5.8.7">
 
   <style>
     .books-grid {
@@ -516,7 +516,7 @@
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" id="btn-nav-stages" title="Хроника и этапы развития платформы">
-              Этапы & Новости
+              Хроника
             </button>
           </li>
           <!-- Admin Panel Button: Strictly visible ONLY to Admin, Owner, Creator! -->
@@ -540,7 +540,8 @@
 
         <!-- Command Palette Trigger Button -->
         <button class="header-cmd-btn magnetic-btn" id="btn-open-command-palette" title="Командная строка и поиск (Ctrl+K)">
-          <span class="cmd-text">Поиск</span>
+          <span class="header-btn-icon">🔍</span>
+          <span class="cmd-text header-btn-label">Поиск</span>
           <span class="cmd-badge-key">Ctrl+K</span>
         </button>
 
@@ -548,7 +549,7 @@
         <div class="theme-picker-container" id="theme-picker-container">
           <button class="theme-trigger-btn magnetic-btn" id="btn-theme-picker-trigger" title="Выбрать тему и цвет платформы">
             <span class="current-theme-dot" id="current-theme-dot"></span>
-            <span>Тема</span>
+            <span class="header-btn-label">Тема</span>
             <span class="theme-chevron">▾</span>
           </button>
           <div class="theme-palette-dropdown" id="theme-palette-dropdown">
@@ -633,7 +634,7 @@
             <span class="ambient-anim-bars" id="ambient-anim-bars">
               <span></span><span></span><span></span><span></span>
             </span>
-            <span id="ambient-current-label">Атмосфера</span>
+            <span class="header-btn-label" id="ambient-current-label">Атмосфера</span>
             <span class="theme-chevron">▾</span>
           </button>
           <div class="ambient-dropdown" id="ambient-dropdown">
@@ -663,17 +664,20 @@
 
         <!-- Sound Synthesizer SFX Button -->
         <button class="header-action-btn sfx-btn magnetic-btn active" id="btn-toggle-sfx" title="Звуковые эффекты (M)">
-          <span>Звук: Вкл</span>
+          <span class="header-btn-icon">🔊</span>
+          <span class="header-btn-label">Звук: Вкл</span>
         </button>
 
         <!-- Turbo / Eco Mode Toggle Button for Low-end Laptops -->
         <button class="header-action-btn sfx-btn magnetic-btn" id="btn-toggle-eco" title="Турбо-режим: максимальная производительность для слабых ПК и ноутбуков">
-          <span>Турбо: Выкл</span>
+          <span class="header-btn-icon">⚡</span>
+          <span class="header-btn-label">Турбо: Выкл</span>
         </button>
 
         <!-- Keyboard Shortcuts Help Button -->
         <button class="header-action-btn sfx-btn magnetic-btn" id="btn-open-shortcuts-help" title="Горячие клавиши (?)">
-          <span>Клавиши</span>
+          <span class="header-btn-icon">⌨️</span>
+          <span class="header-btn-label">Клавиши</span>
         </button>
 
         <!-- Current User Pill -->
@@ -1076,7 +1080,8 @@
           <!-- Left: Return & Book Identity -->
           <div class="reader-island-left">
             <button class="reader-island-btn reader-back-btn" id="btn-back-to-library" onclick="window.app.returnFromReader()" title="Вернуться назад (Esc)">
-              <span class="btn-text">← В библиотеку</span>
+              <span class="reader-btn-icon">←</span>
+              <span class="btn-text">В библиотеку</span>
               <span class="kbd-hint">Esc</span>
             </button>
             <div class="reader-island-book-pill" id="reader-island-book-pill">
@@ -1091,7 +1096,7 @@
           <!-- Center: Chapter Pill & Reading Mode -->
           <div class="reader-island-center">
             <button class="reader-island-btn reader-chapter-pill" id="btn-open-toc" title="Открыть оглавление книги">
-              <span class="btn-text">Оглавление</span>
+              <span class="reader-btn-icon">📑</span>
               <span id="reader-active-chapter-name">Глава 1</span>
               <span class="caret">▾</span>
             </button>
@@ -1099,7 +1104,8 @@
               <option value="0">Глава 1</option>
             </select>
             <button class="reader-island-btn reader-mode-pill" id="btn-toggle-manga-mode" title="Переключить между постраничным чтением и непрерывной лентой">
-              <span id="reader-mode-label">Режим: Лента</span>
+              <span class="reader-btn-icon">📜</span>
+              <span id="reader-mode-label">Лента</span>
             </button>
           </div>
 
@@ -1108,7 +1114,8 @@
             <!-- Aa Appearance Popover Anchor -->
             <div class="reader-popover-anchor">
               <button class="reader-island-btn" id="btn-reader-appearance" title="Настройки шрифта, темы и полей">
-                <span class="btn-text">Шрифт и вид</span>
+                <span class="reader-btn-icon">Aa</span>
+                <span class="btn-text">Вид</span>
               </button>
               <!-- Aa Appearance Popover -->
               <div class="reader-popover" id="reader-appearance-popover" style="display: none;">
@@ -1202,6 +1209,7 @@
             <!-- Audio & Ambient Popover Anchor -->
             <div class="reader-popover-anchor">
               <button class="reader-island-btn" id="btn-reader-audio-panel" title="Атмосферный звук и озвучивание">
+                <span class="reader-btn-icon">🎧</span>
                 <span class="btn-text">Аудио</span>
               </button>
               <!-- Audio Popover -->
@@ -1250,15 +1258,19 @@
 
             <!-- Action Buttons -->
             <button class="reader-island-btn" id="btn-start-rsvp" title="Скоростной спринт RSVP">
-              <span class="btn-text">Скорочтение</span>
+              <span class="reader-btn-icon">⚡</span>
+              <span class="btn-text">Спринт</span>
             </button>
             <button class="reader-island-btn" id="btn-open-bookmarks" title="Закладки и заметки">
+              <span class="reader-btn-icon">🔖</span>
               <span class="btn-text">Закладки</span>
             </button>
             <button class="reader-island-btn" id="btn-toggle-zen-mode" title="Дзен-режим (только текст)">
+              <span class="reader-btn-icon">☯</span>
               <span class="btn-text">Дзен</span>
             </button>
             <button class="reader-island-btn" id="btn-toggle-fullscreen" title="На весь экран">
+              <span class="reader-btn-icon">⛶</span>
               <span class="btn-text">Экран</span>
             </button>
           </div>
@@ -3854,18 +3866,18 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- Scripts (with cache-busting v5.8.0) -->
-  <script src="js/audio.js?v=5.8.4"></script>
-  <script src="js/background.js?v=5.8.4"></script>
-  <script src="js/github.js?v=5.8.4"></script>
-  <script src="js/db.js?v=5.8.4"></script>
-  <script src="js/auth.js?v=5.8.4"></script>
-  <script src="js/bookRelay.js?v=5.8.4"></script>
-  <script src="js/recommendations.js?v=5.8.4"></script>
-  <script src="js/openlibrary.js?v=5.8.4"></script>
-  <script src="js/reader.js?v=5.8.4"></script>
-  <script src="js/games.js?v=5.8.4"></script>
-  <script src="js/admin.js?v=5.8.4"></script>
-  <script src="js/app.js?v=5.8.4"></script>
+  <!-- Scripts (with cache-busting v5.8.7) -->
+  <script src="js/audio.js?v=5.8.7"></script>
+  <script src="js/background.js?v=5.8.7"></script>
+  <script src="js/github.js?v=5.8.7"></script>
+  <script src="js/db.js?v=5.8.7"></script>
+  <script src="js/auth.js?v=5.8.7"></script>
+  <script src="js/bookRelay.js?v=5.8.7"></script>
+  <script src="js/recommendations.js?v=5.8.7"></script>
+  <script src="js/openlibrary.js?v=5.8.7"></script>
+  <script src="js/reader.js?v=5.8.7"></script>
+  <script src="js/games.js?v=5.8.7"></script>
+  <script src="js/admin.js?v=5.8.7"></script>
+  <script src="js/app.js?v=5.8.7"></script>
 </body>
 </html>
