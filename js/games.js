@@ -19,19 +19,199 @@ class MiniGamesSuite {
     this.speedCurrentAuthor = '';
     this.speedIsActive = false;
 
-    this.famousQuotes = [
-      { word: "ГОЛОДНЫМИ", quote: "Оставайтесь голодными, оставайтесь безрассудными.", author: "Стив Джобс" },
-      { word: "КРАСОТА", quote: "Красота спасёт этот безумный мир.", author: "Фёдор Достоевский" },
-      { word: "НАЧАТЬ", quote: "Секрет того, чтобы преуспеть — просто начать.", author: "Марк Твен" },
-      { word: "ВООБРАЖЕНИЕ", quote: "Воображение куда важнее, чем сухие знания.", author: "Альберт Эйнштейн" },
-      { word: "СИЛЬНЕЕ", quote: "То, что нас не убивает, делает нас сильнее.", author: "Фридрих Ницше" },
-      { word: "РОЛИ", quote: "Будь собой, все остальные роли уже безнадежно заняты.", author: "Оскар Уайльд" },
-      { word: "ПРОСТЫ", quote: "Все мысли, имеющие огромные последствия, всегда просты.", author: "Лев Толстой" },
-      { word: "НЕ ГОРЯТ", quote: "Поверьте мне, настоящие рукописи никогда не горят.", author: "Михаил Булгаков" },
-      { word: "СТРАХ", quote: "Страх убивает разум. Страх — это малая смерть.", author: "Фрэнк Герберт (Дюна)" },
-      { word: "ИСТИНА", quote: "Отбросьте все невозможное; то, что останется, и есть истина.", author: "Шерлок Холмс" },
-      { word: "ПОБЕДА", quote: "Лучшая победа — это покорить врага без единого выстрела.", author: "Сунь-Цзы" },
-      { word: "ВРЕМЯ", quote: "Всему свой час, и время всякой вещи под этим небом.", author: "Царь Соломон" }
+    this.speedWordGroups = [
+      {
+        target: "ИСТИНА",
+        hint: "«Отбросьте всё невозможное; то, что останется, и есть истина»",
+        author: "Артур Конан Дойл",
+        decoys: ["ИСТОРИЯ", "ИСТОК", "ИСТОРИК", "ИСТИННЫЙ", "ИСТОЧНИК", "ИСТУКАН", "ИСТЕРИКА", "ИСТЯЗАНИЕ"]
+      },
+      {
+        target: "зАмок",
+        hint: "«Величественная крепость и оплот владыки на неприступной гранитной скале»",
+        author: "Франц Кафка",
+        decoys: ["замОк", "ЗАМОЧЕК", "ЗАРОК", "ЗАГОН", "ЗАЛОГ", "ЗАТОН", "ЗАВОД", "ЗАТОР"]
+      },
+      {
+        target: "замОк",
+        hint: "«Кованый висячий запор с секретом на массивных железных вратах»",
+        author: "Н.В. Гоголь",
+        decoys: ["зАмок", "ЗАМОЧЕК", "ЗАРОК", "ЗАГОН", "ЗАЛОГ", "ЗАТОН", "ЗАВОД", "ЗАПОР"]
+      },
+      {
+        target: "АДРЕСАТ",
+        hint: "«Лицо или организация, кому непосредственно адресовано послание»",
+        author: "Эпистолярный канон",
+        decoys: ["АДРЕСАНТ", "АГРЕГАТ", "АДЪЮТАНТ", "АДЕПТ", "АДРЕНАЛИН", "АРЕАЛ", "АЛЛЕГОРИЯ", "АДМИНИСТРАТОР"]
+      },
+      {
+        target: "АДРЕСАНТ",
+        hint: "«Тот, кто сам отправляет письмо, депешу или почтовое отправление»",
+        author: "Почтовый устав",
+        decoys: ["АДРЕСАТ", "АГРЕГАТ", "АДЪЮТАНТ", "АДЕПТ", "АДРЕНАЛИН", "АРЕАЛ", "АЛЛЕГОРИЯ", "АДМИНИСТРАТОР"]
+      },
+      {
+        target: "КОМПАНИЯ",
+        hint: "«Теплый дружеский круг или торговое содружество единомышленников»",
+        author: "А.С. Пушкин",
+        decoys: ["КАМПАНИЯ", "КОМПОНЕНТ", "КОМПАНЬОН", "КОМПОЗИЦИЯ", "КОМПАКТ", "КАМБУЗ", "КОМБИНАЦИЯ", "КОМПРОМИСС"]
+      },
+      {
+        target: "КАМПАНИЯ",
+        hint: "«Совокупность военных операций или масштабных общественных акций»",
+        author: "Лев Толстой",
+        decoys: ["КОМПАНИЯ", "КОМПОНЕНТ", "КОМПАНЬОН", "КОМПОЗИЦИЯ", "КОМПАКТ", "КАМБУЗ", "КОМБИНАЦИЯ", "КОМПРОМИСС"]
+      },
+      {
+        target: "ЭМИГРАНТ",
+        hint: "«Гражданин, навсегда выехавший из своей родной страны за рубеж»",
+        author: "И.А. Бунин",
+        decoys: ["ИММИГРАНТ", "МИГРАНТ", "ЭМИССАР", "ЭМИР", "ЭМИТЕНТ", "ЭМИССИЯ", "ЭПИГОН", "ИММУНИТЕТ"]
+      },
+      {
+        target: "ИММИГРАНТ",
+        hint: "«Иностранец, въезжающий на постоянное проживание в новое государство»",
+        author: "Социология",
+        decoys: ["ЭМИГРАНТ", "МИГРАНТ", "ЭМИССАР", "ЭМИР", "ЭМИТЕНТ", "ЭМИССИЯ", "ЭПИГОН", "ИММУНИТЕТ"]
+      },
+      {
+        target: "НЕВЕЖДА",
+        hint: "«Малообразованный, темный человек, несведущий в науках и познании»",
+        author: "Д.И. Фонвизин",
+        decoys: ["НЕВЕЖА", "НАДЕЖДА", "НЕВИДАЛЬ", "НЕВЕРИЕ", "НЕВЕРНОСТЬ", "НЕВЕСОМОСТЬ", "НЕВЕСТА", "НЕВИДИМКА"]
+      },
+      {
+        target: "НЕВЕЖА",
+        hint: "«Грубый, бестактный и не умеющий прилично себя вести субъект»",
+        author: "И.А. Крылов",
+        decoys: ["НЕВЕЖДА", "НАДЕЖДА", "НЕВИДАЛЬ", "НЕВЕРИЕ", "НЕВЕРНОСТЬ", "НЕВЕСОМОСТЬ", "НЕВЕСТА", "НЕВИДИМКА"]
+      },
+      {
+        target: "ВДОХ",
+        hint: "«Однократное поступление живительного воздуха в легкие человека»",
+        author: "Физиология",
+        decoys: ["ВЗДОХ", "ВЫДОХ", "ВХОД", "ВСПЛЕСК", "ВБРОС", "ВЗЛЁТ", "ВКУС", "ВЗГЛЯД"]
+      },
+      {
+        target: "ВЗДОХ",
+        hint: "«Шумный выдох с оттенком душевной печали, тоски или тайного облегчения»",
+        author: "М.Ю. Лермонтов",
+        decoys: ["ВДОХ", "ВЫДОХ", "ВХОД", "ВСПЛЕСК", "ВБРОС", "ВЗЛЁТ", "ВКУС", "ВЗГЛЯД"]
+      },
+      {
+        target: "ЭФФЕКТНЫЙ",
+        hint: "«Производящий сильное впечатление, броский, блестящий и нарядный»",
+        author: "Оскар Уайльд",
+        decoys: ["ЭФФЕКТИВНЫЙ", "ДЕФЕКТНЫЙ", "АФФЕКТНЫЙ", "ЭФЕМЕРНЫЙ", "ЭПИЧЕСКИЙ", "ЭСТЕТИЧНЫЙ", "ЭФИРНЫЙ", "ЭПАТАЖНЫЙ"]
+      },
+      {
+        target: "ЭФФЕКТИВНЫЙ",
+        hint: "«Дающий наилучший практический результат, действенный и продуктивный»",
+        author: "Кибернетика",
+        decoys: ["ЭФФЕКТНЫЙ", "ДЕФЕКТНЫЙ", "АФФЕКТНЫЙ", "ЭФЕМЕРНЫЙ", "ЭПИЧЕСКИЙ", "ЭСТЕТИЧНЫЙ", "ЭФИРНЫЙ", "ЭПАТАЖНЫЙ"]
+      },
+      {
+        target: "ДИПЛОМАТ",
+        hint: "«Официальный уполномоченный представитель государства за границей»",
+        author: "А.С. Грибоедов",
+        decoys: ["ДИПЛОМАНТ", "ДИПЛОМНИК", "ДИССИДЕНТ", "ДИЛЕТАНТ", "ДИКТАТОР", "ДИНАМИТ", "ДИАГНОСТ", "ДИКТАНТ"]
+      },
+      {
+        target: "ДИПЛОМАНТ",
+        hint: "«Лауреат творческого конкурса, удостоенный почетного диплома»",
+        author: "Культурология",
+        decoys: ["ДИПЛОМАТ", "ДИПЛОМНИК", "ДИССИДЕНТ", "ДИЛЕТАНТ", "ДИКТАТОР", "ДИНАМИТ", "ДИАГНОСТ", "ДИКТАНТ"]
+      },
+      {
+        target: "ПРЕДОСТАВИТЬ",
+        hint: "«Отдать в чье-либо распоряжение, предоставить слово или кредит»",
+        author: "Деловой канон",
+        decoys: ["ПРЕДСТАВИТЬ", "ПОДСТАВИТЬ", "ПРИСТАВИТЬ", "ПЕРЕСТАВИТЬ", "ПРОСТАВИТЬ", "ПОСТАВИТЬ", "ОТСТАВИТЬ", "ДОСТАВИТЬ"]
+      },
+      {
+        target: "ПРЕДСТАВИТЬ",
+        hint: "«Познакомить с гостями либо воспроизвести образ в собственном уме»",
+        author: "Фёдор Достоевский",
+        decoys: ["ПРЕДОСТАВИТЬ", "ПОДСТАВИТЬ", "ПРИСТАВИТЬ", "ПЕРЕСТАВИТЬ", "ПРОСТАВИТЬ", "ПОСТАВИТЬ", "ОТСТАВИТЬ", "ДОСТАВИТЬ"]
+      },
+      {
+        target: "НАДЕТЬ",
+        hint: "«Натянуть предмет одежды на себя самого (надеть фрак, надеть пальто)»",
+        author: "Грамматика",
+        decoys: ["ОДЕТЬ", "РАЗДЕТЬ", "ВДЕТЬ", "ЗАДЕТЬ", "ПРИОДЕТЬ", "ПЕРЕОДЕТЬ", "ПОДДЕТЬ", "УДЕТЬ"]
+      },
+      {
+        target: "ОДЕТЬ",
+        hint: "«Облечь в одежды кого-то другого (одеть ребенка, одеть куклу)»",
+        author: "Грамматика",
+        decoys: ["НАДЕТЬ", "РАЗДЕТЬ", "ВДЕТЬ", "ЗАДЕТЬ", "ПРИОДЕТЬ", "ПЕРЕОДЕТЬ", "ПОДДЕТЬ", "УДЕТЬ"]
+      },
+      {
+        target: "АТЛАС",
+        hint: "«Собрание географических карт морей, континентов и звездного неба»",
+        author: "Герард Меркатор",
+        decoys: ["АТЛАСНЫЙ", "АТЛАНТ", "АТЛЕТ", "АТОЛЛ", "АСТРАЛ", "АСФАЛЬТ", "АСПЕКТ", "АТОМ"]
+      },
+      {
+        target: "АТЛАСНЫЙ",
+        hint: "«Гладкий и шелковистый материал с благородным лоснящимся отливом»",
+        author: "Текстиль",
+        decoys: ["АТЛАС", "АТЛАНТ", "АТЛЕТ", "АТОЛЛ", "АСТРАЛ", "АСФАЛЬТ", "АСПЕКТ", "АТОМ"]
+      },
+      {
+        target: "КОНТЕКСТ",
+        hint: "«Смысловая среда фразы, определяющая точное значение каждого слова»",
+        author: "Семиотика",
+        decoys: ["КОНТАКТ", "КОНТРАКТ", "КОНСПЕКТ", "КОНЦЕПТ", "КОНТЕНТ", "КОНТРАСТ", "КОНСУЛ", "КОНТУР"]
+      },
+      {
+        target: "СИМВОЛ",
+        hint: "«Образ, заключающий в себе многогранный философский подтекст»",
+        author: "Шарль Бодлер",
+        decoys: ["СТИМУЛ", "СИМПТОМ", "СИМУЛЯКР", "СИНОПСИС", "СИЛУЭТ", "СИНДИКАТ", "СИММЕТРИЯ", "СИНТЕЗ"]
+      },
+      {
+        target: "МЕТАФОРА",
+        hint: "«Перенос свойств одного предмета на другой на основе их сходства»",
+        author: "Аристотель",
+        decoys: ["МЕТАМОРФОЗА", "МЕТАФИЗИКА", "МЕТЕОР", "МЕТОД", "МЕТАНОЛ", "МЕТРОНОМ", "МЕТАГАЛАКТИКА", "МЕТАЛЛ"]
+      },
+      {
+        target: "КИБЕРНЕТИКА",
+        hint: "«Наука об управлении сложными динамическими системами и передаче данных»",
+        author: "Норберт Винер",
+        decoys: ["КИБЕРНЕТИК", "КИБОРГ", "КИБЕРПАНК", "КИБЕРСФЕРА", "КИБЕРИКА", "КИБЕРСИСТЕМА", "КИБЕРНЕТ", "КИБЕРТЕКСТ"]
+      },
+      {
+        target: "ОНТОЛОГИЯ",
+        hint: "«Философское учение о первоосновах бытия и фундаментальной реальности»",
+        author: "Парменид",
+        decoys: ["АНТОЛОГИЯ", "АНАЛОГИЯ", "АПОЛОГИЯ", "АНТРОПОЛОГИЯ", "АРХЕОЛОГИЯ", "АСТРОЛОГИЯ", "АНАТОМИЯ", "АНОМАЛИЯ"]
+      },
+      {
+        target: "АНТОЛОГИЯ",
+        hint: "«Сборник избранных шедевров разных поэтов и прозаиков»",
+        author: "Античная словесность",
+        decoys: ["ОНТОЛОГИЯ", "АНАЛОГИЯ", "АПОЛОГИЯ", "АНТРОПОЛОГИЯ", "АРХЕОЛОГИЯ", "АСТРОЛОГИЯ", "АНАТОМИЯ", "АНОМАЛИЯ"]
+      },
+      {
+        target: "ЦИТАДЕЛЬ",
+        hint: "«Неприступная крепостная твердыня в сердце осажденного города»",
+        author: "Антуан де Сент-Экзюпери",
+        decoys: ["ЦИТАТА", "ЦИКАДА", "ЦИТРА", "ЦИФРА", "ЦИНИЗМ", "ЦИРКУЛЬ", "ЦИКЛОН", "ЦЕЙТНОТ"]
+      },
+      {
+        target: "ЦИТАТА",
+        hint: "«Дословная, буквальная выдержка из авторского сочинения»",
+        author: "М.М. Бахтин",
+        decoys: ["ЦИТАДЕЛЬ", "ЦИКАДА", "ЦИТРА", "ЦИФРА", "ЦИНИЗМ", "ЦИРКУЛЬ", "ЦИКЛОН", "ЦЕЙТНОТ"]
+      },
+      {
+        target: "ВЕЧНОСТЬ",
+        hint: "«Беспредельное существование во времени, не имеющее предела»",
+        author: "Ханс Кристиан Андерсен",
+        decoys: ["ВЕРНОСТЬ", "ВЕЖЛИВОСТЬ", "ВЕТХОСТЬ", "ВЕЩЕСТВЕННОСТЬ", "ВСТРЕЧНОСТЬ", "ВЛАСТНОСТЬ", "ВЕРТЛЯВОСТЬ", "ВАЖНОСТЬ"]
+      }
     ];
 
     // Game 2: Book-Specific Quiz Database
@@ -895,22 +1075,22 @@ class MiniGamesSuite {
   }
 
   nextSpeedWord() {
-    const item = this.famousQuotes[Math.floor(Math.random() * this.famousQuotes.length)];
-    this.speedCurrentTarget = item.word;
-    this.speedCurrentAuthor = item.author;
+    if (!this.speedWordGroups || this.speedWordGroups.length === 0) return;
+    const group = this.speedWordGroups[Math.floor(Math.random() * this.speedWordGroups.length)];
+    this.speedCurrentTarget = group.target;
+    this.speedCurrentAuthor = group.author;
 
     const targetEl = document.getElementById('speed-target-word');
     if (targetEl) {
       targetEl.innerHTML = `
-        <span style="display:block; font-size: 1rem; color: var(--accent-magenta); margin-bottom: 0.5rem; font-style:italic;">«${item.quote}»</span>
-        <span style="font-size: 1.9rem; letter-spacing: 2px; font-weight:900;">${item.word}</span>
-        <span style="display:block; font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem;">— ${item.author}</span>
+        <span style="display:block; font-size: 0.95rem; color: var(--accent-magenta); margin-bottom: 0.4rem; font-style:italic;">«${group.hint}»</span>
+        <span style="font-size: 2.1rem; letter-spacing: 2px; font-weight:900; color: #fff; text-shadow: 0 0 16px rgba(0, 240, 255, 0.7);">${group.target}</span>
+        <span style="display:block; font-size: 0.85rem; color: var(--text-dim); margin-top: 0.4rem;">— ${group.author}</span>
       `;
     }
 
-    const allWords = this.famousQuotes.map(q => q.word);
-    const decoys = allWords.filter(w => w !== this.speedCurrentTarget).sort(() => Math.random() - 0.5).slice(0, 3);
-    const options = [this.speedCurrentTarget, ...decoys].sort(() => Math.random() - 0.5);
+    // Exactly 9 choices (1 target + 8 orthographically similar deceptive decoys) in a 3x3 matrix
+    const options = [group.target, ...group.decoys].sort(() => Math.random() - 0.5);
 
     const grid = document.getElementById('speed-options-grid');
     if (!grid) return;
@@ -919,9 +1099,6 @@ class MiniGamesSuite {
     options.forEach((word) => {
       const btn = document.createElement('button');
       btn.className = 'btn btn-secondary speed-word-card';
-      btn.style.padding = '1.2rem 1.5rem';
-      btn.style.fontSize = '1.15rem';
-      btn.style.fontWeight = '800';
       btn.textContent = word;
 
       btn.addEventListener('click', () => this.handleSpeedWordChoice(word, btn));
@@ -933,21 +1110,31 @@ class MiniGamesSuite {
     if (!this.speedIsActive) return;
 
     if (chosenWord === this.speedCurrentTarget) {
-      btn.style.background = 'var(--accent-green)';
-      btn.style.borderColor = 'var(--accent-green)';
-      this.speedScore += 100 * this.speedCombo;
-      this.speedCombo = Math.min(5, this.speedCombo + 1);
+      btn.classList.add('correct');
+      // Base score is 10 per reacted word, scaled with gentle combo
+      const pts = Math.round(10 * this.speedCombo);
+      this.speedScore += pts;
+      // Gentle combo scaling capped at x2.0
+      this.speedCombo = Math.min(2.0, +(this.speedCombo + 0.1).toFixed(1));
 
-      document.getElementById('speed-score-display').textContent = this.speedScore;
-      document.getElementById('speed-combo-display').textContent = `x${this.speedCombo}`;
+      const scoreEl = document.getElementById('speed-score-display');
+      const comboEl = document.getElementById('speed-combo-display');
+      if (scoreEl) scoreEl.textContent = this.speedScore;
+      if (comboEl) comboEl.textContent = `x${this.speedCombo.toFixed(1)}`;
 
-      if (window.soundEngine) window.soundEngine.playCorrect();
-      setTimeout(() => this.nextSpeedWord(), 250);
+      if (window.soundEngine?.playCorrect) window.soundEngine.playCorrect();
+      setTimeout(() => this.nextSpeedWord(), 150);
     } else {
-      btn.style.background = 'var(--accent-magenta)';
-      btn.style.borderColor = 'var(--accent-magenta)';
-      this.speedCombo = 1;
-      document.getElementById('speed-combo-display').textContent = 'x1';
+      btn.classList.add('wrong');
+      // Penalty on misclick: -5 pts and combo reset to x1.0
+      this.speedScore = Math.max(0, this.speedScore - 5);
+      this.speedCombo = 1.0;
+
+      const scoreEl = document.getElementById('speed-score-display');
+      const comboEl = document.getElementById('speed-combo-display');
+      if (scoreEl) scoreEl.textContent = this.speedScore;
+      if (comboEl) comboEl.textContent = 'x1.0';
+
       if (window.soundEngine) (window.soundEngine.playWrong || window.soundEngine.playError).call(window.soundEngine);
     }
   }
@@ -962,8 +1149,9 @@ class MiniGamesSuite {
       btn.textContent = 'Сыграть снова';
     }
 
-    const lumensEarned = Math.round(this.speedScore / 10);
-    const xpEarned = Math.round(this.speedScore / 3);
+    // Balanced payouts: entry cost is 25 ⬡, fair yield is ~15-45 ⬡ and ~20-40 XP
+    const lumensEarned = Math.min(50, Math.max(8, Math.round(this.speedScore / 8)));
+    const xpEarned = Math.min(45, Math.max(10, Math.round(this.speedScore / 8)));
 
     if (window.auth) {
       window.auth.addLumens(lumensEarned);
@@ -1360,7 +1548,7 @@ class MiniGamesSuite {
       const matchesEl = document.getElementById('memory-matches-display');
       const scoreEl = document.getElementById('memory-score-display');
       if (matchesEl) matchesEl.textContent = `${this.matchingSolvedCount} / ${this.matchingTotalPairs}`;
-      const rewardSoFar = this.matchingSolvedCount * 30;
+      const rewardSoFar = this.matchingSolvedCount * 8;
       if (scoreEl) scoreEl.textContent = `${rewardSoFar} ⬡`;
 
       if (window.soundEngine) window.soundEngine.playCorrect();

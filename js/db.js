@@ -468,6 +468,23 @@ class DatabaseEngine {
     this.data = null;
     this.listeners = [];
     this.saveTimeout = null;
+
+    // Synchronously initialize this.data immediately to avoid any race condition
+    try {
+      const local = localStorage.getItem(this.storageKey);
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (parsed && Array.isArray(parsed.books) && parsed.books.length > 0) {
+          this.data = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Sync DB bootstrap error:', e);
+    }
+
+    if (!this.data) {
+      this.data = JSON.parse(JSON.stringify(DEFAULT_DATABASE));
+    }
   }
 
   async init() {
@@ -488,18 +505,15 @@ class DatabaseEngine {
       }
     }
 
-    if (!this.data) {
+    if (!local) {
       try {
         const res = await fetch('database.json');
         if (res.ok) {
           this.data = await res.json();
           this.persistLocally();
-        } else {
-          throw new Error('HTTP ' + res.status);
         }
       } catch (err) {
         console.log('Using robust embedded DEFAULT_DATABASE (safe for file:// and offline mode)');
-        this.data = JSON.parse(JSON.stringify(DEFAULT_DATABASE));
         this.persistLocally();
       }
     }
@@ -534,8 +548,13 @@ class DatabaseEngine {
 
   persistLocally() {
     if (!this.data) return;
+    if (!this.data.meta) this.data.meta = {};
     this.data.meta.lastUpdated = new Date().toISOString();
-    localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+    } catch (e) {
+      console.error('Failed to persist local DB:', e);
+    }
   }
 
   save(actionDescription = 'Update data') {

@@ -100,23 +100,45 @@
 
 .speed-options-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1.25rem;
-  max-width: 700px;
-  margin: 0 auto 2.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  max-width: 680px;
+  margin: 0 auto 2rem;
 }
 
 .speed-word-card {
-  padding: 1.25rem 1rem;
-  background: rgba(10, 16, 28, 0.8);
+  padding: 1rem 0.6rem;
+  background: rgba(10, 16, 28, 0.85);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   user-select: none;
   will-change: transform;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 600px) {
+  .speed-options-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.45rem;
+    margin-bottom: 1.5rem;
+  }
+  .speed-word-card {
+    padding: 0.65rem 0.35rem;
+    font-size: 0.85rem;
+    min-height: 48px;
+    letter-spacing: 0;
+  }
 }
 
 .speed-word-card:hover {

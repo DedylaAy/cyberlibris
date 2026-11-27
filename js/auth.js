@@ -24,11 +24,29 @@ class AuthManager {
 
   init() {
     const activeId = localStorage.getItem(this.sessionKey) || 'usr_creator';
-    this.currentUser = window.dbEngine.getUser(activeId);
-    if (!this.currentUser) {
+    let user = window.dbEngine.getUser(activeId);
+
+    // Bulletproof sync from dedicated user persistence
+    try {
+      const savedUserStr = localStorage.getItem('cyberlibris_user_' + activeId);
+      if (savedUserStr) {
+        const savedUser = JSON.parse(savedUserStr);
+        if (savedUser && savedUser.id === activeId) {
+          if (user) {
+            Object.assign(user, savedUser);
+          } else {
+            user = savedUser;
+            window.dbEngine.getUsers().push(user);
+          }
+        }
+      }
+    } catch (e) {}
+
+    if (!user) {
       // Default fallback to Creator
-      this.currentUser = window.dbEngine.getUsers().find((u) => u.role === 'creator') || window.dbEngine.getUsers()[0];
+      user = window.dbEngine.getUsers().find((u) => u.role === 'creator') || window.dbEngine.getUsers()[0];
     }
+    this.currentUser = user;
     this.syncUserToUI();
   }
 
@@ -328,6 +346,9 @@ class AuthManager {
 
   saveUser() {
     if (this.currentUser) {
+      try {
+        localStorage.setItem('cyberlibris_user_' + this.currentUser.id, JSON.stringify(this.currentUser));
+      } catch (e) {}
       window.dbEngine.saveUser(this.currentUser);
     }
   }
