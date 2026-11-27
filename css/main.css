@@ -5742,3 +5742,398 @@ body.eco-mode .steam-book-card::after {
   font-size: 0.8rem;
   background: rgba(255, 255, 255, 0.02);
 }
+
+/* ==========================================================================
+   STEAM-STYLE PROFILE & TOP NAVIGATION DROPDOWN
+   ========================================================================== */
+.steam-user-container {
+  position: relative;
+  display: inline-block;
+}
+
+.steam-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: rgba(16, 24, 40, 0.95);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  padding: 0.35rem 0.85rem 0.35rem 0.5rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.steam-profile-pill:hover,
+.steam-profile-pill.active {
+  background: rgba(24, 36, 60, 0.98);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.3);
+}
+
+.steam-avatar-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.steam-pill-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.steam-pill-name {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.steam-pill-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.steam-pill-level {
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.steam-pill-lumens {
+  color: var(--accent-gold);
+  font-weight: 800;
+}
+
+.steam-pill-chevron {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  transition: transform 0.2s ease;
+  margin-left: 0.2rem;
+}
+.steam-profile-pill.active .steam-pill-chevron {
+  transform: rotate(180deg);
+}
+
+/* Steam Dropdown Box */
+.steam-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 320px;
+  background: rgba(12, 18, 30, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 240, 255, 0.2);
+  padding: 1.2rem;
+  z-index: 1000;
+  display: none;
+  animation: fadeInDown 0.2s ease-out;
+}
+.steam-profile-dropdown.open {
+  display: block;
+}
+
+.steam-drop-header {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.steam-drop-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(0, 240, 255, 0.1);
+  border: 2px solid var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+}
+
+.steam-drop-user-info {
+  flex: 1;
+}
+
+.steam-drop-username {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.steam-drop-role-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.steam-drop-progress-row {
+  margin-top: 0.8rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+}
+
+.steam-drop-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.steam-drop-bar-track {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.steam-drop-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+  border-radius: 3px;
+}
+
+.steam-drop-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.9rem 0;
+}
+
+.steam-drop-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-main);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.steam-drop-item:hover {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.3);
+  color: #fff;
+  transform: translateX(4px);
+}
+
+.steam-drop-item-icon {
+  font-size: 1.1rem;
+}
+
+.steam-drop-accounts-block {
+  border-top: 1px solid var(--border-glass);
+  padding-top: 0.8rem;
+  margin-top: 0.6rem;
+}
+
+.steam-drop-accounts-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.steam-drop-users-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 0.8rem;
+}
+
+.steam-quick-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.steam-quick-user-row:hover,
+.steam-quick-user-row.active {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--accent-cyan);
+}
+
+.steam-quick-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.steam-drop-footer-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Dynamic Ticker Improvements */
+.cyber-live-ticker .ticker-item.ticker-link {
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.cyber-live-ticker .ticker-item.ticker-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-cyan);
+}
+.cyber-live-ticker:hover .ticker-items-scroll {
+  animation-play-state: paused !important;
+}
+
+/* Roadmap Modal Timeline */
+.modal-roadmap-box {
+  background: rgba(10, 16, 28, 0.98);
+  border: 1.5px solid rgba(0, 240, 255, 0.45);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 240, 255, 0.25);
+}
+
+.roadmap-stage-card {
+  display: flex;
+  gap: 1.2rem;
+  padding: 1.2rem;
+  background: rgba(16, 24, 40, 0.7);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+}
+
+.roadmap-stage-card.active {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+}
+
+.stage-badge-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 75px;
+  flex-shrink: 0;
+}
+
+.stage-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+
+.stage-badge.done {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--accent-green);
+  border: 1.5px solid var(--accent-green);
+}
+
+.stage-badge.current {
+  background: rgba(0, 240, 255, 0.25);
+  color: #fff;
+  border: 2px solid var(--accent-cyan);
+  box-shadow: 0 0 15px var(--accent-cyan);
+}
+
+.stage-badge.future {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+  border: 1.5px dashed var(--border-glass);
+}
+
+.stage-status-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-align: center;
+}
+.stage-status-label.done { color: var(--accent-green); }
+.stage-status-label.current { color: var(--accent-cyan); }
+.stage-status-label.future { color: var(--text-dim); }
+
+.stage-info {
+  flex: 1;
+}
+
+.stage-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.stage-header-row h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.stage-version {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.stage-version.current {
+  background: rgba(0, 240, 255, 0.2);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+}
+.stage-version.future {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+}
+
+.stage-info p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}

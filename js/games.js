@@ -512,6 +512,54 @@ class MiniGamesSuite {
         author: "Сунь-Цзы",
         book: "«Искусство войны»",
         decoys: ["боя", "быстро"]
+      },
+      {
+        quote: "Мы в ответе за тех кого однажды приручили",
+        author: "Антуан де Сент-Экзюпери",
+        book: "«Маленький принц»",
+        decoys: ["любили", "знали"]
+      },
+      {
+        quote: "В человеке должно быть всё прекрасно и лицо и одежда и душа и мысли",
+        author: "Антон Чехов",
+        book: "«Дядя Ваня»",
+        decoys: ["тело", "разум"]
+      },
+      {
+        quote: "Любви все возрасты покорны как мудро молвил древний поэт",
+        author: "Александр Пушкин",
+        book: "«Евгений Онегин»",
+        decoys: ["сердца", "годы"]
+      },
+      {
+        quote: "Быть или не быть вот в чём истинный вопрос",
+        author: "Уильям Шекспир",
+        book: "«Гамлет»",
+        decoys: ["жить", "смысл"]
+      },
+      {
+        quote: "Самое прекрасное в мире это само познание непостижимого",
+        author: "Альберт Эйнштейн",
+        book: "«Мир как я его вижу»",
+        decoys: ["тайны", "вселенной"]
+      },
+      {
+        quote: "Один за всех и все за одного",
+        author: "Александр Дюма",
+        book: "«Три мушкетёра»",
+        decoys: ["всегда", "вместе"]
+      },
+      {
+        quote: "Тот кто имеет зачем жить может вынести почти любое как",
+        author: "Фридрих Ницше",
+        book: "«Сумерки идолов»",
+        decoys: ["почему", "когда"]
+      },
+      {
+        quote: "Единственный способ избавиться от искушения это поддаться ему",
+        author: "Оскар Уайльд",
+        book: "«Портрет Дориана Грея»",
+        decoys: ["победить", "верить"]
       }
     ];
 
@@ -533,7 +581,7 @@ class MiniGamesSuite {
     this.gameNames = {
       speed: 'Словесный Шторм',
       quiz: 'Квиз Эрудита',
-      memory: 'Мемори-Карты',
+      memory: 'Сопоставление Пар',
       speedread: 'Скорочтение & Фокус',
       reconstruct: 'Мнемо-Цитаты'
     };
@@ -1138,229 +1186,201 @@ class MiniGamesSuite {
   }
 
   // =========================================================================
-  // GAME 3: LITERARY MEMORY MATRIX (МЕМОРИ-КАРТЫ)
+  // GAME 3: LITERARY MATCHING PAIRS (СОПОСТАВЛЕНИЕ ПАР)
   // =========================================================================
 
   bindMemoryControls() {
     document.getElementById('btn-memory-restart')?.addEventListener('click', () => {
       this.requestGamePlay('memory', () => {
-        this.memoryRoundActive = true;
-        this.initMemoryGame(this.memoryDifficulty);
-      });
-    });
-
-    document.getElementById('btn-memory-peek')?.addEventListener('click', () => {
-      this.peekMemoryCards();
-    });
-
-    document.querySelectorAll('.memory-diff-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.memory-diff-btn').forEach(b => b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-        const pairs = parseInt(e.currentTarget.dataset.pairs, 10) || 8;
-        this.memoryDifficulty = pairs;
-        this.requestGamePlay('memory', () => {
-          this.memoryRoundActive = true;
-          this.initMemoryGame(pairs);
-        });
+        this.startMatchingRound();
       });
     });
   }
 
-  initMemoryGame(numPairs = this.memoryDifficulty) {
+  initMemoryGame() {
+    this.startMatchingRound();
+  }
+
+  startMatchingRound() {
     if (this.memoryTimer) clearInterval(this.memoryTimer);
 
-    this.memoryDifficulty = numPairs;
-    this.memoryMatchedCount = 0;
-    this.memoryMoves = 0;
-    this.memorySeconds = 0;
-    this.memoryFlippedCards = [];
-    this.memoryIsBusy = false;
-    this.memoryGameActive = true;
-    this.memoryRoundActive = false;
+    this.matchingRoundActive = true;
+    this.matchingSelectedLeft = null;
+    this.matchingSolvedCount = 0;
+    this.matchingMoves = 0;
+    this.matchingSeconds = 0;
 
-    // Reset HUD
+    const pairsCount = 6;
+    this.matchingTotalPairs = pairsCount;
+
+    // Pick 6 random pairs from memoryPairsData
+    const pool = [...this.memoryPairsData].sort(() => Math.random() - 0.5).slice(0, pairsCount);
+    this.activePairs = pool;
+
+    // Left cards: cardA
+    this.leftCards = pool.map(p => ({
+      pairId: p.pairId,
+      icon: p.cardA.icon,
+      title: p.cardA.title,
+      type: p.cardA.type,
+      hint: p.cardA.hint,
+      solved: false
+    })).sort(() => Math.random() - 0.5);
+
+    // Right cards: cardB
+    this.rightCards = pool.map(p => ({
+      pairId: p.pairId,
+      icon: p.cardB.icon,
+      title: p.cardB.title,
+      type: p.cardB.type,
+      hint: p.cardB.hint,
+      solved: false
+    })).sort(() => Math.random() - 0.5);
+
+    // Update HUD
     const movesEl = document.getElementById('memory-moves-display');
     const matchesEl = document.getElementById('memory-matches-display');
     const timerEl = document.getElementById('memory-timer-display');
     const scoreEl = document.getElementById('memory-score-display');
 
     if (movesEl) movesEl.textContent = '0';
-    if (matchesEl) matchesEl.textContent = `0 / ${numPairs}`;
+    if (matchesEl) matchesEl.textContent = `0 / ${pairsCount}`;
     if (timerEl) timerEl.textContent = '00:00';
     if (scoreEl) scoreEl.textContent = '0 ⬡';
 
-    // Pick pairs
-    const pool = [...this.memoryPairsData].sort(() => Math.random() - 0.5).slice(0, numPairs);
-    const cardList = [];
-
-    pool.forEach((p) => {
-      cardList.push({
-        id: `${p.pairId}_a`,
-        pairId: p.pairId,
-        icon: p.cardA.icon,
-        title: p.cardA.title,
-        type: p.cardA.type,
-        hint: p.cardA.hint,
-        matched: false
-      });
-      cardList.push({
-        id: `${p.pairId}_b`,
-        pairId: p.pairId,
-        icon: p.cardB.icon,
-        title: p.cardB.title,
-        type: p.cardB.type,
-        hint: p.cardB.hint,
-        matched: false
-      });
-    });
-
-    // Shuffle cards
-    this.memoryCards = cardList.sort(() => Math.random() - 0.5);
-
-    // Render grid
-    this.renderMemoryBoard();
+    this.renderMatchingBoard();
 
     // Start timer
     this.memoryTimer = setInterval(() => {
-      this.memorySeconds++;
-      const mins = String(Math.floor(this.memorySeconds / 60)).padStart(2, '0');
-      const secs = String(this.memorySeconds % 60).padStart(2, '0');
-      const tEl = document.getElementById('memory-timer-display');
-      if (tEl) tEl.textContent = `${mins}:${secs}`;
+      this.matchingSeconds++;
+      const mins = String(Math.floor(this.matchingSeconds / 60)).padStart(2, '0');
+      const secs = String(this.matchingSeconds % 60).padStart(2, '0');
+      if (timerEl) timerEl.textContent = `${mins}:${secs}`;
     }, 1000);
   }
 
-  renderMemoryBoard() {
-    const grid = document.getElementById('literary-memory-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
+  renderMatchingBoard() {
+    const colLeft = document.getElementById('matching-col-left');
+    const colRight = document.getElementById('matching-col-right');
+    if (!colLeft || !colRight) return;
 
-    if (this.memoryDifficulty === 12) {
-      grid.style.maxWidth = '980px';
-      grid.style.gridTemplateColumns = 'repeat(6, 1fr)';
-    } else {
-      grid.style.maxWidth = '840px';
-      grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
-    }
+    colLeft.innerHTML = '';
+    colRight.innerHTML = '';
 
-    this.memoryCards.forEach((c) => {
+    // Render Left Cards
+    this.leftCards.forEach(c => {
       const cardEl = document.createElement('div');
-      cardEl.className = 'literary-memory-card';
-      cardEl.dataset.id = c.id;
-
+      cardEl.className = `matching-card ${c.solved ? 'matched' : ''} ${this.matchingSelectedLeft?.pairId === c.pairId ? 'selected' : ''}`;
+      cardEl.dataset.pairId = c.pairId;
       cardEl.innerHTML = `
-        <div class="literary-card-face literary-card-front">
-          <div class="card-cyber-icon">🔮</div>
-          <div class="card-cyber-tag">CYBER•MEM</div>
-        </div>
-        <div class="literary-card-face literary-card-back">
-          <div class="card-badge">${c.type}</div>
-          <div class="card-title">${c.icon} ${c.title}</div>
-          <div class="card-hint">${c.hint}</div>
+        <div class="matching-card-icon">${c.icon}</div>
+        <div class="matching-card-content">
+          <div class="matching-card-tag">${c.type}</div>
+          <div class="matching-card-title">${c.title}</div>
+          <div class="matching-card-hint">${c.hint}</div>
         </div>
       `;
 
-      cardEl.addEventListener('click', () => this.handleMemoryCardClick(c, cardEl));
-      grid.appendChild(cardEl);
+      cardEl.addEventListener('click', () => {
+        if (c.solved) return;
+        this.selectMatchingLeft(c, cardEl);
+      });
+      colLeft.appendChild(cardEl);
+    });
+
+    // Render Right Cards
+    this.rightCards.forEach(c => {
+      const cardEl = document.createElement('div');
+      cardEl.className = `matching-card ${c.solved ? 'matched' : ''}`;
+      cardEl.dataset.pairId = c.pairId;
+      cardEl.innerHTML = `
+        <div class="matching-card-icon">${c.icon}</div>
+        <div class="matching-card-content">
+          <div class="matching-card-tag">${c.type}</div>
+          <div class="matching-card-title">${c.title}</div>
+          <div class="matching-card-hint">${c.hint}</div>
+        </div>
+      `;
+
+      cardEl.addEventListener('click', () => {
+        if (c.solved) return;
+        this.selectMatchingRight(c, cardEl);
+      });
+      colRight.appendChild(cardEl);
     });
   }
 
-  handleMemoryCardClick(card, cardEl) {
-    if (!this.memoryGameActive || this.memoryIsBusy) return;
-    if (card.matched) return;
-    if (cardEl.classList.contains('flipped')) return;
-
-    if (!this.memoryRoundActive) {
-      this.requestGamePlay('memory', () => {
-        this.memoryRoundActive = true;
-        this.proceedMemoryCardFlip(card, cardEl);
-      });
+  selectMatchingLeft(card, cardEl) {
+    if (this.matchingSelectedLeft?.pairId === card.pairId) {
+      this.matchingSelectedLeft = null;
+      cardEl.classList.remove('selected');
       return;
     }
 
-    this.proceedMemoryCardFlip(card, cardEl);
+    this.matchingSelectedLeft = card;
+    document.querySelectorAll('#matching-col-left .matching-card').forEach(c => c.classList.remove('selected'));
+    cardEl.classList.add('selected');
+    if (window.soundEngine) window.soundEngine.playClick();
   }
 
-  proceedMemoryCardFlip(card, cardEl) {
-    // Flip card
-    cardEl.classList.add('flipped');
-    this.memoryFlippedCards.push({ card, el: cardEl });
+  selectMatchingRight(card, cardEl) {
+    if (!this.matchingSelectedLeft) {
+      window.app?.showToast('Сначала выберите карточку слева!', 'info');
+      if (window.soundEngine) window.soundEngine.playHover();
+      return;
+    }
 
-    if (window.soundEngine) window.soundEngine.playCardFlip();
+    this.matchingMoves++;
+    const movesEl = document.getElementById('memory-moves-display');
+    if (movesEl) movesEl.textContent = this.matchingMoves;
 
-    if (this.memoryFlippedCards.length === 2) {
-      this.memoryMoves++;
-      const movesEl = document.getElementById('memory-moves-display');
-      if (movesEl) movesEl.textContent = this.memoryMoves;
+    const leftCard = this.matchingSelectedLeft;
+    const leftEl = document.querySelector(`#matching-col-left .matching-card[data-pair-id="${leftCard.pairId}"]`);
 
-      const [first, second] = this.memoryFlippedCards;
+    if (leftCard.pairId === card.pairId) {
+      // MATCH!
+      leftCard.solved = true;
+      card.solved = true;
+      this.matchingSolvedCount++;
 
-      if (first.card.pairId === second.card.pairId) {
-        // MATCH!
-        first.card.matched = true;
-        second.card.matched = true;
-        first.el.classList.add('matched');
-        second.el.classList.add('matched');
-        this.memoryMatchedCount++;
+      leftEl?.classList.remove('selected');
+      leftEl?.classList.add('matched');
+      cardEl.classList.add('matched');
 
-        const matchesEl = document.getElementById('memory-matches-display');
-        if (matchesEl) matchesEl.textContent = `${this.memoryMatchedCount} / ${this.memoryDifficulty}`;
+      this.matchingSelectedLeft = null;
 
-        const scoreEl = document.getElementById('memory-score-display');
-        const currentPoints = this.memoryMatchedCount * 25;
-        if (scoreEl) scoreEl.textContent = `${currentPoints} ⬡`;
+      const matchesEl = document.getElementById('memory-matches-display');
+      const scoreEl = document.getElementById('memory-score-display');
+      if (matchesEl) matchesEl.textContent = `${this.matchingSolvedCount} / ${this.matchingTotalPairs}`;
+      const rewardSoFar = this.matchingSolvedCount * 30;
+      if (scoreEl) scoreEl.textContent = `${rewardSoFar} ⬡`;
 
-        if (window.soundEngine) window.soundEngine.playCorrect();
+      if (window.soundEngine) window.soundEngine.playCorrect();
 
-        this.memoryFlippedCards = [];
-
-        if (this.memoryMatchedCount === this.memoryDifficulty) {
-          setTimeout(() => this.endMemoryGame(), 450);
-        }
-      } else {
-        // WRONG PAIR
-        this.memoryIsBusy = true;
-        if (window.soundEngine) window.soundEngine.playWrong();
-
-        setTimeout(() => {
-          first.el.classList.remove('flipped');
-          second.el.classList.remove('flipped');
-          this.memoryFlippedCards = [];
-          this.memoryIsBusy = false;
-        }, 900);
+      if (this.matchingSolvedCount >= this.matchingTotalPairs) {
+        setTimeout(() => this.endMatchingGame(), 500);
       }
+    } else {
+      // WRONG PAIR
+      cardEl.classList.add('wrong');
+      leftEl?.classList.add('wrong');
+      if (window.soundEngine) window.soundEngine.playWrong();
+
+      setTimeout(() => {
+        cardEl.classList.remove('wrong');
+        leftEl?.classList.remove('wrong', 'selected');
+        this.matchingSelectedLeft = null;
+      }, 700);
     }
   }
 
-  peekMemoryCards() {
-    if (!this.memoryGameActive || this.memoryIsBusy) return;
-
-    this.memoryIsBusy = true;
-    const cards = document.querySelectorAll('.literary-memory-card:not(.matched)');
-    cards.forEach(c => c.classList.add('flipped'));
-
-    if (window.soundEngine) window.soundEngine.playHover();
-
-    setTimeout(() => {
-      cards.forEach(c => {
-        const id = c.dataset.id;
-        const isMatched = this.memoryCards.find(card => card.id === id)?.matched;
-        if (!isMatched) c.classList.remove('flipped');
-      });
-      this.memoryIsBusy = false;
-    }, 1500);
-  }
-
-  endMemoryGame() {
-    this.memoryGameActive = false;
+  endMatchingGame() {
     if (this.memoryTimer) clearInterval(this.memoryTimer);
 
-    // Calculate reward based on time and moves
-    const timeSec = Math.max(1, this.memorySeconds);
-    const speedBonus = Math.max(10, 150 - timeSec);
-    const moveBonus = Math.max(10, (this.memoryDifficulty * 3 - this.memoryMoves) * 5);
-    const totalLumens = Math.round(50 + speedBonus + moveBonus);
+    const timeSec = Math.max(1, this.matchingSeconds);
+    const speedBonus = Math.max(10, 120 - timeSec);
+    const moveBonus = Math.max(10, (this.matchingTotalPairs * 2 - this.matchingMoves) * 5);
+    const totalLumens = Math.round(60 + speedBonus + moveBonus);
     const totalXp = totalLumens * 2;
 
     if (window.auth) {
@@ -1378,7 +1398,7 @@ class MiniGamesSuite {
     const secs = timeSec % 60;
     const timeStr = mins > 0 ? `${mins}м ${secs}с` : `${secs}с`;
 
-    window.app.showToast(`Все пары найдены за ${timeStr}! Ходы: ${this.memoryMoves}. Награда: +${totalLumens} ⬡, +${totalXp} XP`, 'reward');
+    window.app.showToast(`Все литературные пары сопоставлены за ${timeStr}! Награда: +${totalLumens} ⬡, +${totalXp} XP`, 'reward');
     if (window.soundEngine) window.soundEngine.playLevelUp();
   }
 
@@ -1446,17 +1466,45 @@ class MiniGamesSuite {
 
   startSpeedReading() {
     if (this.speedReadIsRunning) return;
+
+    const startBtn = document.getElementById('btn-speedread-start');
+    const activeWordEl = document.getElementById('speedread-active-word');
+    const fillEl = document.getElementById('speedread-progress-fill');
+    if (startBtn) {
+      startBtn.disabled = true;
+      startBtn.textContent = '⏱ Отсчёт...';
+    }
+
+    if (fillEl) fillEl.style.width = '0%';
+
+    // 3-2-1 Countdown before RSVP streaming begins
+    let count = 3;
+    activeWordEl.innerHTML = `<div class="speedread-countdown-box">${count}</div>`;
+    if (window.soundEngine?.playClick) window.soundEngine.playClick();
+
+    const countdownTimer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        activeWordEl.innerHTML = `<div class="speedread-countdown-box">${count}</div>`;
+        if (window.soundEngine?.playClick) window.soundEngine.playClick();
+      } else if (count === 0) {
+        activeWordEl.innerHTML = `<div class="speedread-countdown-box" style="color:var(--accent-green); font-size:3.5rem;">МАРШ!</div>`;
+        if (window.soundEngine?.playCorrect) window.soundEngine.playCorrect();
+      } else {
+        clearInterval(countdownTimer);
+        this.runSpeedReadingStream();
+      }
+    }, 850);
+  }
+
+  runSpeedReadingStream() {
     this.speedReadIsRunning = true;
+    const startBtn = document.getElementById('btn-speedread-start');
+    if (startBtn) startBtn.textContent = '⏱ Чтение в процессе...';
 
     const excerpt = this.speedReadExcerpts[this.speedReadIdx];
     this.speedReadWords = excerpt.text.split(/\s+/).filter(Boolean);
     this.speedReadWordIdx = 0;
-
-    const startBtn = document.getElementById('btn-speedread-start');
-    if (startBtn) {
-      startBtn.disabled = true;
-      startBtn.textContent = '⏱ Чтение в процессе...';
-    }
 
     const intervalMs = Math.round((60 / this.speedReadCurrentWpm) * 1000);
     const activeWordEl = document.getElementById('speedread-active-word');
@@ -1469,7 +1517,9 @@ class MiniGamesSuite {
         clearInterval(this.speedReadTimer);
         this.speedReadIsRunning = false;
         if (fillEl) fillEl.style.width = '100%';
-        if (activeWordEl) activeWordEl.textContent = '✓ ФРАГМЕНТ ПРОЧИТАН!';
+        if (activeWordEl) {
+          activeWordEl.innerHTML = `<span style="color:var(--accent-green); font-size:1.8rem; font-weight:900;">✓ ФРАГМЕНТ ПРОЧИТАН!</span>`;
+        }
         if (window.soundEngine) window.soundEngine.playCorrect();
 
         setTimeout(() => this.showSpeedReadQuiz(), 900);
@@ -1477,14 +1527,20 @@ class MiniGamesSuite {
       }
 
       const word = this.speedReadWords[this.speedReadWordIdx];
-      // Optimal Recognition Point (middle letter highlighted)
-      const mid = Math.floor(word.length / 2);
-      const before = word.slice(0, mid);
-      const orp = word[mid] || '';
-      const after = word.slice(mid + 1);
+      // Optimal Recognition Point (focal letter at ~1/3 of word length)
+      const orpIdx = Math.max(0, Math.floor((word.length - 1) / 3));
+      const leftPart = word.slice(0, orpIdx);
+      const centerLetter = word[orpIdx] || '';
+      const rightPart = word.slice(orpIdx + 1);
 
       if (activeWordEl) {
-        activeWordEl.innerHTML = `${before}<span class="speedread-orp-letter">${orp}</span>${after}`;
+        activeWordEl.innerHTML = `
+          <div class="orp-word-box">
+            <span class="orp-part-left">${leftPart}</span>
+            <span class="orp-part-center">${centerLetter}</span>
+            <span class="orp-part-right">${rightPart}</span>
+          </div>
+        `;
       }
 
       this.speedReadWordIdx++;
@@ -1615,10 +1671,14 @@ class MiniGamesSuite {
   // =========================================================================
 
   bindReconstructControls() {
-    document.getElementById('btn-reconstruct-skip-preview')?.addEventListener('click', () => {
+    document.getElementById('btn-reconstruct-start-game')?.addEventListener('click', () => {
       this.requestGamePlay('reconstruct', () => {
-        this.startReconstructAssembly();
+        this.startReconstructRound();
       });
+    });
+
+    document.getElementById('btn-reconstruct-skip-preview')?.addEventListener('click', () => {
+      this.startReconstructAssembly();
     });
 
     document.getElementById('btn-reconstruct-check')?.addEventListener('click', () => {
@@ -1637,18 +1697,41 @@ class MiniGamesSuite {
   initReconstructGame() {
     if (this.reconstructTimer) clearInterval(this.reconstructTimer);
 
-    const qItem = this.reconstructQuotes[this.reconstructIdx] || this.reconstructQuotes[0];
+    // Initial Stage 0 with «ПУСК ▶» button: do NOT start countdown automatically on reload!
+    const startStage = document.getElementById('reconstruct-stage-start');
+    const previewStage = document.getElementById('reconstruct-stage-preview');
+    const assembleStage = document.getElementById('reconstruct-stage-assemble');
+
+    if (startStage) startStage.style.display = 'block';
+    if (previewStage) previewStage.style.display = 'none';
+    if (assembleStage) assembleStage.style.display = 'none';
+  }
+
+  startReconstructRound() {
+    if (this.reconstructTimer) clearInterval(this.reconstructTimer);
+
+    // Randomize quote from pool so it never repeats the same one on reload
+    const totalQuotes = this.reconstructQuotes.length;
+    let nextIdx = Math.floor(Math.random() * totalQuotes);
+    if (nextIdx === this.reconstructIdx && totalQuotes > 1) {
+      nextIdx = (nextIdx + 1) % totalQuotes;
+    }
+    this.reconstructIdx = nextIdx;
+
+    const qItem = this.reconstructQuotes[this.reconstructIdx];
 
     const numEl = document.getElementById('reconstruct-quote-num');
-    if (numEl) numEl.textContent = `Цитата ${this.reconstructIdx + 1} из ${this.reconstructQuotes.length}`;
+    if (numEl) numEl.textContent = `Цитата ${this.reconstructIdx + 1} из ${totalQuotes}`;
 
     const quoteEl = document.getElementById('reconstruct-preview-quote');
     const authorEl = document.getElementById('reconstruct-preview-author');
     if (quoteEl) quoteEl.textContent = `«${qItem.quote}»`;
     if (authorEl) authorEl.textContent = `— ${qItem.author} (${qItem.book})`;
 
+    const startStage = document.getElementById('reconstruct-stage-start');
     const previewStage = document.getElementById('reconstruct-stage-preview');
     const assembleStage = document.getElementById('reconstruct-stage-assemble');
+    if (startStage) startStage.style.display = 'none';
     if (previewStage) previewStage.style.display = 'block';
     if (assembleStage) assembleStage.style.display = 'none';
 
@@ -1668,11 +1751,11 @@ class MiniGamesSuite {
 
       if (elapsed >= totalMs) {
         clearInterval(this.reconstructTimer);
-        this.requestGamePlay('reconstruct', () => {
-          this.startReconstructAssembly();
-        });
+        this.startReconstructAssembly();
       }
     }, stepMs);
+
+    if (window.soundEngine) window.soundEngine.playCardFlip();
   }
 
   startReconstructAssembly() {

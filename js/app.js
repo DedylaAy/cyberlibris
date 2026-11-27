@@ -30,6 +30,9 @@ class AppController {
     this.cmdPaletteQuery = '';
     this.cmdPaletteSelectedIndex = 0;
 
+    // Catalog Chunk Loading (Performance Optimization for low memory)
+    this.catalogDisplayLimit = 12;
+
     // Steam Carousel State (Slower, 10s intervals for smooth relaxed viewing)
     this.carouselIndex = 0;
     this.carouselTimer = null;
@@ -51,11 +54,14 @@ class AppController {
     // 3. Setup Micro-interactions & UI Handlers
     this.bindNavigation();
     this.bindModals();
+    window.auth.bindAuthModalTabs();
+    this.bindRoadmapModal();
+    this.bindTickerClicks();
+    this.bindCatalogPagination();
     this.bindTiltEffect();
     this.bindMagneticButtons();
     this.bindAudioTriggers();
     this.bindHoverSFX();
-    this.setupCyberOracle();
     this.setupHeaderAmbientControl();
     this.bindThemePalette();
     this.bindSearchAndFilters();
@@ -92,14 +98,6 @@ class AppController {
 
     document.querySelector('.logo-container')?.addEventListener('click', () => {
       this.switchView('library');
-    });
-
-    document.getElementById('user-pill-container')?.addEventListener('click', (e) => {
-      if (e.target.closest('#btn-open-login')) {
-        this.openModal('modal-auth');
-      } else {
-        this.switchView('profile');
-      }
     });
 
     // Quick Theme Switcher Button in header
@@ -457,7 +455,7 @@ class AppController {
         if (clearBtn) clearBtn.style.display = this.searchQuery ? 'block' : 'none';
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
-          this.renderLibrary();
+          this.renderLibrary(true);
         }, 120);
       });
     }
@@ -467,7 +465,7 @@ class AppController {
         if (searchInput) searchInput.value = '';
         this.searchQuery = '';
         clearBtn.style.display = 'none';
-        this.renderLibrary();
+        this.renderLibrary(true);
       });
     }
 
@@ -475,7 +473,7 @@ class AppController {
     if (sortSelect) {
       sortSelect.addEventListener('change', (e) => {
         this.selectedSort = e.target.value;
-        this.renderLibrary();
+        this.renderLibrary(true);
       });
     }
 
@@ -505,7 +503,7 @@ class AppController {
           if (olExplorer) olExplorer.style.display = 'none';
           if (localWrapper) localWrapper.style.display = 'block';
           this.updateMegaFilterActiveCount();
-          this.renderLibrary();
+          this.renderLibrary(true);
         }
 
         if (window.soundEngine) window.soundEngine.playClick();
@@ -677,7 +675,10 @@ class AppController {
     this.updateMegaFilterActiveCount();
   }
 
-  renderLibrary() {
+  renderLibrary(resetPagination = false) {
+    if (resetPagination) {
+      this.catalogDisplayLimit = 12;
+    }
     const grid = document.getElementById('books-catalog-grid');
     const counterEl = document.getElementById('remanga-books-found-count');
     const megaCountEl = document.getElementById('mega-filter-found-count');
@@ -749,10 +750,15 @@ class AppController {
           <button class="btn btn-secondary btn-sm" onclick="document.getElementById('btn-reset-remanga-filters')?.click()">Сбросить все фильтры</button>
         </div>
       `;
+      const expandWrap = document.getElementById('catalog-expand-wrap');
+      if (expandWrap) expandWrap.style.display = 'none';
       return;
     }
 
-    displayBooks.forEach((b) => {
+    const totalCount = displayBooks.length;
+    const pagedBooks = displayBooks.slice(0, this.catalogDisplayLimit);
+
+    pagedBooks.forEach((b) => {
       let rarityPillClass = 'rarity-pill-classic';
       if (b.rarity === 'legendary') rarityPillClass = 'rarity-pill-legendary';
       else if (b.rarity === 'masterpiece') rarityPillClass = 'rarity-pill-masterpiece';
@@ -818,6 +824,26 @@ class AppController {
 
       grid.appendChild(card);
     });
+
+    // Update Load More / Collapse expander button
+    const expandWrap = document.getElementById('catalog-expand-wrap');
+    const expandBtn = document.getElementById('btn-catalog-load-more');
+    const expandLabel = document.getElementById('catalog-expand-label');
+
+    if (expandWrap && expandBtn && expandLabel) {
+      if (totalCount <= 12) {
+        expandWrap.style.display = 'none';
+      } else {
+        expandWrap.style.display = 'block';
+        if (this.catalogDisplayLimit < totalCount) {
+          expandLabel.textContent = `Показать ещё произведения (${Math.min(this.catalogDisplayLimit, totalCount)} из ${totalCount}) ▾`;
+          expandBtn.dataset.mode = 'more';
+        } else {
+          expandLabel.textContent = `Свернуть каталог (показаны все ${totalCount}) ▲`;
+          expandBtn.dataset.mode = 'collapse';
+        }
+      }
+    }
 
     this.bindTiltEffect();
   }
@@ -2555,49 +2581,101 @@ class AppController {
       });
     });
 
-    // Auth Tabs
-    document.getElementById('tab-btn-login')?.addEventListener('click', () => {
-      document.getElementById('tab-btn-login').classList.add('active');
-      document.getElementById('tab-btn-register').classList.remove('active');
-      document.getElementById('auth-form-login').style.display = 'block';
-      document.getElementById('auth-form-register').style.display = 'none';
-    });
+    const formLogin = document.getElementById('form-login') || document.getElementById('auth-form-login');
+    const formReg = document.getElementById('form-register') || document.getElementById('auth-form-register');
 
-    document.getElementById('tab-btn-register')?.addEventListener('click', () => {
-      document.getElementById('tab-btn-register').classList.add('active');
-      document.getElementById('tab-btn-login').classList.remove('active');
-      document.getElementById('auth-form-register').style.display = 'block';
-      document.getElementById('auth-form-login').style.display = 'none';
-    });
-
-    document.getElementById('auth-form-login')?.addEventListener('submit', (e) => {
+    formLogin?.addEventListener('submit', (e) => {
       e.preventDefault();
-      const u = document.getElementById('login-username').value;
-      const p = document.getElementById('login-password').value;
+      const u = document.getElementById('login-username')?.value;
+      const p = document.getElementById('login-password')?.value;
       const res = window.auth.login(u, p);
       if (res.success) {
         this.closeAllModals();
-        this.showToast(`Добро пожаловать, ${res.user.displayName}!`, 'success');
+        this.showToast(`Добро пожаловать, ${res.user.displayName || res.user.username}!`, 'success');
       } else {
         this.showToast(res.message, 'error');
       }
     });
 
-    document.getElementById('auth-form-register')?.addEventListener('submit', (e) => {
+    formReg?.addEventListener('submit', (e) => {
       e.preventDefault();
-      const u = document.getElementById('reg-username').value;
-      const d = document.getElementById('reg-display-name').value;
-      const p = document.getElementById('reg-password').value;
+      const u = document.getElementById('reg-username')?.value;
+      const d = document.getElementById('reg-display-name')?.value;
+      const p = document.getElementById('reg-password')?.value;
       const a = document.querySelector('input[name="reg-avatar"]:checked')?.value || '📖';
 
-      const res = window.auth.register(u, d, p, a);
+      const res = window.auth.register(u, p, d, a);
       if (res.success) {
         this.closeAllModals();
-        this.showToast(`Регистрация успешна! Задайте ваши литературные вкусы:`, 'reward');
+        this.showToast(`Регистрация успешна! Добро пожаловать, ${d || u}!`, 'reward');
         this.openModal('modal-taste-onboarding');
       } else {
         this.showToast(res.message, 'error');
       }
+    });
+
+    // Fast 1-click test logins
+    document.getElementById('btn-fast-creator')?.addEventListener('click', () => {
+      window.auth.switchUser('usr_creator');
+      this.closeAllModals();
+      this.showToast('Вход выполнен как Создатель Системы 👑', 'reward');
+    });
+
+    document.getElementById('btn-fast-user')?.addEventListener('click', () => {
+      window.auth.switchUser('usr_scholar');
+      this.closeAllModals();
+      this.showToast('Вход выполнен как Читатель-Схоласт 📖', 'info');
+    });
+  }
+
+  openRoadmapModal() {
+    this.openModal('modal-site-roadmap');
+    if (window.soundEngine) window.soundEngine.playCardFlip();
+  }
+
+  bindRoadmapModal() {
+    document.getElementById('btn-nav-stages')?.addEventListener('click', () => {
+      this.openRoadmapModal();
+    });
+    document.getElementById('ticker-badge-btn')?.addEventListener('click', () => {
+      this.openRoadmapModal();
+    });
+    document.getElementById('btn-close-roadmap')?.addEventListener('click', () => {
+      this.closeAllModals();
+    });
+  }
+
+  bindTickerClicks() {
+    const ticker = document.getElementById('ticker-items-scroll');
+    if (!ticker) return;
+
+    ticker.querySelectorAll('.ticker-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const bookId = item.dataset.bookId;
+        const action = item.dataset.action;
+
+        if (action === 'roadmap') {
+          this.openRoadmapModal();
+        } else if (bookId) {
+          this.openBookDetails(bookId);
+        }
+      });
+    });
+  }
+
+  bindCatalogPagination() {
+    document.getElementById('btn-catalog-load-more')?.addEventListener('click', () => {
+      const btn = document.getElementById('btn-catalog-load-more');
+      const mode = btn?.dataset.mode || 'more';
+      if (mode === 'more') {
+        this.catalogDisplayLimit += 12;
+        this.renderLibrary();
+      } else {
+        this.catalogDisplayLimit = 12;
+        this.renderLibrary();
+        document.getElementById('remanga-filter-panel')?.scrollIntoView({ behavior: 'smooth' });
+      }
+      if (window.soundEngine) window.soundEngine.playClick();
     });
   }
 
@@ -2738,73 +2816,7 @@ class AppController {
   }
 
   setupCyberOracle() {
-    const orb = document.getElementById('oracle-crystal-orb');
-    const askBtn = document.getElementById('btn-ask-oracle');
-    const quoteDisplay = document.getElementById('oracle-quote-display');
-    const authorDisplay = document.getElementById('oracle-author-display');
-    if (!orb || !askBtn || !quoteDisplay || !authorDisplay) return;
-
-    const quotes = [
-      { quote: "«Сражение выигрывает тот, кто твердо решил его выиграть.»", author: "— Лев Толстой, «Война и мир»" },
-      { quote: "«Тот, кто победил другого — силен, но победивший себя — воистину могуществен.»", author: "— Лао-Цзы, «Дао Дэ Цзин»" },
-      { quote: "«Красота спасёт мир.»", author: "— Фёдор Достоевский, «Идиот»" },
-      { quote: "«Кто управляет прошлым — тот управляет будущим; кто управляет настоящим — управляет прошлым.»", author: "— Джордж Оруэлл, «1984»" },
-      { quote: "«Непобедимость заключена в себе самом, возможность победы заключена в противнике.»", author: "— Сунь-Цзы, «Искусство войны»" },
-      { quote: "«Рукописи не горят.»", author: "— Михаил Булгаков, «Мастер и Маргарита»" },
-      { quote: "«Никакое препятствие не может сокрушить непоколебимую решимость духа.»", author: "— Леонардо да Винчи" },
-      { quote: "«Мы учимся не для школы, а для жизни.»", author: "— Сенека, «Нравственные письма»" },
-      { quote: "«Знание само по себе есть неодолимая сила.»", author: "— Фрэнсис Бэкон" },
-      { quote: "«Зорко одно лишь сердце. Самого главного глазами не увидишь.»", author: "— Антуан де Сент-Экзюпери" },
-      { quote: "«Человек создан не для того, чтобы терпеть поражения. Человека можно уничтожить, но его нельзя победить.»", author: "— Эрнест Хемингуэй" }
-    ];
-
-    let isTyping = false;
-    let quoteIndex = 0;
-
-    const rollOracle = () => {
-      if (isTyping) return;
-      isTyping = true;
-      if (window.soundEngine) {
-        window.soundEngine.playCardFlip();
-      }
-
-      let newIdx;
-      do {
-        newIdx = Math.floor(Math.random() * quotes.length);
-      } while (newIdx === quoteIndex && quotes.length > 1);
-      quoteIndex = newIdx;
-      const targetItem = quotes[quoteIndex];
-
-      quoteDisplay.style.opacity = '0.3';
-      quoteDisplay.textContent = '⚡ Кибер-Оракул сканирует древние свитки...';
-
-      setTimeout(() => {
-        quoteDisplay.style.opacity = '1';
-        quoteDisplay.textContent = '';
-        authorDisplay.textContent = '';
-
-        let charIdx = 0;
-        const text = targetItem.quote;
-        const interval = setInterval(() => {
-          if (charIdx < text.length) {
-            quoteDisplay.textContent += text[charIdx];
-            charIdx++;
-          } else {
-            clearInterval(interval);
-            authorDisplay.textContent = targetItem.author;
-            isTyping = false;
-            if (window.auth && window.auth.currentUser) {
-              window.auth.addXp(15);
-              window.auth.addLumens(5);
-              this.showToast('Мудрость Оракула получена: +15 XP и +5 Люменов', 'reward');
-            }
-          }
-        }, 18);
-      }, 300);
-    };
-
-    orb.addEventListener('click', rollOracle);
-    askBtn.addEventListener('click', rollOracle);
+    // Removed per user request
   }
 
   setupHeaderAmbientControl() {
@@ -3043,17 +3055,6 @@ class AppController {
             const lbl = document.getElementById('ambient-current-label');
             if (lbl) lbl.textContent = `🎧 ${labels[next] || 'Эмбиент'}`;
             this.showToast(`Фоновый звук: ${labels[next] || next}`, 'info');
-          }
-        },
-        {
-          title: '🔮 Кибер-Оракул: Мудрость классиков',
-          sub: 'Получить философское пророчество и +15 XP за эрудицию',
-          icon: '🔮',
-          hint: '',
-          action: () => {
-            this._closeCommandPaletteFn?.();
-            document.getElementById('cyber-oracle-box')?.scrollIntoView({ behavior: 'smooth' });
-            document.getElementById('btn-ask-oracle')?.click();
           }
         },
         {

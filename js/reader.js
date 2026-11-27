@@ -1140,15 +1140,13 @@ class ReaderEngine {
       this.readSeconds += 1;
       // Award rewards every 60 seconds of active reading
       if (this.readSeconds % 60 === 0) {
-        window.auth.addLumens(15);
-        window.auth.addXp(40);
+        window.auth.addLumens(5);
+        window.auth.addXp(15);
         window.auth.updateStat('readTimeMinutes', 1);
         if (window.dbEngine) {
           window.dbEngine.updateQuestProgress('quest_read_2min', 1);
           if (window.app?.renderDailyQuests) window.app.renderDailyQuests();
         }
-        window.app.showToast('Чтение вознаграждено: +15 ⬡, +40 XP', 'reward');
-        if (window.soundEngine) window.soundEngine.playClick();
       }
     }, 1000);
   }

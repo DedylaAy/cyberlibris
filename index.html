@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap">
   </noscript>
 
-  <!-- Core & Custom Stylesheets (with cache-busting v5.2.2) -->
-  <link rel="stylesheet" href="css/main.css?v=5.2.2">
-  <link rel="stylesheet" href="css/animations.css?v=5.2.2">
-  <link rel="stylesheet" href="css/reader.css?v=5.2.2">
-  <link rel="stylesheet" href="css/games.css?v=5.2.2">
+  <!-- Core & Custom Stylesheets (with cache-busting v5.3.0) -->
+  <link rel="stylesheet" href="css/main.css?v=5.3.0">
+  <link rel="stylesheet" href="css/animations.css?v=5.3.0">
+  <link rel="stylesheet" href="css/reader.css?v=5.3.0">
+  <link rel="stylesheet" href="css/games.css?v=5.3.0">
 
   <style>
     .books-grid {
@@ -489,7 +489,7 @@
           </li>
           <li class="nav-item">
             <button class="nav-btn magnetic-btn" data-view="games">
-              Игры
+              Аркада
             </button>
           </li>
           <li class="nav-item">
@@ -503,8 +503,8 @@
             </button>
           </li>
           <li class="nav-item">
-            <button class="nav-btn magnetic-btn" data-view="profile">
-              Профиль
+            <button class="nav-btn magnetic-btn" id="btn-nav-stages" title="Хроника и этапы развития платформы">
+              Этапы & Новости
             </button>
           </li>
           <!-- Admin Panel Button: Strictly visible ONLY to Admin, Owner, Creator! -->
@@ -672,26 +672,24 @@
     </header>
 
     <!-- Cyber Live Marquee Ticker -->
-    <div class="cyber-live-ticker">
-      <div class="ticker-badge">
+    <div class="cyber-live-ticker" id="cyber-live-ticker">
+      <div class="ticker-badge" id="ticker-badge-btn" style="cursor: pointer;" title="Открыть хронологию этапов проекта">
         <span class="ticker-pulse-dot"></span>
         <span>КИБЕР-ЭФИР</span>
       </div>
       <div class="ticker-content-track">
-        <div class="ticker-items-scroll">
-          <span class="ticker-item"><span class="ticker-tag">RELAY</span> <strong>ZERO-STORAGE:</strong> 100% текстов транслируются из Wikisource на лету без сохранения байтов на диск</span>
-          <span class="ticker-item"><span class="ticker-tag">ЧТЕЦ</span> <strong>КИБЕР-ЧТЕЦ:</strong> Нажмите «Аудио» в книге для голосовой озвучки с подсветкой предложений</span>
-          <span class="ticker-item"><span class="ticker-tag">ОРАКУЛ</span> <strong>КИБЕР-ОРАКУЛ:</strong> Нажмите на ядро мудрости ниже, чтобы получить философскую цитату и +15 XP</span>
-          <span class="ticker-item"><span class="ticker-tag">ЛЕКСИКОН</span> <strong>КИБЕР-ЛЕКСИКОН:</strong> Выделите любое архаичное слово в тексте для получения исторического толкования</span>
-          <span class="ticker-item"><span class="ticker-tag">ПАМЯТЬ</span> <strong>ПАМЯТЬ ГЛАВ:</strong> Платформа автоматически фиксирует номер главы и точный процент чтения</span>
-          <span class="ticker-item"><span class="ticker-tag">РЕЙТИНГ</span> <strong>ТОП СХОЛАСТОВ:</strong> Повышайте уровень за чтение и мини-игры, чтобы занять верхние строчки Зала Славы</span>
+        <div class="ticker-items-scroll" id="ticker-items-scroll">
+          <span class="ticker-item ticker-link" data-action="roadmap"><span class="ticker-tag" style="background: rgba(0, 240, 255, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan);">ЭТАПЫ</span> <strong>ХРОНИКА V3.2:</strong> Запущен Этап 4 — Мульти-аккаунты, сопоставление книг, ORP-скорочтение и оптимизация памяти (Нажмите)</span>
+          <span class="ticker-item ticker-link" data-book-id="book_master_margarita"><span class="ticker-tag" style="background: rgba(255, 0, 127, 0.2); color: var(--accent-magenta); border-color: var(--accent-magenta);">НОВИНКА</span> <strong>«Мастер и Маргарита»</strong> М.А. Булгаков — культовый мистический роман в каталоге (Читать)</span>
+          <span class="ticker-item ticker-link" data-book-id="book_frankenstein"><span class="ticker-tag" style="background: rgba(0, 255, 136, 0.2); color: var(--accent-green); border-color: var(--accent-green);">АЛГОРИТМ</span> <strong>РЕКОМЕНДАЦИЯ:</strong> «Франкенштейн» Мэри Шелли — совпадение 98% по жанру научной готики</span>
+          <span class="ticker-item ticker-link" data-book-id="book_crime_punishment"><span class="ticker-tag" style="background: rgba(255, 215, 0, 0.2); color: var(--accent-gold); border-color: var(--accent-gold);">ТРЕНД</span> <strong>«Преступление и наказание»</strong> Ф.М. Достоевский — читают прямо сейчас</span>
+          <span class="ticker-item ticker-link" data-book-id="book_zarathustra"><span class="ticker-tag" style="background: rgba(157, 78, 221, 0.2); color: #c77dff; border-color: #9d4edd);">ФИЛОСОФИЯ</span> <strong>«Так говорил Заратустра»</strong> Ф. Ницше — глубокий трактат о духе человека</span>
           <!-- Duplicate for seamless infinite loop -->
-          <span class="ticker-item"><span class="ticker-tag">RELAY</span> <strong>ZERO-STORAGE:</strong> 100% текстов транслируются из Wikisource на лету без сохранения байтов на диск</span>
-          <span class="ticker-item"><span class="ticker-tag">ЧТЕЦ</span> <strong>КИБЕР-ЧТЕЦ:</strong> Нажмите «Аудио» в книге для голосовой озвучки с подсветкой предложений</span>
-          <span class="ticker-item"><span class="ticker-tag">ОРАКУЛ</span> <strong>КИБЕР-ОРАКУЛ:</strong> Нажмите на ядро мудрости ниже, чтобы получить философскую цитату и +15 XP</span>
-          <span class="ticker-item"><span class="ticker-tag">ЛЕКСИКОН</span> <strong>КИБЕР-ЛЕКСИКОН:</strong> Выделите любое архаичное слово в тексте для получения исторического толкования</span>
-          <span class="ticker-item"><span class="ticker-tag">ПАМЯТЬ</span> <strong>ПАМЯТЬ ГЛАВ:</strong> Платформа автоматически фиксирует номер главы и точный процент чтения</span>
-          <span class="ticker-item"><span class="ticker-tag">РЕЙТИНГ</span> <strong>ТОП СХОЛАСТОВ:</strong> Повышайте уровень за чтение и мини-игры, чтобы занять верхние строчки Зала Славы</span>
+          <span class="ticker-item ticker-link" data-action="roadmap"><span class="ticker-tag" style="background: rgba(0, 240, 255, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan);">ЭТАПЫ</span> <strong>ХРОНИКА V3.2:</strong> Запущен Этап 4 — Мульти-аккаунты, сопоставление книг, ORP-скорочтение и оптимизация памяти (Нажмите)</span>
+          <span class="ticker-item ticker-link" data-book-id="book_master_margarita"><span class="ticker-tag" style="background: rgba(255, 0, 127, 0.2); color: var(--accent-magenta); border-color: var(--accent-magenta);">НОВИНКА</span> <strong>«Мастер и Маргарита»</strong> М.А. Булгаков — культовый мистический роман в каталоге (Читать)</span>
+          <span class="ticker-item ticker-link" data-book-id="book_frankenstein"><span class="ticker-tag" style="background: rgba(0, 255, 136, 0.2); color: var(--accent-green); border-color: var(--accent-green);">АЛГОРИТМ</span> <strong>РЕКОМЕНДАЦИЯ:</strong> «Франкенштейн» Мэри Шелли — совпадение 98% по жанру научной готики</span>
+          <span class="ticker-item ticker-link" data-book-id="book_crime_punishment"><span class="ticker-tag" style="background: rgba(255, 215, 0, 0.2); color: var(--accent-gold); border-color: var(--accent-gold);">ТРЕНД</span> <strong>«Преступление и наказание»</strong> Ф.М. Достоевский — читают прямо сейчас</span>
+          <span class="ticker-item ticker-link" data-book-id="book_zarathustra"><span class="ticker-tag" style="background: rgba(157, 78, 221, 0.2); color: #c77dff; border-color: #9d4edd);">ФИЛОСОФИЯ</span> <strong>«Так говорил Заратустра»</strong> Ф. Ницше — глубокий трактат о духе человека</span>
         </div>
       </div>
     </div>
@@ -716,25 +714,6 @@
           <div class="carousel-progress-bar" id="carousel-timer-bar"></div>
         </div>
 
-        <!-- Interactive Cyber-Oracle Card -->
-        <div class="cyber-oracle-banner" id="cyber-oracle-banner">
-          <div class="oracle-crystal-orb" id="oracle-crystal-orb" title="Прикоснуться к ядру мудрости"><div class="oracle-gem-core"></div></div>
-          <div class="oracle-content">
-            <div class="oracle-header">
-              <span class="oracle-tag">КИБЕР-ОРАКУЛ МУДРОСТИ</span>
-              <span class="oracle-subtag">Интерактивный терминал классической мысли</span>
-            </div>
-            <div class="oracle-quote-display" id="oracle-quote-display">
-              «Сражение выигрывает тот, кто твердо решил его выиграть.»
-            </div>
-            <div class="oracle-author-display" id="oracle-author-display">— Лев Толстой, «Война и мир»</div>
-          </div>
-          <div class="oracle-actions">
-            <button class="btn btn-primary magnetic-btn oracle-ask-btn" id="btn-ask-oracle">
-              Спросить Оракула (+15 XP)
-            </button>
-          </div>
-        </div>
 
         <!-- Grand Mega-Filter & Catalog Control Hub -->
         <div class="remanga-filter-panel grand-filter-hub" id="remanga-filter-panel">
@@ -945,6 +924,12 @@
         <div id="local-catalog-wrapper">
           <div class="books-grid" id="books-catalog-grid">
             <!-- Populated dynamically by app.js -->
+          </div>
+          <!-- Chunk load more expander -->
+          <div class="catalog-expand-wrap" id="catalog-expand-wrap" style="text-align: center; margin: 2.2rem 0 3rem;">
+            <button class="btn btn-primary magnetic-btn btn-catalog-expand" id="btn-catalog-load-more" style="padding: 0.85rem 2.2rem; font-size: 0.95rem; border-radius: var(--radius-full); box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);">
+              <span id="catalog-expand-label">Показать ещё произведения (12 из 52) ▾</span>
+            </button>
           </div>
         </div>
 
@@ -1405,7 +1390,7 @@
             Квиз Эрудита
           </button>
           <button class="game-tab-btn magnetic-btn" data-game="memory">
-            Мемори-Карты
+            Сопоставление Пар
           </button>
           <button class="game-tab-btn magnetic-btn" data-game="speedread">
             Скорочтение & Фокус
@@ -1514,7 +1499,7 @@
             </div>
           </div>
 
-          <!-- GAME 3: LITERARY MEMORY MATRIX (МЕМОРИ-КАРТЫ) -->
+          <!-- GAME 3: LITERARY MATCHING MATRIX (СОПОСТАВЛЕНИЕ ПАР) -->
           <div class="game-arena-view" id="game-view-memory" style="display: none;">
             <div class="game-arena-hud">
               <div class="hud-stat-pill energy-stat-pill" id="energy-pill-memory" title="Доступно 3 бесплатных попытки в день">
@@ -1531,7 +1516,7 @@
               </div>
               <div class="hud-stat-pill">
                 <span>Найдено пар:</span>
-                <span id="memory-matches-display" style="color: var(--accent-cyan);">0 / 8</span>
+                <span id="memory-matches-display" style="color: var(--accent-cyan);">0 / 6</span>
               </div>
               <div class="hud-stat-pill">
                 <span>Награда:</span>
@@ -1540,23 +1525,29 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.8rem;">
-              <div style="display:flex; gap:0.5rem; align-items:center;">
-                <span style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">Сложность:</span>
-                <button class="btn btn-secondary btn-sm memory-diff-btn active" data-pairs="8">8 пар (16 карт)</button>
-                <button class="btn btn-secondary btn-sm memory-diff-btn" data-pairs="12">12 пар (24 карты)</button>
+              <div style="font-size:0.92rem; color:var(--text-muted); font-weight:600;">
+                🎯 Выберите карточку <strong style="color:var(--accent-cyan);">Персонажа/Цитаты</strong> слева, затем её <strong style="color:var(--accent-gold);">Произведение/Автора</strong> справа:
               </div>
               <div style="display:flex; gap:0.6rem;">
-                <button class="btn btn-secondary btn-sm" id="btn-memory-peek">
-                  Подглядеть (1.5с)
-                </button>
-                <button class="btn btn-primary btn-sm" id="btn-memory-restart">
-                  Новый раунд
+                <button class="btn btn-primary btn-sm magnetic-btn" id="btn-memory-restart">
+                  ↻ Новый раунд
                 </button>
               </div>
             </div>
 
-            <div class="literary-memory-grid" id="literary-memory-grid">
-              <!-- Dynamically populated -->
+            <!-- Two-column Matching Board -->
+            <div class="literary-matching-board" id="literary-matching-board">
+              <div class="matching-col matching-col-left" id="matching-col-left">
+                <!-- Left cards: Characters / Quotes -->
+              </div>
+              <div class="matching-divider">
+                <div class="matching-divider-line"></div>
+                <div class="matching-divider-orb">⚡</div>
+                <div class="matching-divider-line"></div>
+              </div>
+              <div class="matching-col matching-col-right" id="matching-col-right">
+                <!-- Right cards: Books / Authors -->
+              </div>
             </div>
           </div>
 
@@ -1592,9 +1583,13 @@
 
               <!-- Stage 1: RSVP Display -->
               <div id="speedread-reading-stage">
-                <div class="speedread-viewport">
+                <div class="speedread-viewport" id="speedread-viewport">
                   <div class="speedread-active-word" id="speedread-active-word">
-                    ГОТОВЫ К ЧТЕНИЮ?
+                    <div class="orp-word-box">
+                      <span class="orp-part-left">ГОТОВЫ К </span>
+                      <span class="orp-part-center">Ч</span>
+                      <span class="orp-part-right">ТЕНИЮ?</span>
+                    </div>
                   </div>
                   <div class="speedread-progress-track">
                     <div class="speedread-progress-fill" id="speedread-progress-fill"></div>
@@ -1603,7 +1598,7 @@
 
                 <div style="display:flex; justify-content:center; gap:0.8rem; flex-wrap:wrap;">
                   <button class="btn btn-primary magnetic-btn" id="btn-speedread-start" style="padding:0.8rem 2rem; font-size:1.05rem;">
-                    Запустить чтение
+                    ▶ Запустить чтение
                   </button>
                   <button class="btn btn-secondary magnetic-btn" id="btn-speedread-next-text">
                     Другой фрагмент
@@ -1654,8 +1649,20 @@
             </div>
 
             <div class="reconstruct-box">
+              <!-- Stage 0: Initial Start Screen -->
+              <div id="reconstruct-stage-start" style="text-align: center; padding: 2.2rem 1rem;">
+                <div style="font-size: 3.5rem; margin-bottom: 0.8rem; filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.4));">🧠</div>
+                <h3 style="font-size: 1.5rem; color: #fff; margin-bottom: 0.5rem; font-weight: 800;">Мнемо-Цитаты: Тренировка Памяти</h3>
+                <p style="color: var(--text-muted); max-width: 520px; margin: 0 auto 1.8rem; font-size: 0.95rem; line-height: 1.55;">
+                  Вам будет показана великая литературная цитата на 5 секунд. Запомните её построение и соберите по памяти из рассыпанных слов!
+                </p>
+                <button class="btn btn-primary magnetic-btn" id="btn-reconstruct-start-game" style="font-size: 1.15rem; padding: 0.95rem 2.8rem; border-radius: var(--radius-full); box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);">
+                  ПУСК ▶
+                </button>
+              </div>
+
               <!-- Stage 1: Preview / Memorize -->
-              <div id="reconstruct-stage-preview">
+              <div id="reconstruct-stage-preview" style="display: none;">
                 <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.6rem; font-weight:800;">
                   Запомните цитату (5 секунд)
                 </div>
@@ -2353,9 +2360,10 @@
       </div>
 
       <!-- Auth Tabs -->
-      <div style="display: flex; gap: 0.8rem; margin-bottom: 1.5rem;">
-        <button class="btn btn-secondary btn-sm active" id="tab-btn-login" style="flex: 1;">Вход</button>
-        <button class="btn btn-secondary btn-sm" id="tab-btn-register" style="flex: 1;">Регистрация читателя</button>
+      <div style="display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <button class="btn btn-secondary btn-sm active" id="tab-btn-login" style="flex: 1; min-width: 90px;">Вход</button>
+        <button class="btn btn-secondary btn-sm" id="tab-btn-register" style="flex: 1; min-width: 140px;">Регистрация</button>
+        <button class="btn btn-secondary btn-sm" id="tab-btn-switch-account" style="flex: 1; min-width: 120px;">Смена читателя</button>
       </div>
 
       <!-- Form: Login -->
@@ -2413,6 +2421,16 @@
           Зарегистрироваться (+150 ⬡ бонус) →
         </button>
       </form>
+
+      <!-- Panel: Switch Account -->
+      <div id="auth-panel-switch" style="display: none;">
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Выберите читательский аккаунт для моментального переключения:
+        </div>
+        <div id="auth-switch-users-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 280px; overflow-y: auto;">
+          <!-- Dynamically populated with registered accounts -->
+        </div>
+      </div>
     </div>
   </div>
 
@@ -3099,6 +3117,99 @@
     </div>
   </div>
 
+  <!-- Site Roadmap / Stages Modal -->
+  <div class="modal-overlay" id="modal-site-roadmap">
+    <div class="modal-box modal-roadmap-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <span style="font-size: 1.8rem;">🚀</span>
+          <div>
+            <h3 style="color: #fff; margin: 0; font-size: 1.3rem;">Хроника Развития CyberLibris</h3>
+            <div style="font-size: 0.8rem; color: var(--accent-cyan);">Этапы модернизации и журнал обновлений платформы</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-roadmap">✕</button>
+      </div>
+
+      <div class="roadmap-timeline" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.2rem;">
+        <!-- Stage 1 -->
+        <div class="roadmap-stage-card completed">
+          <div class="stage-badge-col">
+            <span class="stage-badge done">1</span>
+            <span class="stage-status-label done">Завершено</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-header-row">
+              <h4>Этап 1: Архитектура & Zero-Storage Ядро</h4>
+              <span class="stage-version">V1.0</span>
+            </div>
+            <p>Цифровой ридер классической литературы с трансляцией текстов из Wikisource и каталогов без сохранения тяжелых файлов на устройство. Удобные шрифты, главы и закладки.</p>
+          </div>
+        </div>
+
+        <!-- Stage 2 -->
+        <div class="roadmap-stage-card completed">
+          <div class="stage-badge-col">
+            <span class="stage-badge done">2</span>
+            <span class="stage-status-label done">Завершено</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-header-row">
+              <h4>Этап 2: Геймификация & Читательская Экономика</h4>
+              <span class="stage-version">V2.0</span>
+            </div>
+            <p>Интеллектуальные игры, квизы по содержанию книг, Люмены (⬡), прокачка уровней, система рангов и Зал Славы схоластов.</p>
+          </div>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="roadmap-stage-card completed">
+          <div class="stage-badge-col">
+            <span class="stage-badge done">3</span>
+            <span class="stage-status-label done">Завершено</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-header-row">
+              <h4>Этап 3: Сенсорная Среда & Атмосфера</h4>
+              <span class="stage-version">V3.0</span>
+            </div>
+            <p>Реактивный Canvas фон с кастомными частицами (звезды, искры, пиксели, пузыри), синтезатор эмбиентных звуков (дождь, камин, дрон, библиотека) и 9 цветовых тем.</p>
+          </div>
+        </div>
+
+        <!-- Stage 4 -->
+        <div class="roadmap-stage-card active">
+          <div class="stage-badge-col">
+            <span class="stage-badge current">4</span>
+            <span class="stage-status-label current">Текущий этап</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-header-row">
+              <h4>Этап 4: Персонализация & Оптимизация Платформы</h4>
+              <span class="stage-version current">V3.2 (Активно)</span>
+            </div>
+            <p>Мульти-аккаунты читателей с сохранением тем и стилей, Steam-профиль, чанковая загрузка каталога с кнопкой развертывания (снижение RAM до минимума), интеллектуальное сопоставление книг и точное ORP-скорочтение с обратным отсчетом.</p>
+          </div>
+        </div>
+
+        <!-- Stage 5 -->
+        <div class="roadmap-stage-card future">
+          <div class="stage-badge-col">
+            <span class="stage-badge future">5</span>
+            <span class="stage-status-label future">В разработке</span>
+          </div>
+          <div class="stage-info">
+            <div class="stage-header-row">
+              <h4>Этап 5: Нейро-Экосистема & Социальные Дуэли</h4>
+              <span class="stage-version future">Скоро</span>
+            </div>
+            <p>Дуэли эрудитов в реальном времени, облачный читательский дневник и рекомендательная нейросеть по редким изданиям.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Floating Scroll To Top Button with Scroll Percentage -->
   <button id="btn-fab-scroll-top" class="fab-scroll-top" title="Наверх страницы (Home)">
     <span class="fab-scroll-icon">↑</span>
@@ -3108,18 +3219,18 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- Scripts (with cache-busting v5.2.2) -->
-  <script src="js/audio.js?v=5.2.2"></script>
-  <script src="js/background.js?v=5.2.2"></script>
-  <script src="js/github.js?v=5.2.2"></script>
-  <script src="js/db.js?v=5.2.2"></script>
-  <script src="js/auth.js?v=5.2.2"></script>
-  <script src="js/bookRelay.js?v=5.2.2"></script>
-  <script src="js/recommendations.js?v=5.2.2"></script>
-  <script src="js/openlibrary.js?v=5.2.2"></script>
-  <script src="js/reader.js?v=5.2.2"></script>
-  <script src="js/games.js?v=5.2.2"></script>
-  <script src="js/admin.js?v=5.2.2"></script>
-  <script src="js/app.js?v=5.2.2"></script>
+  <!-- Scripts (with cache-busting v5.3.0) -->
+  <script src="js/audio.js?v=5.3.0"></script>
+  <script src="js/background.js?v=5.3.0"></script>
+  <script src="js/github.js?v=5.3.0"></script>
+  <script src="js/db.js?v=5.3.0"></script>
+  <script src="js/auth.js?v=5.3.0"></script>
+  <script src="js/bookRelay.js?v=5.3.0"></script>
+  <script src="js/recommendations.js?v=5.3.0"></script>
+  <script src="js/openlibrary.js?v=5.3.0"></script>
+  <script src="js/reader.js?v=5.3.0"></script>
+  <script src="js/games.js?v=5.3.0"></script>
+  <script src="js/admin.js?v=5.3.0"></script>
+  <script src="js/app.js?v=5.3.0"></script>
 </body>
 </html>
