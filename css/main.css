@@ -4838,8 +4838,25 @@ body.theme-steam {
 }
 
 .featured-book-cover-col {
-  width: 170px;
+  width: 195px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#btn-featured-continue-read {
+  width: 100% !important;
+  padding: 0.75rem 0.6rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.3px !important;
+  text-transform: uppercase !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  margin-top: 0.85rem !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 .featured-cover-img {

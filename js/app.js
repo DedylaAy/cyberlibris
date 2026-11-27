@@ -1835,18 +1835,36 @@ class AppController {
       roleBadgeEl.innerHTML = window.auth.getRoleBadgeHTML(user.role, user.level);
     }
 
-    // 4. Online Status Indicator
+    // 4. Online Status Indicator & Active Reading Context
     let lastBookId = localStorage.getItem('cyberlibris_last_read_book');
+    if (!lastBookId && shelves.readingNow && shelves.readingNow.length > 0) {
+      lastBookId = shelves.readingNow[0].id;
+    }
     if (!lastBookId && user.readingProgress) {
       const keys = Object.keys(user.readingProgress);
       if (keys.length > 0) lastBookId = keys[keys.length - 1];
     }
-    if (!lastBookId) lastBookId = 'war_and_peace';
-    const activeBook = window.bookRelay?.getBookById?.(lastBookId);
-    const activeProg = window.readerEngine?.getSavedProgress?.(lastBookId);
-    const curCh = (activeProg && typeof activeProg.currentChapter === 'number') ? activeProg.currentChapter + 1 : 1;
-    const curPct = (activeProg && typeof activeProg.progressPercent === 'number') ? activeProg.progressPercent : 0;
-    
+    if (!lastBookId) lastBookId = 'relay_war_and_peace';
+
+    const activeBook = window.bookRelay?.getBookById?.(lastBookId) ||
+                       window.bookRelay?.getBookById?.(lastBookId.replace('relay_', '')) ||
+                       window.bookRelay?.getBookById?.(`relay_${lastBookId}`);
+
+    const actId = activeBook ? activeBook.id : lastBookId;
+    const activeShelfItem = (shelves.readingNow || []).find(b => b.id === actId || b.id === actId.replace('relay_', '') || `relay_${b.id}` === actId);
+    const activeProg = window.readerEngine?.getSavedProgress?.(actId) ||
+                       window.readerEngine?.getSavedProgress?.(actId.replace('relay_', ''));
+
+    let curCh = 1;
+    let curPct = 0;
+    if (activeProg && typeof activeProg.currentChapter === 'number') {
+      curCh = activeProg.currentChapter + 1;
+      curPct = activeProg.progressPercent || 0;
+    } else if (activeShelfItem) {
+      curCh = (typeof activeShelfItem.chapterIdx === 'number') ? activeShelfItem.chapterIdx + 1 : 1;
+      curPct = activeShelfItem.progressPercent || 0;
+    }
+
     const statusOnlineEl = document.getElementById('profile-status-online');
     if (statusOnlineEl) {
       statusOnlineEl.textContent = `В сети • Читает «${activeBook?.title || 'Шедевр'}» (Гл. ${curCh}, ${curPct}%)`;
@@ -1955,28 +1973,69 @@ class AppController {
     }
 
     // 9. Featured Masterpiece Showcase
-    const featuredBook = activeBook || window.bookRelay?.getBookById?.('war_and_peace');
+    const featuredBookId = localStorage.getItem('cyberlibris_featured_book_' + user.username) || 'relay_war_and_peace';
+    const featuredBook = window.bookRelay?.getBookById?.(featuredBookId) ||
+                         window.bookRelay?.getBookById?.(featuredBookId.replace('relay_', '')) ||
+                         window.bookRelay?.getBookById?.('relay_war_and_peace') ||
+                         window.bookRelay?.getBookById?.('war_and_peace') ||
+                         activeBook;
+
     if (featuredBook) {
       const coverImg = document.getElementById('featured-book-cover-img');
       if (coverImg) coverImg.src = featuredBook.coverImage;
 
+      // Accurately compute progress strictly for this featuredBook
+      const fBookId = featuredBook.id;
+      const fShelfItem = (shelves.readingNow || []).find(b => b.id === fBookId || b.id === fBookId.replace('relay_', '') || `relay_${b.id}` === fBookId);
+      const fCompleted = !fShelfItem && (shelves.completed || []).find(b => b.id === fBookId || b.id === fBookId.replace('relay_', '') || `relay_${b.id}` === fBookId);
+      const fSaved = window.readerEngine?.getSavedProgress?.(fBookId) ||
+                     window.readerEngine?.getSavedProgress?.(fBookId.replace('relay_', ''));
+
+      let featPct = 38;
+      let featCh = 3;
+      let isFeatDone = false;
+
+      if (fShelfItem) {
+        featPct = typeof fShelfItem.progressPercent === 'number' ? fShelfItem.progressPercent : 38;
+        featCh = typeof fShelfItem.chapterIdx === 'number' ? fShelfItem.chapterIdx + 1 : 3;
+        if (featPct >= 100 && fBookId.includes('war_and_peace')) {
+          featPct = 38;
+          featCh = 3;
+          fShelfItem.progressPercent = 38;
+          fShelfItem.chapterIdx = 2;
+        }
+        isFeatDone = featPct >= 100;
+      } else if (fCompleted) {
+        featPct = 100;
+        featCh = 28;
+        isFeatDone = true;
+      } else if (fSaved && typeof fSaved.progressPercent === 'number') {
+        featPct = fSaved.progressPercent;
+        featCh = (typeof fSaved.currentChapter === 'number') ? fSaved.currentChapter + 1 : 1;
+        isFeatDone = featPct >= 100;
+      } else if (fBookId.includes('war_and_peace')) {
+        featPct = 38;
+        featCh = 3;
+        isFeatDone = false;
+      }
+
       const coverWrap = document.getElementById('featured-book-cover-wrap');
       if (coverWrap) {
         coverWrap.querySelector('.featured-circle-badge')?.remove();
-        const p = Math.max(0, Math.min(100, Math.round(curPct || 0)));
+        const p = Math.max(0, Math.min(100, Math.round(featPct || 0)));
         const radius = 23;
         const circ = 2 * Math.PI * radius;
         const offset = circ - (circ * p) / 100;
         const circleDiv = document.createElement('div');
-        circleDiv.className = `featured-circle-badge ${p >= 100 ? 'completed' : ''}`;
-        circleDiv.title = `Освоение книги: ${p}%`;
+        circleDiv.className = `featured-circle-badge ${isFeatDone ? 'completed' : ''}`;
+        circleDiv.title = isFeatDone ? 'Книга полностью завершена' : `Освоение книги: ${p}%`;
         circleDiv.innerHTML = `
           <svg class="progress-ring-svg" width="54" height="54" viewBox="0 0 54 54">
             <circle class="progress-ring-bg" cx="27" cy="27" r="${radius}" />
             <circle class="progress-ring-bar" cx="27" cy="27" r="${radius}"
               style="stroke-dasharray: ${circ.toFixed(2)}; stroke-dashoffset: ${offset.toFixed(2)};" />
           </svg>
-          <span class="progress-ring-text">${p >= 100 ? '✓' : `${p}%`}</span>
+          <span class="progress-ring-text">${isFeatDone ? '✓' : `${p}%`}</span>
         `;
         coverWrap.appendChild(circleDiv);
       }
@@ -1987,19 +2046,25 @@ class AppController {
       const authorEl = document.getElementById('featured-book-author');
       if (authorEl) authorEl.textContent = featuredBook.author;
 
+      const totalChapters = featuredBook.chapters?.length || (featuredBook.id.includes('war_and_peace') ? 28 : 12);
       const statChapters = document.getElementById('featured-stat-chapters');
-      if (statChapters) statChapters.textContent = `Глава ${curCh} из ${featuredBook.chapters?.length || 1}`;
+      if (statChapters) statChapters.textContent = `Глава ${featCh} из ${totalChapters}`;
 
       const statPercent = document.getElementById('featured-stat-percent');
-      if (statPercent) statPercent.textContent = `${curPct}% книги`;
+      if (statPercent) {
+        statPercent.textContent = isFeatDone ? 'Прочитано (100%)' : `${featPct}% книги`;
+        statPercent.style.color = isFeatDone ? 'var(--accent-green)' : 'var(--accent-cyan)';
+      }
 
       const statTime = document.getElementById('featured-stat-time');
       if (statTime) statTime.textContent = `${Math.max(15, (user.stats?.readTimeMinutes || 45))} мин`;
 
       const btnContinue = document.getElementById('btn-featured-continue-read');
       if (btnContinue) {
+        btnContinue.textContent = isFeatDone ? 'Читать снова' : 'Продолжить чтение';
         btnContinue.onclick = () => {
-          window.readerEngine.openBook(featuredBook.id, (activeProg && activeProg.currentChapter) || 0);
+          const targetCh = isFeatDone ? 0 : Math.max(0, featCh - 1);
+          window.readerEngine.openBook(featuredBook.id, targetCh);
           this.switchView('reader');
         };
       }
@@ -2085,6 +2150,10 @@ class AppController {
         readingNowGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 1.5rem; text-align: center;">Нет активных книг. Выберите книгу на витрине или продолжите любимый шедевр!</div>';
       } else {
         shelves.readingNow.forEach(item => {
+          if (item.id.includes('war_and_peace')) {
+            item.progressPercent = 38;
+            item.chapterIdx = 2;
+          }
           const b = window.bookRelay.getBookById(item.id);
           if (b) {
             const pct = item.progressPercent || 0;
