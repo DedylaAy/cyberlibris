@@ -69,6 +69,7 @@ class AppController {
     this.bindTasteOnboarding();
     this.bindBookDetailsModal();
     this.bindEditProfileModal();
+    this.bindProfileStudio();
     this.bindAdminRecommendations();
     this.bindOpenLibraryExplorer();
     this.bindCommandPalette();
@@ -202,6 +203,7 @@ class AppController {
     else if (viewName === 'shop') window.miniGames.renderShopCategory('frames');
     else if (viewName === 'leaderboard') this.renderLeaderboard();
     else if (viewName === 'profile') this.renderProfile();
+    else if (viewName === 'profile-edit') this.renderProfileEditor();
     else if (viewName === 'admin') window.adminEngine.renderAdminView();
 
     this.updateHeaderResumePill();
@@ -1895,9 +1897,10 @@ class AppController {
       genreJustification = `Звание заслужено изучением бессмертных философских трактатов и классических романов.`;
     }
 
+    const chosenTitle = user.title || genreRankTitle;
     const titleTagEl = document.getElementById('profile-title-tag');
     if (titleTagEl) {
-      titleTagEl.innerHTML = `<span class="rarity-pill rarity-pill-legendary">${genreRankTitle}</span>`;
+      titleTagEl.innerHTML = `<span class="rarity-pill rarity-pill-legendary">${chosenTitle}</span>`;
     }
 
     const justTextEl = document.getElementById('profile-rank-justification-text');
@@ -2610,72 +2613,349 @@ class AppController {
     }
   }
 
-  // --- EDIT PROFILE MODAL ENGINE ---
+  // --- EDIT PROFILE & STANDALONE STUDIO ENGINE ---
 
   bindEditProfileModal() {
     const btnOpen = document.getElementById('btn-open-edit-profile');
+    if (btnOpen) {
+      btnOpen.addEventListener('click', () => {
+        const user = window.auth.currentUser;
+        if (!user) { this.openModal('modal-auth'); return; }
+        this.switchView('profile-edit');
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    }
+
     const form = document.getElementById('form-edit-profile');
-    if (!btnOpen || !form) return;
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const user = window.auth.currentUser;
+        if (!user) return;
 
-    btnOpen.addEventListener('click', () => {
-      const user = window.auth.currentUser;
-      if (!user) { this.openModal('modal-auth'); return; }
+        const newName = document.getElementById('edit-display-name')?.value.trim();
+        const newMotto = document.getElementById('edit-profile-motto')?.value.trim();
+        const newAvatar = form.querySelector('input[name="edit-avatar"]:checked')?.value;
+        const newFrame = form.querySelector('input[name="edit-avatar-frame"]:checked')?.value;
+        const newBg = form.querySelector('input[name="edit-profile-bg"]:checked')?.value;
+        const newParticleShape = form.querySelector('input[name="edit-particle-shape"]:checked')?.value;
 
-      document.getElementById('edit-display-name').value = user.displayName || user.username;
-      const mottoField = document.getElementById('edit-profile-motto');
-      if (mottoField) mottoField.value = user.motto || '';
+        if (newName) user.displayName = newName;
+        if (newMotto !== undefined) user.motto = newMotto;
+        if (newAvatar) user.avatar = newAvatar;
+        if (newFrame) user.avatarFrame = newFrame;
+        if (newBg) user.profileBg = newBg;
+        if (newParticleShape) {
+          user.particleShape = newParticleShape;
+          if (window.reactiveBg) window.reactiveBg.setParticleShape(newParticleShape);
+        }
 
-      const avatarRadio = form.querySelector(`input[name="edit-avatar"][value="${user.avatar || '👑'}"]`);
-      if (avatarRadio) avatarRadio.checked = true;
+        window.auth.saveUser();
+        window.auth.syncUserToUI();
+        this.closeAllModals();
+        this.renderProfile();
+        this.showToast('Профиль успешно обновлен и сохранен', 'success');
+        if (window.soundEngine?.playCorrect) window.soundEngine.playCorrect();
+      });
+    }
+  }
 
-      const frameRadio = form.querySelector(`input[name="edit-avatar-frame"][value="${user.avatarFrame || 'frame-gold'}"]`);
-      if (frameRadio) frameRadio.checked = true;
+  bindProfileStudio() {
+    if (this.studioEventsBound) return;
+    this.studioEventsBound = true;
 
-      const bgRadio = form.querySelector(`input[name="edit-profile-bg"][value="${user.profileBg || 'bg-steam'}"]`);
-      if (bgRadio) bgRadio.checked = true;
+    // 1. Navigation / Action Buttons
+    document.getElementById('btn-back-to-profile-from-studio')?.addEventListener('click', () => this.cancelProfileStudio());
+    document.getElementById('btn-cancel-profile-studio')?.addEventListener('click', () => this.cancelProfileStudio());
+    document.getElementById('btn-cancel-profile-studio-bottom')?.addEventListener('click', () => this.cancelProfileStudio());
 
-      const shapeRadio = form.querySelector(`input[name="edit-particle-shape"][value="${user.particleShape || 'auto'}"]`);
-      if (shapeRadio) shapeRadio.checked = true;
+    document.getElementById('btn-save-profile-studio')?.addEventListener('click', () => this.saveProfileStudio());
+    document.getElementById('btn-save-profile-studio-bottom')?.addEventListener('click', () => this.saveProfileStudio());
 
-      this.openModal('modal-edit-profile');
+    // 2. Real-time Name Input
+    const nameInput = document.getElementById('studio-input-name');
+    nameInput?.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      const user = window.auth?.currentUser;
+      const previewName = document.getElementById('preview-studio-display-name');
+      if (previewName) {
+        previewName.textContent = val || user?.username || 'Читатель';
+      }
+    });
+
+    // 3. Real-time Motto Input & Quote Preset Chips
+    const mottoInput = document.getElementById('studio-input-motto');
+    mottoInput?.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      const previewMotto = document.getElementById('preview-studio-motto');
+      if (previewMotto) {
+        previewMotto.textContent = val ? (val.startsWith('«') ? val : `«${val}»`) : '«В книгах ищу то, чего не хватает в реальности...»';
+      }
+    });
+
+    document.querySelectorAll('#studio-motto-presets .studio-preset-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        const quote = e.currentTarget.dataset.quote || '';
+        if (mottoInput) {
+          mottoInput.value = quote.replace(/^«|»$/g, '');
+          mottoInput.dispatchEvent(new Event('input'));
+        }
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+
+    // 4. Honorific Title Selector
+    document.getElementById('studio-select-title')?.addEventListener('change', (e) => {
+      const val = e.target.value;
+      const pill = document.getElementById('preview-studio-role-pill');
+      if (pill) pill.textContent = val;
       if (window.soundEngine) window.soundEngine.playClick();
     });
 
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const user = window.auth.currentUser;
-      if (!user) return;
-
-      const newName = document.getElementById('edit-display-name').value.trim();
-      const newMotto = document.getElementById('edit-profile-motto')?.value.trim();
-      const newAvatar = form.querySelector('input[name="edit-avatar"]:checked')?.value;
-      const newFrame = form.querySelector('input[name="edit-avatar-frame"]:checked')?.value;
-      const newBg = form.querySelector('input[name="edit-profile-bg"]:checked')?.value;
-      const newParticleShape = form.querySelector('input[name="edit-particle-shape"]:checked')?.value;
-
-      if (newName) user.displayName = newName;
-      if (newMotto !== undefined) user.motto = newMotto;
-      if (newAvatar) user.avatar = newAvatar;
-      if (newFrame) user.avatarFrame = newFrame;
-      if (newBg) user.profileBg = newBg;
-      if (newParticleShape) {
-        user.particleShape = newParticleShape;
-        if (window.reactiveBg) window.reactiveBg.setParticleShape(newParticleShape);
-        const badge = document.getElementById('current-particle-badge');
-        const shapeLabels = { auto: 'Авто', stars: 'Звёзды ✨', hearts: 'Сердца ❤️', pixels: 'Пиксели 👾', embers: 'Искры 🔥', petals: 'Лепестки 🍃', bubbles: 'Пузыри 🫧' };
-        if (badge) badge.textContent = shapeLabels[newParticleShape] || 'Авто';
-        document.querySelectorAll('.particle-shape-btn').forEach((btn) => {
-          btn.classList.toggle('active', btn.dataset.shape === newParticleShape);
-        });
-      }
-
-      window.auth.saveUser();
-      window.auth.syncUserToUI();
-      this.closeAllModals();
-      this.renderProfile();
-      this.showToast('Профиль успешно обновлен и сохранен', 'success');
-      if (window.soundEngine?.playCorrect) window.soundEngine.playCorrect();
+    // 5. Avatar Glyph Grid
+    document.querySelectorAll('#studio-avatars-grid .studio-avatar-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('#studio-avatars-grid .studio-avatar-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        const avatar = e.currentTarget.dataset.avatar;
+        this.studioSelectedAvatar = avatar;
+        const glyph = document.getElementById('preview-studio-avatar-glyph');
+        if (glyph) glyph.textContent = avatar;
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
     });
+
+    // 6. Neon Avatar Frame Options
+    document.querySelectorAll('#studio-frames-grid .studio-opt-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        document.querySelectorAll('#studio-frames-grid .studio-opt-card').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        const frame = e.currentTarget.dataset.frame;
+        this.studioSelectedFrame = frame;
+        const wrap = document.getElementById('preview-studio-avatar-wrap');
+        if (wrap) wrap.className = `avatar-frame-wrap preview-avatar-large ${frame}`;
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+
+    // 7. Backdrop Swatches (Steam Themes)
+    document.querySelectorAll('#studio-themes-grid .studio-opt-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        document.querySelectorAll('#studio-themes-grid .studio-opt-card').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        const bg = e.currentTarget.dataset.bg;
+        this.studioSelectedBg = bg;
+        const ambient = document.getElementById('preview-studio-ambient-bg');
+        if (ambient) ambient.className = `steam-profile-ambient-bg ${bg}`;
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+
+    // 8. Featured Masterpiece Selection
+    document.querySelectorAll('#studio-featured-books-grid .studio-book-pick-btn').forEach(card => {
+      card.addEventListener('click', (e) => {
+        document.querySelectorAll('#studio-featured-books-grid .studio-book-pick-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        const bookId = e.currentTarget.dataset.bookId;
+        this.studioSelectedBookId = bookId;
+        this.updateStudioBookPreview(bookId);
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+
+    // 9. Particle Shapes Chips
+    document.querySelectorAll('#studio-particles-grid .studio-particle-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        document.querySelectorAll('#studio-particles-grid .studio-particle-chip').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        const shape = e.currentTarget.dataset.shape;
+        this.studioSelectedParticleShape = shape;
+        window.reactiveBg?.setParticleShape?.(shape);
+        if (window.soundEngine) window.soundEngine.playClick();
+      });
+    });
+  }
+
+  renderProfileEditor() {
+    const user = window.auth.currentUser;
+    if (!user) {
+      this.openModal('modal-auth');
+      return;
+    }
+
+    // Initialize state from current user data
+    this.studioSelectedAvatar = user.avatar || '👑';
+    this.studioSelectedFrame = user.avatarFrame || 'frame-gold';
+    this.studioSelectedBg = user.profileBg || 'bg-steam';
+    this.studioSelectedParticleShape = user.particleShape || 'auto';
+    this.studioSelectedBookId = localStorage.getItem('cyberlibris_featured_book_' + user.username) || 'relay_war_and_peace';
+
+    // 1. Text Inputs
+    const nameInput = document.getElementById('studio-input-name');
+    if (nameInput) nameInput.value = user.displayName || user.username;
+
+    const mottoInput = document.getElementById('studio-input-motto');
+    if (mottoInput) mottoInput.value = user.motto || '';
+
+    const titleSelect = document.getElementById('studio-select-title');
+    if (titleSelect) {
+      if (user.title) titleSelect.value = user.title;
+      else titleSelect.value = '👑 Создатель Системы [CREATOR]';
+    }
+
+    // 2. Highlight Selection Buttons
+    document.querySelectorAll('#studio-avatars-grid .studio-avatar-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.avatar === this.studioSelectedAvatar);
+    });
+
+    document.querySelectorAll('#studio-frames-grid .studio-opt-card').forEach(b => {
+      b.classList.toggle('active', b.dataset.frame === this.studioSelectedFrame);
+    });
+
+    document.querySelectorAll('#studio-themes-grid .studio-opt-card').forEach(b => {
+      b.classList.toggle('active', b.dataset.bg === this.studioSelectedBg);
+    });
+
+    document.querySelectorAll('#studio-particles-grid .studio-particle-chip').forEach(b => {
+      b.classList.toggle('active', b.dataset.shape === this.studioSelectedParticleShape);
+    });
+
+    document.querySelectorAll('#studio-featured-books-grid .studio-book-pick-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.bookId === this.studioSelectedBookId);
+    });
+
+    // 3. Render Live Preview
+    const previewName = document.getElementById('preview-studio-display-name');
+    if (previewName) previewName.textContent = user.displayName || user.username;
+
+    const previewTag = document.getElementById('preview-studio-username-tag');
+    if (previewTag) previewTag.textContent = `@${user.username}`;
+
+    const previewMotto = document.getElementById('preview-studio-motto');
+    if (previewMotto) {
+      const m = user.motto || 'В книгах ищу то, чего не хватает в реальности...';
+      previewMotto.textContent = m.startsWith('«') ? m : `«${m}»`;
+    }
+
+    const previewGlyph = document.getElementById('preview-studio-avatar-glyph');
+    if (previewGlyph) previewGlyph.textContent = this.studioSelectedAvatar;
+
+    const previewWrap = document.getElementById('preview-studio-avatar-wrap');
+    if (previewWrap) previewWrap.className = `avatar-frame-wrap preview-avatar-large ${this.studioSelectedFrame}`;
+
+    const previewAmbient = document.getElementById('preview-studio-ambient-bg');
+    if (previewAmbient) previewAmbient.className = `steam-profile-ambient-bg ${this.studioSelectedBg}`;
+
+    const previewRolePill = document.getElementById('preview-studio-role-pill');
+    if (previewRolePill) {
+      previewRolePill.textContent = user.title || (user.role === 'creator' ? '👑 Создатель' : (user.role === 'admin' ? '🛡️ Администратор' : '📖 Читатель'));
+    }
+
+    const previewRoleBadge = document.getElementById('preview-studio-role-badge');
+    if (previewRoleBadge && window.auth.getRoleBadgeHTML) {
+      previewRoleBadge.innerHTML = window.auth.getRoleBadgeHTML(user.role, user.level);
+    }
+
+    // Level & XP
+    const previewLevel = document.getElementById('preview-studio-level-num');
+    if (previewLevel) previewLevel.textContent = user.level || 1;
+
+    const neededXp = (user.level || 1) * 400;
+    const currentXp = user.xp || 0;
+    const xpPercent = Math.min(100, Math.round((currentXp / neededXp) * 100));
+    const previewXpFill = document.getElementById('preview-studio-xp-fill');
+    if (previewXpFill) previewXpFill.style.width = `${xpPercent}%`;
+
+    // Presence in preview
+    const previewStatusOnline = document.getElementById('preview-studio-status-online');
+    if (previewStatusOnline) {
+      previewStatusOnline.textContent = 'В сети • В студии профиля';
+    }
+
+    // Featured book preview
+    this.updateStudioBookPreview(this.studioSelectedBookId);
+  }
+
+  updateStudioBookPreview(bookId) {
+    const user = window.auth?.currentUser;
+    const book = window.bookRelay?.getBookById?.(bookId) ||
+                 window.bookRelay?.getBookById?.(bookId.replace('relay_', '')) ||
+                 window.bookRelay?.getBookById?.('relay_war_and_peace') ||
+                 window.bookRelay?.getBookById?.('war_and_peace');
+    if (!book) return;
+
+    const coverEl = document.getElementById('preview-studio-feat-cover');
+    const titleEl = document.getElementById('preview-studio-feat-title');
+    const authorEl = document.getElementById('preview-studio-feat-author');
+    const statEl = document.getElementById('preview-studio-feat-stat');
+
+    if (coverEl) coverEl.src = book.coverImage;
+    if (titleEl) titleEl.textContent = `«${book.title}»`;
+    if (authorEl) authorEl.textContent = book.author;
+
+    let statText = 'Освоение: 38% книги • Глава 3 из 28';
+    if (user && user.shelves) {
+      const fItem = (user.shelves.readingNow || []).find(b => b.id === book.id || b.id === book.id.replace('relay_', '') || `relay_${b.id}` === book.id);
+      const fDone = (user.shelves.completed || []).find(b => b.id === book.id || b.id === book.id.replace('relay_', '') || `relay_${b.id}` === book.id);
+      if (fItem) {
+        const p = fItem.progressPercent || 38;
+        const c = (fItem.chapterIdx !== undefined ? fItem.chapterIdx + 1 : 3);
+        statText = `Освоение: ${p}% книги • Глава ${c} из 28`;
+      } else if (fDone) {
+        statText = `Освоение: 100% книги • Полностью завершено`;
+      } else if (book.id.includes('war_and_peace')) {
+        statText = 'Освоение: 38% книги • Глава 3 из 28';
+      } else {
+        statText = 'Начало чтения • Глава 1 из 20';
+      }
+    }
+    if (statEl) statEl.textContent = statText;
+  }
+
+  saveProfileStudio() {
+    const user = window.auth.currentUser;
+    if (!user) return;
+
+    const nameVal = document.getElementById('studio-input-name')?.value.trim();
+    const mottoVal = document.getElementById('studio-input-motto')?.value.trim();
+    const titleVal = document.getElementById('studio-select-title')?.value;
+
+    if (nameVal) user.displayName = nameVal;
+    if (mottoVal !== undefined) user.motto = mottoVal;
+    if (titleVal) user.title = titleVal;
+
+    if (this.studioSelectedAvatar) user.avatar = this.studioSelectedAvatar;
+    if (this.studioSelectedFrame) user.avatarFrame = this.studioSelectedFrame;
+    if (this.studioSelectedBg) user.profileBg = this.studioSelectedBg;
+    if (this.studioSelectedParticleShape) {
+      user.particleShape = this.studioSelectedParticleShape;
+      window.reactiveBg?.setParticleShape?.(this.studioSelectedParticleShape);
+      const badge = document.getElementById('current-particle-badge');
+      const shapeLabels = { auto: 'Авто', stars: 'Звёзды ✨', hearts: 'Сердца ❤️', pixels: 'Пиксели 👾', embers: 'Искры 🔥', petals: 'Лепестки 🍃', bubbles: 'Пузыри 🫧' };
+      if (badge) badge.textContent = shapeLabels[this.studioSelectedParticleShape] || 'Авто';
+      document.querySelectorAll('.particle-shape-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.shape === this.studioSelectedParticleShape);
+      });
+    }
+
+    if (this.studioSelectedBookId) {
+      localStorage.setItem('cyberlibris_featured_book_' + user.username, this.studioSelectedBookId);
+    }
+
+    window.auth.saveUser();
+    window.auth.syncUserToUI();
+    this.renderProfile();
+    this.showToast('Профиль успешно обновлен! Все визуальные изменения сохранены.', 'success');
+    if (window.soundEngine?.playCorrect) window.soundEngine.playCorrect();
+    this.switchView('profile');
+  }
+
+  cancelProfileStudio() {
+    const user = window.auth.currentUser;
+    if (user && window.reactiveBg) {
+      window.reactiveBg.setParticleShape(user.particleShape || 'auto');
+    }
+    this.switchView('profile');
   }
 
   // --- INTERACTIVE THEME PALETTE (COLOR CIRCLES PREVIEW) ---

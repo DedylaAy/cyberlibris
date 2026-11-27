@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap">
   </noscript>
 
-  <!-- Core & Custom Stylesheets (with cache-busting v5.3.2) -->
-  <link rel="stylesheet" href="css/main.css?v=5.4.1">
-  <link rel="stylesheet" href="css/animations.css?v=5.4.1">
-  <link rel="stylesheet" href="css/reader.css?v=5.4.1">
-  <link rel="stylesheet" href="css/games.css?v=5.4.1">
+  <!-- Core & Custom Stylesheets (with cache-busting v5.5.0) -->
+  <link rel="stylesheet" href="css/main.css?v=5.5.0">
+  <link rel="stylesheet" href="css/animations.css?v=5.5.0">
+  <link rel="stylesheet" href="css/reader.css?v=5.5.0">
+  <link rel="stylesheet" href="css/games.css?v=5.5.0">
 
   <style>
     .books-grid {
@@ -2179,6 +2179,347 @@
       </section>
 
       <!-- ===================================================================
+           VIEW: PROFILE STUDIO & EDITOR (ОТДЕЛЬНЫЙ ЭКРАН РЕДАКТИРОВАНИЯ С ЖИВЫМ ПРЕДПРОСМОТРОМ)
+           =================================================================== -->
+      <section id="view-profile-edit" class="view-section">
+        <!-- Studio Header Bar -->
+        <div class="studio-header-bar">
+          <div class="studio-header-left">
+            <button class="btn btn-secondary btn-sm magnetic-btn" id="btn-back-to-profile-from-studio">
+              ← Назад в профиль
+            </button>
+            <div>
+              <h2 class="studio-title">🎨 Студия Персонализации Профиля</h2>
+              <p class="studio-subtitle">Редактируйте параметры слева и мгновенно наблюдайте за изменениями на живой витрине справа</p>
+            </div>
+          </div>
+          <div class="studio-header-actions">
+            <button class="btn btn-secondary btn-sm" id="btn-cancel-profile-studio">
+              ✕ Отмена
+            </button>
+            <button class="btn btn-primary btn-sm magnetic-btn" id="btn-save-profile-studio">
+              💾 Сохранить изменения
+            </button>
+          </div>
+        </div>
+
+        <!-- Studio Split Layout -->
+        <div class="profile-studio-grid">
+          <!-- LEFT COLUMN: CONTROLS & SETTINGS -->
+          <div class="profile-studio-controls-col">
+            <!-- 1. Identity & Motto -->
+            <div class="studio-card">
+              <div class="studio-card-header">
+                <span class="studio-card-icon">👤</span>
+                <div>
+                  <div class="studio-card-title">Имя, Звание и Девиз</div>
+                  <div class="studio-card-sub">Базовая информация вашего профиля Steam</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Отображаемое имя (Никнейм)</label>
+                <input type="text" id="studio-input-name" class="form-input" placeholder="Ваше имя / никнейм" maxlength="32">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Читательский девиз / Статусная мысль</label>
+                <input type="text" id="studio-input-motto" class="form-input" placeholder="«В книгах ищу то, чего не хватает в реальности...»" maxlength="120">
+                <div class="studio-preset-chips" id="studio-motto-presets">
+                  <span class="studio-chip-label">Быстрые цитаты:</span>
+                  <button type="button" class="studio-preset-chip" data-quote="«Рукописи не горят»">«Рукописи не горят»</button>
+                  <button type="button" class="studio-preset-chip" data-quote="«Человек — это канат над пропастью»">«Человек — это канат...»</button>
+                  <button type="button" class="studio-preset-chip" data-quote="«Красота спасёт мир»">«Красота спасёт мир»</button>
+                  <button type="button" class="studio-preset-chip" data-quote="«Все мысли просты»">«Все мысли просты»</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Почетный титул читателя</label>
+                <select id="studio-select-title" class="form-input remanga-select">
+                  <option value="Создатель Системы [CREATOR]">👑 Создатель Системы [CREATOR]</option>
+                  <option value="Верховный Архивариус">⚜️ Верховный Архивариус</option>
+                  <option value="Магистр Мысли">📜 Магистр Мысли</option>
+                  <option value="Старейшина Знаний">🕯️ Старейшина Знаний</option>
+                  <option value="Схоласт Сети">🔮 Схоласт Сети</option>
+                  <option value="Знаток Глав">🏛️ Знаток Глав</option>
+                  <option value="Любитель">🌱 Любитель</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 2. Avatar Selection -->
+            <div class="studio-card">
+              <div class="studio-card-header">
+                <span class="studio-card-icon">🎭</span>
+                <div>
+                  <div class="studio-card-title">Иконка Аватара</div>
+                  <div class="studio-card-sub">Выберите символ вашего цифрового воплощения</div>
+                </div>
+              </div>
+              <div class="studio-avatars-grid" id="studio-avatars-grid">
+                <button type="button" class="studio-avatar-btn" data-avatar="👑">👑</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="⚜️">⚜️</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="⚡">⚡</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🛡️">🛡️</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="📖">📖</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🔮">🔮</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🕶️">🕶️</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🧠">🧠</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🐉">🐉</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🌟">🌟</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🦉">🦉</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🔥">🔥</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="⚔️">⚔️</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🌌">🌌</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="💎">💎</button>
+                <button type="button" class="studio-avatar-btn" data-avatar="🏛️">🏛️</button>
+              </div>
+            </div>
+
+            <!-- 3. Avatar Frame -->
+            <div class="studio-card">
+              <div class="studio-card-header">
+                <span class="studio-card-icon">⚡</span>
+                <div>
+                  <div class="studio-card-title">Неоновая Рамка Аватара</div>
+                  <div class="studio-card-sub">Анимированная рамка с живым неоновым свечением</div>
+                </div>
+              </div>
+              <div class="studio-options-grid" id="studio-frames-grid">
+                <button type="button" class="studio-opt-card" data-frame="frame-gold">
+                  <div class="studio-opt-preview frame-gold"><span>👑</span></div>
+                  <div class="studio-opt-name">Золотая Корона</div>
+                  <div class="studio-opt-desc">Премиум золото</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-frame="frame-neon">
+                  <div class="studio-opt-preview frame-neon"><span>⚡</span></div>
+                  <div class="studio-opt-name">Кибер-Неон</div>
+                  <div class="studio-opt-desc">Бирюзовый лазер</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-frame="frame-dragon">
+                  <div class="studio-opt-preview frame-dragon"><span>🐉</span></div>
+                  <div class="studio-opt-name">Огненный Дракон</div>
+                  <div class="studio-opt-desc">Пылающий огонь</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-frame="frame-matrix">
+                  <div class="studio-opt-preview frame-matrix"><span>🟩</span></div>
+                  <div class="studio-opt-name">Код Матрицы</div>
+                  <div class="studio-opt-desc">Изумрудный терминал</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-frame="frame-default">
+                  <div class="studio-opt-preview frame-default"><span>⚪</span></div>
+                  <div class="studio-opt-name">Классика</div>
+                  <div class="studio-opt-desc">Минимализм</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- 4. Steam Animated Backdrop -->
+            <div class="studio-card">
+              <div class="studio-card-header">
+                <span class="studio-card-icon">🌌</span>
+                <div>
+                  <div class="studio-card-title">Фон Профиля (Steam Backdrop)</div>
+                  <div class="studio-card-sub">Интерактивная тема шапки и фонового полотна</div>
+                </div>
+              </div>
+              <div class="studio-options-grid" id="studio-themes-grid">
+                <button type="button" class="studio-opt-card" data-bg="bg-steam">
+                  <div class="studio-bg-swatch bg-steam-swatch"></div>
+                  <div class="studio-opt-name">Steam Midnight</div>
+                  <div class="studio-opt-desc">Классический индиго</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-bg="bg-cyber">
+                  <div class="studio-bg-swatch bg-cyber-swatch"></div>
+                  <div class="studio-opt-name">Cyberpunk Neon</div>
+                  <div class="studio-opt-desc">Неон и фуксия</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-bg="bg-cosmic">
+                  <div class="studio-bg-swatch bg-cosmic-swatch"></div>
+                  <div class="studio-opt-name">Cosmic Void</div>
+                  <div class="studio-opt-desc">Глубокий космос</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-bg="bg-matrix">
+                  <div class="studio-bg-swatch bg-matrix-swatch"></div>
+                  <div class="studio-opt-name">Matrix Grid</div>
+                  <div class="studio-opt-desc">Зеленый монохром</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-bg="bg-royal">
+                  <div class="studio-bg-swatch bg-royal-swatch"></div>
+                  <div class="studio-opt-name">Royal Velvet</div>
+                  <div class="studio-opt-desc">Королевский пурпур</div>
+                </button>
+                <button type="button" class="studio-opt-card" data-bg="bg-zen">
+                  <div class="studio-bg-swatch bg-zen-swatch"></div>
+                  <div class="studio-opt-name">Zen Paper</div>
+                  <div class="studio-opt-desc">Японский минимализм</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- 5. Featured Masterpiece Selection -->
+            <div class="studio-card">
+              <div class="studio-card-header">
+                <span class="studio-card-icon">🏆</span>
+                <div>
+                  <div class="studio-card-title">Главная Витрина: Любимый Шедевр</div>
+                  <div class="studio-card-sub">Выберите главное произведение, которое увидят посетители вашего профиля</div>
+                </div>
+              </div>
+              <div class="studio-books-grid" id="studio-featured-books-grid">
+                <button type="button" class="studio-book-pick-btn active" data-book-id="relay_war_and_peace">
+                  <img src="https://covers.openlibrary.org/b/id/12818862-L.jpg" class="studio-book-thumb" alt="Война и мир">
+                  <div class="studio-book-meta">
+                    <div class="studio-book-name">«Война и мир»</div>
+                    <div class="studio-book-author">Л.Н. Толстой</div>
+                  </div>
+                </button>
+                <button type="button" class="studio-book-pick-btn" data-book-id="relay_master_margarita">
+                  <img src="https://covers.openlibrary.org/b/id/8386348-L.jpg" class="studio-book-thumb" alt="Собачье сердце">
+                  <div class="studio-book-meta">
+                    <div class="studio-book-name">«Собачье сердце»</div>
+                    <div class="studio-book-author">М.А. Булгаков</div>
+                  </div>
+                </button>
+                <button type="button" class="studio-book-pick-btn" data-book-id="relay_crime_and_punishment">
+                  <img src="https://covers.openlibrary.org/b/id/12818864-L.jpg" class="studio-book-thumb" alt="Преступление и наказание">
+                  <div class="studio-book-meta">
+                    <div class="studio-book-name">«Преступление и наказание»</div>
+                    <div class="studio-book-author">Ф.М. Достоевский</div>
+                  </div>
+                </button>
+                <button type="button" class="studio-book-pick-btn" data-book-id="relay_art_of_war">
+                  <img src="https://covers.openlibrary.org/b/id/12818865-L.jpg" class="studio-book-thumb" alt="Искусство войны">
+                  <div class="studio-book-meta">
+                    <div class="studio-book-name">«Искусство войны»</div>
+                    <div class="studio-book-author">Сунь-Цзы</div>
+                  </div>
+                </button>
+                <button type="button" class="studio-book-pick-btn" data-book-id="relay_1984">
+                  <img src="https://covers.openlibrary.org/b/id/12818866-L.jpg" class="studio-book-thumb" alt="1984">
+                  <div class="studio-book-meta">
+                    <div class="studio-book-name">«1984»</div>
+                    <div class="studio-book-author">Джордж Оруэлл</div>
+                  </div>
+                </button>
+                <button type="button" class="studio-book-pick-btn" data-book-id="relay_captains_daughter">
+                  <img src="https://covers.openlibrary.org/b/id/12818867-L.jpg" class="studio-book-thumb" alt="Капитанская дочка">
+                  <div class="studio-book-meta">
+                    <div class="studio-book-name">«Капитанская дочка»</div>
+                    <div class="studio-book-author">А.С. Пушкин</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- 6. Reactive Particle Shape -->
+            <div class="studio-card">
+              <div class="studio-card-header">
+                <span class="studio-card-icon">✨</span>
+                <div>
+                  <div class="studio-card-title">Форма Фоновых Частиц</div>
+                  <div class="studio-card-sub">Интерактивные микрочастицы фона CyberLibris</div>
+                </div>
+              </div>
+              <div class="studio-particles-grid" id="studio-particles-grid">
+                <button type="button" class="studio-particle-chip active" data-shape="auto">Авто</button>
+                <button type="button" class="studio-particle-chip" data-shape="stars">Звёзды ✨</button>
+                <button type="button" class="studio-particle-chip" data-shape="hearts">Сердца ❤️</button>
+                <button type="button" class="studio-particle-chip" data-shape="pixels">Пиксели 👾</button>
+                <button type="button" class="studio-particle-chip" data-shape="embers">Искры 🔥</button>
+                <button type="button" class="studio-particle-chip" data-shape="petals">Лепестки 🍃</button>
+                <button type="button" class="studio-particle-chip" data-shape="bubbles">Пузыри 🫧</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: LIVE REAL-TIME PREVIEW -->
+          <div class="profile-studio-preview-col">
+            <div class="studio-preview-sticky-wrap">
+              <div class="studio-preview-header">
+                <div class="studio-preview-title-row">
+                  <span class="preview-live-dot"></span>
+                  <span class="preview-title-text">ЖИВОЙ ПРЕДПРОСМОТР В РЕАЛЬНОМ ВРЕМЕНИ</span>
+                </div>
+                <div class="preview-live-pill">LIVE WYSIWYG</div>
+              </div>
+
+              <!-- Real-Time Steam Profile Hub Card Preview -->
+              <div class="steam-profile-hub-card preview-card" id="studio-live-hub-card">
+                <div class="steam-profile-ambient-bg bg-steam" id="preview-studio-ambient-bg"></div>
+
+                <!-- Top Ribbon -->
+                <div class="steam-profile-top-ribbon">
+                  <div class="profile-online-badge">
+                    <span class="online-pulse-dot dot-online"></span>
+                    <span id="preview-studio-status-online">В сети • В студии профиля</span>
+                  </div>
+                  <div class="steam-profile-actions">
+                    <span class="badge-role-pill" id="preview-studio-role-pill">👑 Создатель</span>
+                  </div>
+                </div>
+
+                <!-- Identity Row -->
+                <div class="steam-profile-identity-row">
+                  <div class="avatar-frame-wrap preview-avatar-large frame-gold" id="preview-studio-avatar-wrap">
+                    <div class="avatar-inner" id="preview-studio-avatar-glyph">👑</div>
+                  </div>
+
+                  <div class="steam-profile-main-info">
+                    <div class="steam-profile-name-row">
+                      <span class="steam-profile-name" id="preview-studio-display-name">Верховный Создатель</span>
+                      <span class="steam-profile-tag" id="preview-studio-username-tag">@admin</span>
+                      <span id="preview-studio-role-badge"></span>
+                    </div>
+
+                    <div class="steam-profile-motto" id="preview-studio-motto">
+                      «Рукописи не горят»
+                    </div>
+
+                    <div class="steam-profile-level-badge">
+                      <div class="steam-level-circle">
+                        <span class="steam-lvl-num" id="preview-studio-level-num">35</span>
+                      </div>
+                      <div class="steam-level-info">
+                        <div class="steam-lvl-title">Уровень Читателя Steam</div>
+                        <div class="steam-xp-track">
+                          <div class="steam-xp-fill" id="preview-studio-xp-fill" style="width: 78%;"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Featured Masterpiece Showcase Preview -->
+                <div class="studio-showcase-preview-card">
+                  <div class="studio-showcase-preview-badge">ГЛАВНАЯ ВИТРИНА ШЕДЕВРА</div>
+                  <div class="studio-showcase-preview-content">
+                    <img src="https://covers.openlibrary.org/b/id/12818862-L.jpg" class="studio-showcase-img" id="preview-studio-feat-cover" alt="Обложка">
+                    <div class="studio-showcase-info">
+                      <div class="studio-showcase-title" id="preview-studio-feat-title">«Война и мир»</div>
+                      <div class="studio-showcase-author" id="preview-studio-feat-author">Лев Николаевич Толстой</div>
+                      <div class="studio-showcase-stat" id="preview-studio-feat-stat">Освоение: 38% книги • Глава 3 из 28</div>
+                      <div class="studio-showcase-btn">Продолжить чтение →</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Preview Sticky Actions Footer -->
+              <div class="studio-preview-footer-actions">
+                <button class="btn btn-primary btn-block magnetic-btn" id="btn-save-profile-studio-bottom" style="padding: 0.85rem 1.5rem; font-size: 1rem; font-weight: 800;">
+                  💾 Сохранить и применить
+                </button>
+                <button class="btn btn-secondary btn-block" id="btn-cancel-profile-studio-bottom" style="padding: 0.65rem 1rem;">
+                  ✕ Отмена без сохранения
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================
            VIEW 7: ADMIN PANEL (ПАНЕЛЬ АДМИНИСТРАТОРА И СОЗДАТЕЛЯ)
            =================================================================== -->
       <section id="view-admin" class="view-section">
@@ -3270,18 +3611,18 @@
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- Scripts (with cache-busting v5.4.1) -->
-  <script src="js/audio.js?v=5.4.1"></script>
-  <script src="js/background.js?v=5.4.1"></script>
-  <script src="js/github.js?v=5.4.1"></script>
-  <script src="js/db.js?v=5.4.1"></script>
-  <script src="js/auth.js?v=5.4.1"></script>
-  <script src="js/bookRelay.js?v=5.4.1"></script>
-  <script src="js/recommendations.js?v=5.4.1"></script>
-  <script src="js/openlibrary.js?v=5.4.1"></script>
-  <script src="js/reader.js?v=5.4.1"></script>
-  <script src="js/games.js?v=5.4.1"></script>
-  <script src="js/admin.js?v=5.4.1"></script>
-  <script src="js/app.js?v=5.4.1"></script>
+  <!-- Scripts (with cache-busting v5.5.0) -->
+  <script src="js/audio.js?v=5.5.0"></script>
+  <script src="js/background.js?v=5.5.0"></script>
+  <script src="js/github.js?v=5.5.0"></script>
+  <script src="js/db.js?v=5.5.0"></script>
+  <script src="js/auth.js?v=5.5.0"></script>
+  <script src="js/bookRelay.js?v=5.5.0"></script>
+  <script src="js/recommendations.js?v=5.5.0"></script>
+  <script src="js/openlibrary.js?v=5.5.0"></script>
+  <script src="js/reader.js?v=5.5.0"></script>
+  <script src="js/games.js?v=5.5.0"></script>
+  <script src="js/admin.js?v=5.5.0"></script>
+  <script src="js/app.js?v=5.5.0"></script>
 </body>
 </html>

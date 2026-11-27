@@ -452,6 +452,9 @@ class AuthManager {
                 <button class="steam-drop-item" data-action="profile">
                   <span class="steam-drop-item-icon">👤</span> <span>Мой профиль читателя</span>
                 </button>
+                <button class="steam-drop-item" data-action="profile-edit">
+                  <span class="steam-drop-item-icon">🎨</span> <span>Редактировать профиль</span>
+                </button>
                 <button class="steam-drop-item" data-action="inventory">
                   <span class="steam-drop-item-icon">🎒</span> <span>Инвентарь & Артефакты</span>
                 </button>
@@ -530,6 +533,8 @@ class AuthManager {
 
         if (action === 'profile') {
           window.app?.switchView?.('profile');
+        } else if (action === 'profile-edit') {
+          window.app?.switchView?.('profile-edit');
         } else if (action === 'inventory') {
           window.app?.switchView?.('shop');
         } else if (action === 'themes') {
