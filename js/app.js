@@ -1664,6 +1664,143 @@ class AppController {
     `;
   }
 
+  // --- HALL OF FAME & LEADERBOARD SYSTEM ---
+
+  renderLeaderboard() {
+    const podiumEl = document.getElementById('leaderboard-podium');
+    const tbodyEl = document.getElementById('leaderboard-tbody');
+    if (!podiumEl || !tbodyEl) return;
+
+    // 1. Collect all users
+    let users = [];
+    if (window.dbEngine?.getUsers) {
+      users = [...window.dbEngine.getUsers()];
+    }
+
+    // Ensure currently active user stats are up to date in the list
+    const curUser = window.auth?.currentUser;
+    if (curUser) {
+      const idx = users.findIndex(u => u.id === curUser.id || u.username.toLowerCase() === curUser.username.toLowerCase());
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], ...curUser };
+      } else {
+        users.push(curUser);
+      }
+    }
+
+    // 2. Sort users by level (primary), then xp, then gamesWon
+    users.sort((a, b) => {
+      const lvlA = parseInt(a.level || 1, 10);
+      const lvlB = parseInt(b.level || 1, 10);
+      if (lvlB !== lvlA) return lvlB - lvlA;
+      const xpA = parseInt(a.xp || 0, 10);
+      const xpB = parseInt(b.xp || 0, 10);
+      if (xpB !== xpA) return xpB - xpA;
+      const gamesA = a.stats?.gamesWon || 0;
+      const gamesB = b.stats?.gamesWon || 0;
+      return gamesB - gamesA;
+    });
+
+    // 3. Render Top 3 Podium
+    const top3 = users.slice(0, 3);
+    const renderPodiumCol = (u, rank) => {
+      if (!u) return '';
+      const isCur = curUser && (curUser.id === u.id || curUser.username === u.username);
+      const readHrs = Math.floor((u.stats?.readTimeMinutes || 0) / 60);
+      const readMins = (u.stats?.readTimeMinutes || 0) % 60;
+      const timeStr = `${readHrs}ч ${readMins}м`;
+      const frameClass = u.avatarFrame || 'frame-default';
+      const rankBadge = rank === 1 ? '👑 ТОП 1' : (rank === 2 ? '🥈 ТОП 2' : '🥉 ТОП 3');
+
+      return `
+        <div class="podium-column rank-${rank} tilt-card" title="Пользователь @${u.username}">
+          <div class="podium-rank-badge">${rankBadge}</div>
+          <div class="steam-avatar-holder ${frameClass}" style="width: 68px; height: 68px; margin: 1rem auto 0.5rem; font-size: 2.1rem; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0;">
+            ${u.avatar || '📖'}
+          </div>
+          <div style="font-weight: 900; font-size: 1.05rem; color: #fff; margin-bottom: 0.2rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; flex-wrap: wrap; text-align: center; line-height: 1.3; width: 100%;">
+            <span>${u.displayName}</span>
+            ${isCur ? '<span style="font-size: 0.65rem; background: var(--accent-cyan); color: #000; font-weight: 900; padding: 1px 5px; border-radius: 4px; display: inline-block;">ВЫ</span>' : ''}
+          </div>
+          <div style="font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 0.8rem; font-weight: 700; text-align: center;">
+            ${u.title || u.role}
+          </div>
+          <div class="podium-stats-box" style="margin-top: auto; width: 100%;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Уровень:</span>
+              <strong style="color: var(--accent-gold);">Ур. ${u.level}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Опыт:</span>
+              <span>${(u.xp || 0).toLocaleString()} XP</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Время чтения:</span>
+              <span>${timeStr}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Побед в играх:</span>
+              <strong style="color: var(--accent-green);">${u.stats?.gamesWon || 0}</strong>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    podiumEl.innerHTML = `
+      ${top3[1] ? renderPodiumCol(top3[1], 2) : ''}
+      ${top3[0] ? renderPodiumCol(top3[0], 1) : ''}
+      ${top3[2] ? renderPodiumCol(top3[2], 3) : ''}
+    `;
+
+    // 4. Render Table Body (All users)
+    tbodyEl.innerHTML = users.map((u, idx) => {
+      const isCur = curUser && (curUser.id === u.id || curUser.username === u.username);
+      const rankNum = idx + 1;
+      const rankIcon = rankNum === 1 ? '🥇 1' : (rankNum === 2 ? '🥈 2' : (rankNum === 3 ? '🥉 3' : rankNum));
+      const readHrs = Math.floor((u.stats?.readTimeMinutes || 0) / 60);
+      const readMins = (u.stats?.readTimeMinutes || 0) % 60;
+      const timeStr = `${readHrs}ч ${readMins}м`;
+      const rowHighlight = isCur ? 'style="background: rgba(0, 240, 255, 0.08);"' : '';
+
+      return `
+        <tr ${rowHighlight}>
+          <td>
+            <span style="font-weight: 900; font-size: 1.05rem; color: ${rankNum === 1 ? 'var(--accent-gold)' : rankNum === 2 ? 'var(--accent-cyan)' : rankNum === 3 ? '#cd7f32' : 'inherit'};">
+              ${rankIcon}
+            </span>
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <div class="steam-avatar-holder ${u.avatarFrame || 'frame-default'}" style="width: 38px; height: 38px; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                ${u.avatar || '📖'}
+              </div>
+              <div>
+                <div style="color: #fff; font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+                  ${u.displayName}
+                  ${isCur ? '<span style="font-size: 0.65rem; background: var(--accent-cyan); color: #000; font-weight: 900; padding: 1px 5px; border-radius: 3px;">ВЫ</span>' : ''}
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-dim);">@${u.username}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span style="font-size: 0.85rem; color: var(--accent-cyan); font-weight: 600;">${u.title || u.role}</span>
+          </td>
+          <td>
+            <strong style="color: var(--accent-gold);">Ур. ${u.level}</strong>
+            <div style="font-size: 0.72rem; color: var(--text-dim);">${(u.xp || 0).toLocaleString()} XP</div>
+          </td>
+          <td>${timeStr}</td>
+          <td>${u.stats?.speedRecordWPM || 300} сл/мин</td>
+          <td><strong style="color: var(--accent-green);">${u.stats?.gamesWon || 0}</strong></td>
+        </tr>
+      `;
+    }).join('');
+
+    if (this.bindTiltEffect) this.bindTiltEffect();
+  }
+
   renderProfile() {
     const user = window.auth.currentUser;
     if (!user) {

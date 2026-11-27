@@ -144,6 +144,98 @@ const DEFAULT_DATABASE = {
       },
       readingProgress: {},
       bookmarks: []
+    },
+    {
+      id: "usr_speedrunner",
+      username: "speedrunner",
+      passwordHash: "fast123",
+      role: "user",
+      displayName: "Вектор Скорости",
+      avatar: "⚡",
+      avatarFrame: "frame-void",
+      customBg: "theme-synthwave",
+      title: "Магистр Скорочтения",
+      level: 22,
+      xp: 7100,
+      lumens: 1950,
+      stats: { booksRead: 14, readTimeMinutes: 280, gamesWon: 48, speedRecordWPM: 750, cryptorSolved: 24, memoryFlips: 50, currentStreak: 12 },
+      badges: ["book_first_page", "scifi_explorer", "quiz_erudite"],
+      unlockedCosmetics: {
+        frames: ["frame-default", "frame-void"],
+        backgrounds: ["theme-cyberpunk", "theme-synthwave"],
+        titles: ["Магистр Скорочтения", "Любитель"]
+      },
+      readingProgress: {},
+      bookmarks: []
+    },
+    {
+      id: "usr_cyberpunk",
+      username: "netrunner",
+      passwordHash: "matrix123",
+      role: "user",
+      displayName: "Кибер-Деккер",
+      avatar: "📟",
+      avatarFrame: "frame-neon",
+      customBg: "theme-matrix",
+      title: "Деккер Матрицы",
+      level: 19,
+      xp: 5800,
+      lumens: 1600,
+      stats: { booksRead: 11, readTimeMinutes: 240, gamesWon: 35, speedRecordWPM: 560, cryptorSolved: 19, memoryFlips: 40, currentStreak: 10 },
+      badges: ["book_first_page", "scifi_explorer"],
+      unlockedCosmetics: {
+        frames: ["frame-default", "frame-neon"],
+        backgrounds: ["theme-cyberpunk", "theme-matrix"],
+        titles: ["Деккер Матрицы", "Схоласт Сети"]
+      },
+      readingProgress: {},
+      bookmarks: []
+    },
+    {
+      id: "usr_philosopher",
+      username: "socrates",
+      passwordHash: "wisdom123",
+      role: "user",
+      displayName: "Афинский Диалектик",
+      avatar: "🏛️",
+      avatarFrame: "frame-default",
+      customBg: "theme-royal",
+      title: "Знаток Глав",
+      level: 12,
+      xp: 2900,
+      lumens: 780,
+      stats: { booksRead: 10, readTimeMinutes: 340, gamesWon: 19, speedRecordWPM: 290, cryptorSolved: 14, memoryFlips: 28, currentStreak: 8 },
+      badges: ["book_first_page", "classic_connoisseur"],
+      unlockedCosmetics: {
+        frames: ["frame-default"],
+        backgrounds: ["theme-cyberpunk", "theme-royal"],
+        titles: ["Знаток Глав", "Любитель"]
+      },
+      readingProgress: {},
+      bookmarks: []
+    },
+    {
+      id: "usr_novice",
+      username: "reader_neo",
+      passwordHash: "read123",
+      role: "user",
+      displayName: "Неофит Сети",
+      avatar: "🌱",
+      avatarFrame: "frame-default",
+      customBg: "theme-zen",
+      title: "Любитель",
+      level: 4,
+      xp: 950,
+      lumens: 220,
+      stats: { booksRead: 2, readTimeMinutes: 45, gamesWon: 5, speedRecordWPM: 250, cryptorSolved: 3, memoryFlips: 10, currentStreak: 2 },
+      badges: ["book_first_page"],
+      unlockedCosmetics: {
+        frames: ["frame-default"],
+        backgrounds: ["theme-cyberpunk", "theme-zen"],
+        titles: ["Любитель"]
+      },
+      readingProgress: {},
+      bookmarks: []
     }
   ],
   books: [
@@ -518,17 +610,24 @@ class DatabaseEngine {
       }
     }
 
-    // Always enforce pure literary badges
+    // Always enforce pure literary badges and ensure all system accounts exist
     if (this.data) {
       this.data.badges = JSON.parse(JSON.stringify(DEFAULT_DATABASE.badges));
-      if (this.data.users) {
-        this.data.users.forEach(u => {
-          if (u.badges) {
-            u.badges = u.badges.filter(bId => !['creator_badge', 'admin_power', 'github_sync', 'crypto_master', 'memory_master', 'speed_reader', 'speed_demon'].includes(bId));
-            if (!u.badges.includes('book_first_page')) u.badges.push('book_first_page');
-          }
-        });
-      }
+      if (!Array.isArray(this.data.users)) this.data.users = [];
+      // Ensure all standard accounts exist
+      DEFAULT_DATABASE.users.forEach(defU => {
+        const found = this.data.users.find(u => u.username.toLowerCase() === defU.username.toLowerCase());
+        if (!found) {
+          this.data.users.push(JSON.parse(JSON.stringify(defU)));
+        }
+      });
+
+      this.data.users.forEach(u => {
+        if (u.badges) {
+          u.badges = u.badges.filter(bId => !['creator_badge', 'admin_power', 'github_sync', 'crypto_master', 'memory_master', 'speed_reader', 'speed_demon'].includes(bId));
+          if (!u.badges.includes('book_first_page')) u.badges.push('book_first_page');
+        }
+      });
       this.persistLocally();
     }
 
